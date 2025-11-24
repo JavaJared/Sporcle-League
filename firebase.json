@@ -1,0 +1,63 @@
+{
+  "firestore": {
+    "database": "(default)",
+    "location": "nam5",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "apphosting": [
+    {
+      "backendId": "sporcle-league-results",
+      "rootDir": "/",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "functions"
+      ]
+    },
+    {
+      "backendId": "sporcle-league-results",
+      "rootDir": "/",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "functions"
+      ]
+    }
+  ],
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "disallowLegacyRuntimeConfig": true,
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint"
+      ]
+    }
+  ]
+}

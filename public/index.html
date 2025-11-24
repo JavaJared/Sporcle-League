@@ -1,0 +1,2352 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Sporcle League</title>
+
+    <!-- Bootstrap -->
+    <!-- In <head>, replace your existing Bootstrap link -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootswatch@5/dist/minty/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="styles.css" />
+
+    <style>
+      /* small polish so Bootstrap themes apply everywhere */
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        background: var(--bs-body-bg);
+        color: var(--bs-body-color);
+      }
+      .card {
+        border-radius: 12px;
+      }
+      .card .card-body {
+        padding: 16px;
+      }
+      .table td,
+      .table th {
+        vertical-align: middle;
+      }
+      .note {
+        opacity: 0.7;
+      }
+    </style>
+  </head>
+  <body class="bg-body text-body">
+    <!-- Header -->
+    <header class="container my-2">
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <h1 class="m-0 flex-grow-1">Sporcle League</h1>
+        <span id="status" class="badge text-bg-secondary">Ready</span>
+        <button
+          id="account-signout"
+          class="btn btn-outline-danger btn-sm d-none"
+        >
+          Sign out
+        </button>
+        <!-- In the header button group -->
+        <button id="admin-signin-header" class="btn btn-outline-primary btn-sm">
+          Admin sign in
+        </button>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- Always visible: Today's Quiz -->
+      <section class="card mb-3">
+        <div class="card-body d-flex align-items-center flex-wrap gap-2">
+          <span class="text-secondary">Today’s Quiz:</span>
+          <a id="quiz-link-display" href="#" target="_blank"
+            >No quiz link posted yet.</a
+          >
+          <!-- admin-only form; JS will show/hide -->
+          <form id="quiz-form" class="d-inline-flex gap-2 ms-auto d-none">
+            <input
+              id="quiz-url"
+              class="form-control"
+              type="url"
+              placeholder="https://example.com/quiz"
+              required
+            />
+            <button type="submit" class="btn btn-outline-primary">
+              Submit
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Always visible: Submit Score -->
+      <section class="card mb-3">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Submit Score</h2>
+          <form id="entry-form" class="d-flex flex-wrap gap-2">
+            <input
+              id="name"
+              class="form-control"
+              type="text"
+              placeholder="Display name"
+              required
+            />
+            <input
+              id="alias"
+              class="form-control"
+              type="text"
+              placeholder="Alias"
+              required
+            />
+            <input
+              id="fraction"
+              class="form-control"
+              type="text"
+              placeholder="Score (e.g., 7/9)"
+              required
+            />
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Bootstrap Tabs -->
+      <ul
+        class="nav nav-pills nav-fill gap-2 small bg-body-tertiary rounded-3 p-2"
+        id="mainTabs"
+        role="tablist"
+      >
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link active"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-today"
+            type="button"
+            role="tab"
+          >
+            Today’s Standings
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-points"
+            type="button"
+            role="tab"
+          >
+            Season Standings
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-fame"
+            type="button"
+            role="tab"
+          >
+            Wall of Fame
+          </button>
+        </li>
+        <!--<li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-shame"
+            type="button"
+            role="tab"
+          >
+            Participation Pavilion
+          </button>
+        </li>-->
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-playoffs"
+            type="button"
+            role="tab"
+          >
+            Playoffs
+          </button>
+        </li>
+
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="h2h-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-headtohead"
+            type="button"
+            role="tab"
+          >
+            Head to Head
+          </button>
+        </li>
+
+        <!-- In your tabs UL -->
+        <li class="nav-item" role="presentation" id="nav-admin-item">
+          <button
+            class="nav-link"
+            id="admin-tab-btn"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-admin"
+            type="button"
+            role="tab"
+          >
+            Admin
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content py-3">
+        <!-- Today’s Standings -->
+        <div class="tab-pane fade show active" id="tab-today" role="tabpanel">
+          <section class="card">
+            <div class="card-body">
+              <h2 class="h5 mb-3">Today’s Standings</h2>
+              <div class="table-responsive">
+                <table class="table table-sm table-striped align-middle">
+                  <thead>
+                    <tr>
+                      <th style="width: 64px">#</th>
+                      <th>Name</th>
+                      <th>Score</th>
+                      <th>%</th>
+                      <th id="standings-actions-th" style="width: 170px">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody id="standings-body"></tbody>
+                </table>
+              </div>
+              <div id="empty-standings" class="note">No entries yet today.</div>
+            </div>
+          </section>
+        </div>
+
+        <!-- All-Time Points -->
+        <div class="tab-pane fade" id="tab-points" role="tabpanel">
+          <section class="card">
+            <div class="card-body">
+              <h2 class="h5 mb-3">Season Standings</h2>
+              <div class="table-responsive">
+                <table class="table table-sm table-striped align-middle">
+                  <thead>
+                    <tr>
+                      <th style="width: 64px">#</th>
+                      <th>Name</th>
+                      <th>Points</th>
+                    </tr>
+                  </thead>
+                  <tbody id="points-body"></tbody>
+                </table>
+              </div>
+              <div id="empty-points" class="note">No points yet.</div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Wall of Fame -->
+        <div class="tab-pane fade" id="tab-fame" role="tabpanel">
+          <section class="card">
+            <div class="card-body">
+              <h2 class="h5 mb-3">Wall of Fame</h2>
+              <div class="table-responsive">
+                <table class="table table-sm table-striped align-middle">
+                  <thead>
+                    <tr>
+                      <th style="width: 64px">#</th>
+                      <th>Name</th>
+                      <th>Firsts</th>
+                    </tr>
+                  </thead>
+                  <tbody id="fame-body"></tbody>
+                </table>
+              </div>
+              <div id="empty-fame" class="note">No data yet.</div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Wall of Shame -->
+        <div class="tab-pane fade" id="tab-shame" role="tabpanel">
+          <section class="card">
+            <div class="card-body">
+              <h2 class="h5 mb-3">Participation Pavilion</h2>
+              <div class="note mt-2">
+                An ode to those who gave it their all and fell just a little
+                short.
+              </div>
+              <div class="table-responsive">
+                <table class="table table-sm table-striped align-middle">
+                  <thead>
+                    <tr>
+                      <th style="width: 64px">#</th>
+                      <th>Name</th>
+                      <th>Lasts</th>
+                    </tr>
+                  </thead>
+                  <tbody id="shame-body"></tbody>
+                </table>
+              </div>
+              <div id="empty-shame" class="note">No data yet.</div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Playoffs tab -->
+        <div
+          class="tab-pane fade"
+          id="tab-playoffs"
+          role="tabpanel"
+          aria-labelledby="tab-playoffs-tab"
+        >
+          <!-- Join Playoff Match (only shown after Finalize Playoffs) -->
+          <div id="playoff-join-card" class="card mb-3">
+            <div class="card-body">
+              <h5 class="card-title">Playoff Match</h5>
+              <p class="card-text">
+                Enter your alias to join your assigned playoff matchup.
+              </p>
+
+              <form id="playoff-join-form" class="row g-2">
+                <div class="col-sm-4">
+                  <label for="playoff-alias" class="form-label">Alias</label>
+                  <input
+                    type="text"
+                    id="playoff-alias"
+                    class="form-control"
+                    placeholder="ellisjf"
+                    required
+                  />
+                </div>
+
+                <div class="col-sm-4 align-self-end">
+                  <button type="submit" class="btn btn-primary">
+                    Join Playoff Match
+                  </button>
+                </div>
+              </form>
+
+              <div id="playoff-join-status" class="form-text mt-2"></div>
+            </div>
+          </div>
+
+          <!-- Bracket (always visible) -->
+          <section class="card">
+            <div class="card-body">
+              <h2 class="h5 mb-3">Playoffs</h2>
+
+              <div id="playoffs-bracket" class="row g-3 justify-content-center">
+                <!-- BracketMakerJS / bracket markup injected here -->
+              </div>
+
+              <div class="note mt-2">
+                Bracket is seeded by Season Standings. Later rounds will be
+                filled in as winners are decided.
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Head to Head -->
+        <div class="tab-pane fade" id="tab-headtohead" role="tabpanel">
+          <section class="card mt-3">
+            <div class="card-body">
+              <h2 class="h5 mb-3">Head to Head</h2>
+
+              <form id="h2h-form" class="row g-2 mb-3">
+                <div class="col-md-4">
+                  <label for="h2h-name" class="form-label">Display Name</label>
+                  <input
+                    type="text"
+                    id="h2h-name"
+                    class="form-control"
+                    placeholder="Your Name"
+                    required
+                  />
+                </div>
+                <div class="col-md-4">
+                  <label for="h2h-alias" class="form-label">Alias</label>
+                  <input
+                    type="text"
+                    id="h2h-alias"
+                    class="form-control"
+                    placeholder="ellisjf"
+                    required
+                  />
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                  <button
+                    type="submit"
+                    class="btn btn-primary w-100"
+                    id="h2h-find-btn"
+                  >
+                    Find Match
+                  </button>
+                </div>
+              </form>
+
+              <button
+                id="h2h-cancel-btn"
+                class="btn btn-outline-secondary btn-sm mb-3 d-none"
+              >
+                Cancel Matchmaking
+              </button>
+
+              <div id="h2h-status" class="mb-2 text-muted">
+                Enter your name and alias, then click "Find Match" to join the
+                queue.
+              </div>
+
+              <!-- Match info once paired -->
+              <div id="h2h-match-card" class="card d-none mb-3">
+                <div class="card-body">
+                  <h3 class="h6 mb-2">You have been matched!</h3>
+                  <p class="mb-1">
+                    <strong>You:</strong> <span id="h2h-you-name"></span> (<span
+                      id="h2h-you-alias"
+                    ></span
+                    >)
+                  </p>
+                  <p class="mb-1">
+                    <strong>Opponent:</strong>
+                    <span id="h2h-opp-name"></span> (<span
+                      id="h2h-opp-alias"
+                    ></span
+                    >)
+                  </p>
+                  <p class="mb-1">
+                    <strong>Quiz:</strong>
+                    <button
+                      id="h2h-veto-btn"
+                      class="btn btn-warning btn-sm ms-2 d-none"
+                    >
+                      Use Veto
+                    </button>
+
+                    <a href="#" target="_blank" id="h2h-quiz-link">Open quiz</a>
+                  </p>
+                </div>
+              </div>
+
+              <!-- Your score entry (only you edit yours) -->
+              <div id="h2h-score-card" class="card d-none mb-3">
+                <div class="card-body">
+                  <h3 class="h6 mb-2">Submit Your Result</h3>
+                  <form id="h2h-score-form" class="row g-2">
+                    <div class="col-md-6">
+                      <label for="h2h-score" class="form-label">
+                        Your Score (num/den)
+                      </label>
+                      <input
+                        type="text"
+                        id="h2h-score"
+                        class="form-control"
+                        placeholder="10/15"
+                        required
+                      />
+                    </div>
+                    <div class="col-md-4">
+                      <label for="h2h-time" class="form-label">
+                        Time Left (mm:ss)
+                      </label>
+                      <input
+                        type="text"
+                        id="h2h-time"
+                        class="form-control"
+                        placeholder="01:23"
+                        required
+                      />
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                      <button
+                        type="submit"
+                        class="btn btn-success w-100"
+                        id="h2h-score-submit-btn"
+                      >
+                        Submit
+                      </button>
+                    </div>
+                  </form>
+                  <div id="h2h-score-status" class="form-text mt-1"></div>
+                </div>
+              </div>
+
+              <!-- Final results, shown only after both players submitted -->
+              <div id="h2h-result-card" class="card d-none mb-3">
+                <div class="card-body">
+                  <h3 class="h6 mb-2">Match Result</h3>
+                  <p class="mb-1" id="h2h-result-summary"></p>
+                  <ul class="mb-0 small" id="h2h-result-detail"></ul>
+                </div>
+              </div>
+
+              <!-- Standings table -->
+              <div class="mt-4">
+                <h3 class="h6">Head-to-Head Standings</h3>
+                <div class="table-responsive">
+                  <table
+                    class="table table-sm align-middle"
+                    id="h2h-standings-table"
+                  >
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Display Name</th>
+                        <th>Alias</th>
+                        <th>W</th>
+                        <th>L</th>
+                        <th>Streak</th>
+                        <th>Best Streak</th>
+                        <th>Win%</th>
+                      </tr>
+                    </thead>
+
+                    <tbody id="h2h-standings-body">
+                      <!-- filled by JS -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Admin -->
+        <div class="tab-pane fade" id="tab-admin" role="tabpanel">
+          <section class="card" id="admin-panel">
+            <div class="card-body">
+              <h2 class="h5 mb-3">Admin</h2>
+
+              <!-- Auth controls (Google sign in restored) -->
+              <div class="d-flex flex-wrap gap-2 mb-2">
+                <button id="admin-signin" class="btn btn-secondary">
+                  Admin: Sign in with Google
+                </button>
+                <button
+                  id="grant-admin"
+                  class="btn btn-outline-secondary d-none"
+                >
+                  Grant Admin to me
+                </button>
+                <button id="admin-signout" class="btn btn-warning d-none">
+                  Sign out (admin)
+                </button>
+              </div>
+
+              <!-- Day controls -->
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                <button id="finish-day" class="btn btn-primary">
+                  Finish Day (award points)
+                </button>
+                <button id="reset-scores" class="btn btn-danger">
+                  Reset Scores
+                </button>
+              </div>
+
+              <!-- Delete from leaderboard -->
+              <h3 class="h6 mt-2 mb-2">Delete From Leaderboard</h3>
+              <form id="delete-points-form" class="d-flex flex-wrap gap-2 mb-3">
+                <input
+                  id="delete-docid"
+                  class="form-control"
+                  type="text"
+                  placeholder="Alias or existing doc ID"
+                  required
+                />
+                <button type="submit" class="btn btn-danger">Delete</button>
+              </form>
+
+              <!-- Edit points -->
+              <h3 class="h6 mt-2 mb-2">Edit Points</h3>
+              <form id="points-edit-form" class="d-flex flex-wrap gap-2 mb-3">
+                <input
+                  id="pe-docid"
+                  class="form-control"
+                  type="text"
+                  placeholder="Alias or doc ID"
+                  required
+                />
+                <select id="pe-mode" class="form-select">
+                  <option value="set">Set to value</option>
+                  <option value="inc">Increment by</option>
+                </select>
+                <input
+                  id="pe-value"
+                  class="form-control"
+                  type="number"
+                  placeholder="Points"
+                  required
+                />
+                <input
+                  id="pe-dn"
+                  class="form-control"
+                  type="text"
+                  placeholder="Display name (optional)"
+                />
+                <button type="submit" class="btn btn-primary">Apply</button>
+              </form>
+
+              <!-- Retro finishes -->
+              <h3 class="h6 mt-2 mb-2">Retroactively Set Firsts/Lasts</h3>
+              <form id="finishes-edit-form" class="d-flex flex-wrap gap-2 mb-3">
+                <input
+                  id="fe-docid"
+                  class="form-control"
+                  type="text"
+                  placeholder="Alias or doc ID"
+                  required
+                />
+                <select id="fe-mode" class="form-select">
+                  <option value="set">Set</option>
+                  <option value="inc">Increment</option>
+                </select>
+                <input
+                  id="fe-firsts"
+                  class="form-control"
+                  type="number"
+                  placeholder="Firsts"
+                />
+                <input
+                  id="fe-lasts"
+                  class="form-control"
+                  type="number"
+                  placeholder="Lasts"
+                />
+                <button type="submit" class="btn btn-primary">Apply</button>
+              </form>
+
+              <!-- Playoff Controls -->
+              <div class="card mb-3">
+                <div class="card-body">
+                  <h5 class="card-title">Playoffs Control</h5>
+                  <p class="card-text">
+                    Use this to finalize the playoffs bracket and enable playoff
+                    features for everyone.
+                  </p>
+                  <button
+                    id="playoffs-finalize-btn"
+                    class="btn btn-danger btn-sm"
+                  >
+                    Finalize Playoffs
+                  </button>
+                  <button
+                    id="playoffs-unfinalize-btn"
+                    class="btn btn-outline-secondary btn-sm ms-2 d-none"
+                  >
+                    Reopen Playoffs (Admin only)
+                  </button>
+                  <div
+                    id="playoffs-finalize-status"
+                    class="form-text mt-2"
+                  ></div>
+                </div>
+              </div>
+
+              <!-- Alias migration -->
+              <h3 class="h6 mt-2 mb-2">Alias Migration</h3>
+              <form id="alias-migrate-form" class="d-flex flex-wrap gap-2">
+                <input
+                  id="old-id"
+                  class="form-control"
+                  type="text"
+                  placeholder="Old points doc id (e.g., old name)"
+                  required
+                />
+                <input
+                  id="new-alias"
+                  class="form-control"
+                  type="text"
+                  placeholder="New alias (e.g., jdoe42)"
+                  required
+                />
+                <input
+                  id="new-dn"
+                  class="form-control"
+                  type="text"
+                  placeholder="Display name (optional)"
+                />
+                <button type="submit" class="btn btn-primary">
+                  Move/Merge
+                </button>
+              </form>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <!-- Firebase + module: exposes helpers used by app.js -->
+    <script type="module">
+      // Firebase SDK imports
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+      import {
+        getAuth,
+        onAuthStateChanged,
+        signInAnonymously,
+        GoogleAuthProvider,
+        signInWithPopup,
+        signOut,
+        getIdTokenResult,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+      import {
+        getFirestore,
+        collection,
+        doc,
+        addDoc,
+        getDocs,
+        getDoc,
+        query,
+        where,
+        orderBy,
+        limit,
+        serverTimestamp,
+        writeBatch,
+        setDoc,
+        runTransaction,
+        deleteDoc,
+        updateDoc,
+        Timestamp,
+        onSnapshot,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+      import {
+        getFunctions,
+        httpsCallable,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js";
+
+      // Replace with your real config from Firebase console
+      const firebaseConfig = {
+        apiKey: "AIzaSyCljmg5V4r0q7vZ5X6K5Wn78iTT7PtKIqU",
+        authDomain: "sporcle-league-ced80.firebaseapp.com",
+        projectId: "sporcle-league-ced80",
+        storageBucket: "sporcle-league-ced80.firebasestorage.app",
+        messagingSenderId: "34922576123",
+        appId: "1:34922576123:web:429c7e4568455c6d4d185e",
+        measurementId: "G-8V028YY2NK",
+      };
+
+      // 2) Init Firebase
+      const app = initializeApp(firebaseConfig);
+      console.log("firebaseConfig.projectId =", firebaseConfig.projectId);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+      const functions = getFunctions(app);
+      const provider = new GoogleAuthProvider();
+
+      // 3) Theme toggle (affects entire page via Bootstrap color modes)
+      (function themeInit() {
+        var key = "bsTheme";
+        var btn = document.getElementById("theme-toggle");
+        var root = document.documentElement;
+        function apply(t) {
+          root.setAttribute("data-bs-theme", t);
+          if (btn) btn.textContent = t === "dark" ? "🌙" : "🌞";
+          try {
+            localStorage.setItem(key, t);
+          } catch (e) {}
+        }
+        var saved = null;
+        try {
+          saved = localStorage.getItem(key);
+        } catch (e) {}
+        apply(saved === "light" ? "light" : "dark");
+        if (btn)
+          btn.addEventListener("click", function () {
+            var next =
+              root.getAttribute("data-bs-theme") === "dark" ? "light" : "dark";
+            apply(next);
+          });
+      })();
+
+      // 4) Firestore refs
+      const todayCol = collection(db, "today");
+      console.log("todayCol path =", todayCol.path);
+      const pointsCol = collection(db, "points");
+      const quizDoc = doc(db, "quizLink", "today");
+
+      // 5) Expose app helpers used by app.js
+      window.shared = {
+        // Today submissions (alias is the doc id)
+        submitScore: async function ({ alias, displayName, num, den, ratio }) {
+          var id = String(alias || "")
+            .trim()
+            .toLowerCase();
+          if (!id) throw new Error("Alias required");
+          await setDoc(
+            doc(todayCol, id),
+            {
+              alias: id,
+              displayName: displayName,
+              num: num,
+              den: den,
+              ratio: ratio,
+              t: Date.now(),
+            },
+            { merge: true }
+          );
+        },
+        deleteEntry: async function (alias) {
+          var id = String(alias || "")
+            .trim()
+            .toLowerCase();
+          await deleteDoc(doc(todayCol, id));
+        },
+        upsertEntry: async function ({
+          oldAlias,
+          newAlias,
+          displayName,
+          num,
+          den,
+        }) {
+          var src = String(oldAlias || "")
+            .trim()
+            .toLowerCase();
+          var dst = String(newAlias || oldAlias || "")
+            .trim()
+            .toLowerCase();
+          var ratio = num / den;
+          await setDoc(
+            doc(todayCol, dst),
+            {
+              alias: dst,
+              displayName: displayName,
+              num: num,
+              den: den,
+              ratio: ratio,
+              t: Date.now(),
+            },
+            { merge: true }
+          );
+          if (dst !== src) await deleteDoc(doc(todayCol, src));
+        },
+
+        // Live listeners
+        listenToday: function (cb) {
+          return onSnapshot(todayCol, cb, function (err) {
+            console.error("[today] err:", err);
+          });
+        },
+        listenPoints: function (cb) {
+          return onSnapshot(pointsCol, cb, function (err) {
+            console.error("[points] err:", err);
+          });
+        },
+
+        // Quiz link
+        setQuizLink: async function (url) {
+          await setDoc(
+            quizDoc,
+            { url: url, updated: Date.now() },
+            { merge: true }
+          );
+        },
+        listenQuizLink: function (cb) {
+          return onSnapshot(quizDoc, cb);
+        },
+
+        // Callables (admin)
+        finishDay: httpsCallable(functions, "finishDayAwardPoints"),
+        resetScores: httpsCallable(functions, "resetAllPoints"),
+        makeAdmin: httpsCallable(functions, "makeMeAdmin"),
+        adminMovePoints: httpsCallable(functions, "adminMovePoints"),
+        adminSetAliasFields: httpsCallable(functions, "adminSetAliasFields"),
+        adminDeletePoints: httpsCallable(functions, "adminDeletePointsDoc"),
+        adminUpdatePoints: httpsCallable(functions, "adminUpdatePoints"),
+        adminUpdateFinishes: httpsCallable(functions, "adminUpdateFinishes"),
+      };
+
+      // 6) Auth helpers for app.js and buttons
+      window.authHelpers = {
+        signInAsAdmin: async function () {
+          await signInWithPopup(auth, provider);
+          if (auth.currentUser) {
+            await auth.currentUser.getIdToken(true);
+          }
+        },
+        signOut: function () {
+          return signOut(auth);
+        },
+        onChange: function (cb) {
+          return onAuthStateChanged(auth, cb);
+        },
+        getIdTokenResult: function () {
+          return getIdTokenResult(auth.currentUser);
+        },
+      };
+
+      // 7) Admin UI control: header sign in, hide Admin tab when not admin
+      var navAdminItem = document.getElementById("nav-admin-item"); // <li> wrapper of Admin tab
+      var adminTabBtn = document.getElementById("admin-tab-btn"); // <button> Admin tab
+      var adminSigninHeader = document.getElementById("admin-signin-header"); // header "Admin sign in" button
+      var globalOutBtn = document.getElementById("account-signout"); // global sign out button
+
+      function toggleAdminUI(isAdmin) {
+        // Show or hide Admin tab
+        if (navAdminItem) navAdminItem.classList.toggle("d-none", !isAdmin);
+
+        // If user is not admin but Admin tab is active, switch to first visible tab
+        if (
+          !isAdmin &&
+          adminTabBtn &&
+          adminTabBtn.classList.contains("active")
+        ) {
+          var firstTabBtn = document.querySelector(
+            "#mainTabs .nav-link:not(.d-none)"
+          );
+          if (firstTabBtn && window.bootstrap && window.bootstrap.Tab) {
+            new window.bootstrap.Tab(firstTabBtn).show();
+          }
+        }
+
+        // Header admin sign in only when not admin
+        if (adminSigninHeader)
+          adminSigninHeader.classList.toggle("d-none", !!isAdmin);
+
+        // Let app.js reveal per-element admin controls
+        try {
+          if (typeof window.refreshAdminUI === "function")
+            window.refreshAdminUI(isAdmin);
+        } catch (e) {}
+      }
+
+      async function signInWithGoogle() {
+        await signInWithPopup(auth, provider);
+        if (auth.currentUser) await auth.currentUser.getIdToken(true);
+      }
+
+      if (adminSigninHeader) {
+        adminSigninHeader.addEventListener("click", function () {
+          signInWithGoogle().catch(function (e) {
+            console.error(e);
+          });
+        });
+      }
+
+      if (globalOutBtn) {
+        globalOutBtn.addEventListener("click", function () {
+          signOut(auth)
+            .then(function () {
+              location.reload();
+            })
+            .catch(function (e) {
+              console.error(e);
+            });
+        });
+      }
+
+      // 8) Auth state and claims watcher
+      onAuthStateChanged(auth, async (u) => {
+        if (!u) {
+          // Allow anonymous users (so they can submit scores)
+          try {
+            await signInAnonymously(auth);
+          } catch (e) {}
+          toggleAdminUI(false);
+          if (globalOutBtn) globalOutBtn.classList.add("d-none");
+          return;
+        }
+
+        try {
+          // Check custom claims
+          const token = await getIdTokenResult(u, true);
+          const isAdmin = !!(
+            token &&
+            token.claims &&
+            token.claims.admin === true
+          );
+          window.__isAdmin = isAdmin;
+
+          // Only show the Sign Out button for admins
+          if (globalOutBtn) globalOutBtn.classList.toggle("d-none", !isAdmin);
+
+          toggleAdminUI(isAdmin);
+        } catch (e) {
+          console.error("claims error", e);
+          window.__isAdmin = false;
+          if (globalOutBtn) globalOutBtn.classList.add("d-none");
+          toggleAdminUI(false);
+        }
+      });
+
+      // Head-to-Head DOM elements (add to your existing references)
+      const h2hForm = document.getElementById("h2h-form");
+      const h2hNameInput = document.getElementById("h2h-name");
+      const h2hAliasInput = document.getElementById("h2h-alias");
+      const h2hStatus = document.getElementById("h2h-status");
+      const h2hMatchCard = document.getElementById("h2h-match-card");
+      const h2hYouName = document.getElementById("h2h-you-name");
+      const h2hYouAlias = document.getElementById("h2h-you-alias");
+      const h2hOppName = document.getElementById("h2h-opp-name");
+      const h2hOppAlias = document.getElementById("h2h-opp-alias");
+      const h2hQuizLink = document.getElementById("h2h-quiz-link");
+
+      const h2hScoreCard = document.getElementById("h2h-score-card");
+      const h2hScoreForm = document.getElementById("h2h-score-form");
+      const h2hScoreInput = document.getElementById("h2h-score");
+      const h2hTimeInput = document.getElementById("h2h-time");
+      const h2hScoreStatus = document.getElementById("h2h-score-status");
+
+      const h2hResultCard = document.getElementById("h2h-result-card");
+      const h2hResultSummary = document.getElementById("h2h-result-summary");
+      const h2hResultDetail = document.getElementById("h2h-result-detail");
+
+      const h2hStandingsBody = document.getElementById("h2h-standings-body");
+
+      let h2hQueueUnsub = null;
+      let h2hQueueDocRef = null;
+      let h2hCurrentMatchRef = null;
+      let h2hCurrentSide = null; // "playerA" or "playerB"
+      let h2hYouData = null; // {displayName, alias, clientId}
+
+      let h2hQueueStartTime = null;
+      let h2hQueueIntervalId = null;
+      let h2hQueueTimeoutId = null;
+
+      let h2hMatchShownOnce = false;
+
+      const H2H_QUEUE_TIMEOUT_SECONDS = 10 * 60; // 10 minutes
+
+      const h2hCancelBtn = document.getElementById("h2h-cancel-btn");
+
+      function clearHeadToHeadQueueTimers() {
+        h2hQueueStartTime = null;
+        if (h2hQueueIntervalId) {
+          clearInterval(h2hQueueIntervalId);
+          h2hQueueIntervalId = null;
+        }
+        if (h2hQueueTimeoutId) {
+          clearTimeout(h2hQueueTimeoutId);
+          h2hQueueTimeoutId = null;
+        }
+      }
+
+      function startHeadToHeadQueueTimers() {
+        clearHeadToHeadQueueTimers();
+        h2hQueueStartTime = Date.now();
+
+        // live "in queue" indicator
+        h2hQueueIntervalId = setInterval(() => {
+          if (!h2hQueueStartTime) return;
+          const elapsedSec = Math.floor(
+            (Date.now() - h2hQueueStartTime) / 1000
+          );
+          const pretty = formatSecondsAsMMSS(elapsedSec);
+          setH2HStatus(`Waiting for an opponent… In queue for ${pretty}`);
+        }, 1000);
+
+        // hard timeout at 10 minutes
+        h2hQueueTimeoutId = setTimeout(() => {
+          // if we’re still waiting after 10 minutes, auto-cancel
+          cancelHeadToHeadQueue(
+            `Matchmaking timed out after ${formatSecondsAsMMSS(
+              H2H_QUEUE_TIMEOUT_SECONDS
+            )}. Please try again.`
+          );
+        }, H2H_QUEUE_TIMEOUT_SECONDS * 1000);
+      }
+
+      async function cancelHeadToHeadQueue(message) {
+        clearHeadToHeadQueueTimers();
+
+        if (h2hQueueUnsub) {
+          h2hQueueUnsub();
+          h2hQueueUnsub = null;
+        }
+
+        if (h2hQueueDocRef) {
+          try {
+            await deleteDoc(h2hQueueDocRef);
+          } catch (err) {
+            console.error("Error deleting queue doc on cancel", err);
+          }
+          h2hQueueDocRef = null;
+        }
+
+        h2hCurrentMatchRef = null;
+        h2hCurrentSide = null;
+        h2hYouData = null;
+
+        if (h2hMatchCard) h2hMatchCard.classList.add("d-none");
+        if (h2hScoreCard) h2hScoreCard.classList.add("d-none");
+        if (h2hResultCard) h2hResultCard.classList.add("d-none");
+
+        if (h2hScoreInput) {
+          h2hScoreInput.disabled = false;
+          h2hScoreInput.value = "";
+        }
+        if (h2hTimeInput) {
+          h2hTimeInput.disabled = false;
+          h2hTimeInput.value = "";
+        }
+        const submitBtn = document.getElementById("h2h-score-submit-btn");
+        if (submitBtn) submitBtn.disabled = false;
+
+        if (h2hCancelBtn) h2hCancelBtn.classList.add("d-none");
+
+        setH2HStatus(message || "Matchmaking cancelled.");
+      }
+
+      if (h2hCancelBtn) {
+        h2hCancelBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          cancelHeadToHeadQueue();
+        });
+      }
+
+      async function cleanupOldQueueEntries(db, clientId) {
+        const queueRef = collection(db, "headtoheadQueue");
+        const q = query(
+          queueRef,
+          where("clientId", "==", clientId),
+          where("status", "==", "waiting")
+        );
+        const snap = await getDocs(q);
+        if (snap.empty) return;
+
+        const batch = writeBatch(db);
+        snap.forEach((docSnap) => {
+          batch.delete(docSnap.ref);
+        });
+        await batch.commit();
+      }
+
+      // ---- Head-to-Head: persistent client id per browser ----
+      function getOrCreateHeadToHeadClientId() {
+        const key = "h2hClientId";
+        const existing = window.localStorage.getItem(key);
+        if (existing) return existing;
+
+        const newId =
+          "h2h_" +
+          Math.random().toString(36).slice(2) +
+          Date.now().toString(36);
+
+        window.localStorage.setItem(key, newId);
+        return newId;
+      }
+
+      function parseScoreString(raw) {
+        const s = (raw || "").trim();
+        const parts = s.split("/");
+        if (parts.length !== 2) return null;
+        const correct = parseInt(parts[0], 10);
+        const total = parseInt(parts[1], 10);
+        if (
+          !Number.isFinite(correct) ||
+          !Number.isFinite(total) ||
+          total <= 0 ||
+          correct < 0 ||
+          correct > total
+        ) {
+          return null;
+        }
+        return {
+          rawScore: s,
+          correct,
+          total,
+          pct: correct / total,
+        };
+      }
+
+      function parseTimeString(raw) {
+        const s = (raw || "").trim();
+        if (!s) return null;
+
+        // allow "mm:ss" or just "ss"
+        const parts = s.split(":");
+
+        let seconds;
+        if (parts.length === 1) {
+          const sec = Number(parts[0]);
+          if (!Number.isFinite(sec) || sec < 0) return null;
+          seconds = Math.floor(sec);
+        } else if (parts.length === 2) {
+          const min = Number(parts[0]);
+          const sec = Number(parts[1]);
+          if (
+            !Number.isFinite(min) ||
+            !Number.isFinite(sec) ||
+            min < 0 ||
+            sec < 0 ||
+            sec >= 60
+          ) {
+            return null;
+          }
+          seconds = Math.floor(min * 60 + sec);
+        } else {
+          return null;
+        }
+
+        return seconds;
+      }
+
+      function formatSecondsAsMMSS(totalSeconds) {
+        const s = Math.max(0, Math.floor(totalSeconds || 0));
+        const m = Math.floor(s / 60);
+        const sec = s % 60;
+        const mm = String(m).padStart(2, "0");
+        const ss = String(sec).padStart(2, "0");
+        return `${mm}:${ss}`;
+      }
+
+      function setH2HStatus(msg) {
+        if (h2hStatus) h2hStatus.textContent = msg;
+      }
+
+      function showH2HMatch(matchData, you, opp, yourSideKey) {
+        if (!matchData) return;
+
+        h2hYouName.textContent = you.displayName;
+        h2hYouAlias.textContent = you.alias;
+        h2hOppName.textContent = opp.displayName;
+        h2hOppAlias.textContent = opp.alias;
+        h2hQuizLink.href = matchData.quizUrl;
+        h2hQuizLink.textContent = matchData.quizUrl;
+
+        h2hMatchCard.classList.remove("d-none");
+
+        // score entry
+        h2hScoreCard.classList.remove("d-none");
+        h2hResultCard.classList.add("d-none");
+        h2hScoreStatus.textContent =
+          "Play the quiz, then submit your score and time.";
+
+        h2hScoreInput.value = "";
+        h2hTimeInput.value = "";
+
+        // IMPORTANT: re-enable after previous match
+        h2hScoreInput.disabled = false;
+        h2hTimeInput.disabled = false;
+        const submitBtn = document.getElementById("h2h-score-submit-btn");
+        if (submitBtn) submitBtn.disabled = false;
+
+        h2hCurrentSide = yourSideKey; // "playerA" or "playerB"
+      }
+
+      let __playoffsFinalized = false;
+
+      const playoffsConfigRef = doc(db, "config", "playoffs");
+      const playoffsFinalizeBtn = document.getElementById(
+        "playoffs-finalize-btn"
+      );
+      const playoffsUnfinalizeBtn = document.getElementById(
+        "playoffs-unfinalize-btn"
+      );
+      const playoffsFinalizeStatus = document.getElementById(
+        "playoffs-finalize-status"
+      );
+
+      // Elements controlling playoff visibility
+      const playoffsTabBtn = document.querySelector(
+        '.tab-btn[data-tab="playoffs"]'
+      );
+      const playoffsTabPane = document.getElementById("tab-playoffs");
+      const playoffJoinBlock = document
+        .getElementById("playoff-join-form")
+        ?.closest(".card");
+
+      const playoffJoinForm = document.getElementById("playoff-join-form");
+      const playoffAliasInput = document.getElementById("playoff-alias");
+      const playoffJoinStatus = document.getElementById("playoff-join-status");
+
+      let playoffQueueUnsub = null;
+      let playoffQueueDocRef = null;
+      let playoffCurrentMatchRef = null;
+      let playoffCurrentSide = null;
+      let playoffYouData = null;
+
+      if (playoffJoinForm) {
+        playoffJoinForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          if (!__playoffsFinalized) {
+            playoffJoinStatus.textContent = "Playoffs are not finalized yet.";
+            return;
+          }
+          const alias = playoffAliasInput.value.trim();
+          if (!alias) return;
+
+          try {
+            playoffJoinStatus.textContent =
+              "Looking up your playoff matchup...";
+            const matchDoc = await findCurrentPlayoffMatchForAlias(db, alias);
+            if (!matchDoc) {
+              playoffJoinStatus.textContent =
+                "No active or pending playoff matchup found for that alias.";
+              return;
+            }
+
+            const series = matchDoc.data();
+            const clientId = getOrCreateHeadToHeadClientId();
+            const displayName =
+              series.higherAlias === alias
+                ? series.higherDisplayName
+                : series.lowerDisplayName;
+
+            playoffYouData = {
+              alias,
+              displayName,
+              clientId,
+              matchId: matchDoc.id,
+            };
+
+            playoffJoinStatus.textContent = `Joining playoff match vs ${
+              alias === series.higherAlias
+                ? series.lowerDisplayName
+                : series.higherDisplayName
+            }...`;
+
+            await joinPlayoffQueue(db, matchDoc, playoffYouData);
+          } catch (err) {
+            console.error("Error joining playoff match", err);
+            playoffJoinStatus.textContent =
+              "Error joining playoff match. See console.";
+          }
+        });
+      }
+
+      async function findCurrentPlayoffMatchForAlias(db, alias) {
+        const ref = collection(db, "playoffSeries");
+        const q = query(ref, where("aliases", "array-contains", alias));
+        const snap = await getDocs(q);
+        if (snap.empty) return null;
+
+        // Simple approach: pick the earliest round that is not completed
+        let best = null;
+        snap.forEach((docSnap) => {
+          const d = docSnap.data();
+          if (!d) return;
+          if (d.status === "completed") return;
+          if (!best) {
+            best = docSnap;
+          } else {
+            const bd = best.data();
+            if ((d.round || 0) < (bd.round || 0)) {
+              best = docSnap;
+            }
+          }
+        });
+
+        return best;
+      }
+
+      async function joinPlayoffQueue(db, seriesDocSnap, youData) {
+        // Clean up any old listener
+        if (playoffQueueUnsub) {
+          playoffQueueUnsub();
+          playoffQueueUnsub = null;
+        }
+
+        const seriesId = seriesDocSnap.id;
+        const series = seriesDocSnap.data();
+        const queueRef = collection(db, "playoffQueue");
+        const queueDocId = `${seriesId}_${youData.alias}`;
+        const queueDoc = doc(queueRef, queueDocId);
+
+        // Single doc per alias per match
+        await setDoc(queueDoc, {
+          matchId: seriesId,
+          alias: youData.alias,
+          clientId: youData.clientId,
+          status: "waiting",
+          createdAt: serverTimestamp(),
+        });
+
+        playoffQueueDocRef = queueDoc;
+
+        // Listen for status changes
+        playoffQueueUnsub = onSnapshot(queueDoc, async (snap) => {
+          if (!snap.exists()) {
+            playoffJoinStatus.textContent = "You left the playoff queue.";
+            return;
+          }
+          const data = snap.data();
+          if (data.status === "matched" && data.matchId) {
+            playoffJoinStatus.textContent = "Playoff match found!";
+            // Start listening to the playoff head to head match
+            const matchRef = doc(
+              collection(db, "headtoheadMatches"),
+              data.matchId
+            );
+            playoffCurrentMatchRef = matchRef;
+
+            const isHigher = series.higherAlias === youData.alias;
+            const sideKey = isHigher ? "playerA" : "playerB";
+
+            listenForPlayoffHeadToHeadMatch(
+              db,
+              matchRef,
+              series,
+              youData,
+              sideKey
+            );
+
+            // You can also stop the queue listener at this point if you want
+            // playoffQueueUnsub(); playoffQueueUnsub = null;
+          } else {
+            playoffJoinStatus.textContent =
+              "In playoff queue, waiting for opponent...";
+          }
+        });
+
+        // Kick off matching
+        await tryPlayoffMatchmaking(db, seriesDocSnap, youData);
+      }
+
+      async function tryPlayoffMatchmaking(db, seriesDocSnap, myData) {
+        const seriesId = seriesDocSnap.id;
+        const queueRef = collection(db, "playoffQueue");
+
+        const q = query(
+          queueRef,
+          where("matchId", "==", seriesId),
+          where("status", "==", "waiting"),
+          orderBy("createdAt", "asc"),
+          limit(10)
+        );
+        const snap = await getDocs(q);
+        if (snap.empty) return;
+
+        // Find myself and an opponent
+        const all = snap.docs;
+        const meDoc = all.find((d) => d.data().alias === myData.alias);
+        if (!meDoc) return; // my queue write not visible yet
+
+        let oppDoc = null;
+        for (const docSnap of all) {
+          const d = docSnap.data();
+          if (!d) continue;
+          if (d.alias === myData.alias) continue;
+          if (d.clientId === myData.clientId) continue;
+          oppDoc = docSnap;
+          break;
+        }
+        if (!oppDoc) return; // no opponent yet
+
+        const oppData = oppDoc.data();
+
+        const series = seriesDocSnap.data();
+        const matchesRef = collection(db, "headtoheadMatches");
+        const matchRef = doc(matchesRef);
+
+        const quizUrl = await getRandomPlayoffQuizUrl(db);
+
+        const isMyHigher = series.higherAlias === myData.alias;
+        const playerA = isMyHigher ? myData : oppData;
+        const playerB = isMyHigher ? oppData : myData;
+
+        const batch = writeBatch(db);
+
+        batch.set(matchRef, {
+          mode: "playoff",
+          playoffMatchId: seriesId,
+          quizUrl,
+          status: "active",
+          createdAt: serverTimestamp(),
+          playerA: {
+            clientId: playerA.clientId,
+            alias: playerA.alias,
+            displayName: playerA.displayName,
+          },
+          playerB: {
+            clientId: playerB.clientId,
+            alias: playerB.alias,
+            displayName: playerB.displayName,
+          },
+          scores: {
+            playerA: null,
+            playerB: null,
+          },
+          winnerAlias: null,
+          loserAlias: null,
+          tie: false,
+          resolvedAt: null,
+          vetoAllowedForAlias: series.higherAlias,
+          vetoUsed: false,
+          vetoUsedByAlias: null,
+        });
+
+        batch.update(doc(queueRef, `${seriesId}_${playerA.alias}`), {
+          status: "matched",
+          matchId: matchRef.id,
+        });
+        batch.update(doc(queueRef, `${seriesId}_${playerB.alias}`), {
+          status: "matched",
+          matchId: matchRef.id,
+        });
+
+        batch.update(doc(collection(db, "playoffSeries"), seriesId), {
+          status: "active",
+          currentMatchId: matchRef.id,
+        });
+
+        await batch.commit();
+      }
+
+      const h2hVetoBtn = document.getElementById("h2h-veto-btn"); // add this button in HTML
+
+      function listenForPlayoffHeadToHeadMatch(
+        db,
+        matchRef,
+        series,
+        youData,
+        sideKey
+      ) {
+        h2hMatchShownOnce = false; // reuse your existing flag
+
+        onSnapshot(matchRef, async (mSnap) => {
+          if (!mSnap.exists()) return;
+          const mData = mSnap.data();
+
+          const scores = mData.scores || {};
+          const mySide = sideKey;
+          const oppSide = mySide === "playerA" ? "playerB" : "playerA";
+
+          // Show match once
+          if (!h2hMatchShownOnce) {
+            h2hMatchShownOnce = true;
+            const you = mData[mySide === "playerA" ? "playerA" : "playerB"];
+            const opp = mData[oppSide === "playerA" ? "playerA" : "playerB"];
+
+            showH2HMatch(mData, you, opp, mySide);
+            clearHeadToHeadQueueTimers();
+            setH2HStatus(
+              "Playoff match found! Play the quiz and submit your score."
+            );
+
+            setupPlayoffVeto(matchRef, mData, series, youData, mySide);
+          } else {
+            // Update quiz link if veto changed it
+            if (mData.quizUrl && h2hQuizLink) {
+              h2hQuizLink.href = mData.quizUrl;
+              h2hQuizLink.textContent = mData.quizUrl;
+            }
+          }
+
+          const myScore = scores[mySide];
+          const oppScore = scores[oppSide];
+
+          if (myScore && !mData.winnerAlias && !mData.tie) {
+            h2hScoreStatus.textContent =
+              "Score submitted. Waiting for opponent...";
+          }
+
+          if (mData.status === "completed" || mData.winnerAlias || mData.tie) {
+            renderHeadToHeadResult(mData, youData, mySide);
+
+            // Update playoffSeries with winner if this is a playoff match
+            if (
+              mData.mode === "playoff" &&
+              mData.playoffMatchId &&
+              mData.winnerAlias
+            ) {
+              const seriesRef = doc(
+                collection(db, "playoffSeries"),
+                mData.playoffMatchId
+              );
+              const winnerAlias = mData.winnerAlias;
+              const winnerDisplay =
+                winnerAlias === series.higherAlias
+                  ? series.higherDisplayName
+                  : series.lowerDisplayName;
+
+              try {
+                await updateDoc(seriesRef, {
+                  status: "completed",
+                  winnerAlias,
+                  winnerDisplayName: winnerDisplay,
+                });
+              } catch (e) {
+                console.error("Error updating playoffSeries winner", e);
+              }
+            }
+          }
+        });
+      }
+
+      function setupPlayoffVeto(matchRef, matchData, series, youData, mySide) {
+        if (!h2hVetoBtn) return;
+
+        const canVeto =
+          matchData.mode === "playoff" &&
+          matchData.vetoAllowedForAlias === youData.alias &&
+          !matchData.vetoUsed;
+
+        if (!canVeto) {
+          h2hVetoBtn.classList.add("d-none");
+          return;
+        }
+
+        h2hVetoBtn.classList.remove("d-none");
+        h2hVetoBtn.disabled = false;
+
+        h2hVetoBtn.onclick = async (e) => {
+          e.preventDefault();
+          h2hVetoBtn.disabled = true;
+          try {
+            const newQuiz = await getRandomPlayoffQuizUrl(db);
+            await updateDoc(matchRef, {
+              quizUrl: newQuiz,
+              vetoUsed: true,
+              vetoUsedByAlias: youData.alias,
+            });
+            h2hVetoBtn.classList.add("d-none");
+            setH2HStatus("Veto used. New playoff quiz assigned.");
+          } catch (err) {
+            console.error("Error using veto", err);
+            h2hVetoBtn.disabled = false;
+          }
+        };
+      }
+
+      /**
+       * Pick a random quiz URL from the 'quizzes' collection.
+       */
+      let h2hRecentQuizUrls = [];
+
+      let playoffRecentQuizUrls = [];
+
+      async function getRandomPlayoffQuizUrl(db) {
+        const ref = collection(db, "playoffQuizzes");
+        const snap = await getDocs(ref);
+
+        const urls = [];
+        snap.forEach((docSnap) => {
+          const d = docSnap.data();
+          if (d && d.url) urls.push(d.url);
+        });
+
+        if (!urls.length) {
+          throw new Error("No playoff quizzes available");
+        }
+
+        // Avoid recent repeats on this device
+        let choice = null;
+        for (let tries = 0; tries < 5; tries++) {
+          const idx = Math.floor(Math.random() * urls.length);
+          const candidate = urls[idx];
+          if (!playoffRecentQuizUrls.includes(candidate)) {
+            choice = candidate;
+            break;
+          }
+        }
+        if (!choice) {
+          const idx = Math.floor(Math.random() * urls.length);
+          choice = urls[idx];
+        }
+
+        playoffRecentQuizUrls.push(choice);
+        if (playoffRecentQuizUrls.length > 10) {
+          playoffRecentQuizUrls.shift();
+        }
+
+        return choice;
+      }
+
+      const playoffJoinCard = document.getElementById("playoff-join-card");
+
+      function updatePlayoffsUIFromFlag() {
+        if (playoffJoinCard) {
+          playoffJoinCard.classList.toggle("d-none", !__playoffsFinalized);
+        }
+      }
+
+      onSnapshot(
+        playoffsConfigRef,
+        (snap) => {
+          const data = snap.exists() ? snap.data() : {};
+          __playoffsFinalized = !!data.finalized;
+          updatePlayoffsUIFromFlag();
+        },
+        (err) => {
+          console.error("Error listening to playoffs config", err);
+        }
+      );
+
+      if (playoffsFinalizeBtn) {
+        playoffsFinalizeBtn.addEventListener("click", async (e) => {
+          e.preventDefault();
+          try {
+            await setDoc(
+              playoffsConfigRef,
+              {
+                finalized: true,
+                finalizedAt: serverTimestamp(),
+              },
+              { merge: true }
+            );
+            // onSnapshot will update the UI
+          } catch (err) {
+            console.error("Error finalizing playoffs", err);
+            if (playoffsFinalizeStatus) {
+              playoffsFinalizeStatus.textContent =
+                "Error finalizing playoffs. See console.";
+            }
+          }
+        });
+      }
+
+      if (playoffsUnfinalizeBtn) {
+        playoffsUnfinalizeBtn.addEventListener("click", async (e) => {
+          e.preventDefault();
+          if (
+            !confirm(
+              "Reopen playoffs for editing? This hides playoff features again."
+            )
+          )
+            return;
+          try {
+            await setDoc(
+              playoffsConfigRef,
+              {
+                finalized: false,
+              },
+              { merge: true }
+            );
+          } catch (err) {
+            console.error("Error unfinalizing playoffs", err);
+            if (playoffsFinalizeStatus) {
+              playoffsFinalizeStatus.textContent =
+                "Error reopening playoffs. See console.";
+            }
+          }
+        });
+      }
+
+      async function getRandomQuizUrl(db) {
+        const quizzesRef = collection(db, "quizzes");
+        const snap = await getDocs(quizzesRef);
+
+        const urls = [];
+        snap.forEach((docSnap) => {
+          const d = docSnap.data();
+          if (d && d.url) urls.push(d.url);
+        });
+
+        if (!urls.length) {
+          throw new Error("No quizzes available");
+        }
+
+        // avoid recent repeats on this device
+        let choice = null;
+        for (let tries = 0; tries < 5; tries++) {
+          const idx = Math.floor(Math.random() * urls.length);
+          const candidate = urls[idx];
+          if (!h2hRecentQuizUrls.includes(candidate)) {
+            choice = candidate;
+            break;
+          }
+        }
+        if (!choice) {
+          const idx = Math.floor(Math.random() * urls.length);
+          choice = urls[idx];
+        }
+
+        h2hRecentQuizUrls.push(choice);
+        if (h2hRecentQuizUrls.length > 10) {
+          h2hRecentQuizUrls.shift();
+        }
+
+        return choice;
+      }
+
+      /**
+       * Try to pair this user with a waiting opponent.
+       * If someone is waiting, create match doc and mark both as matched.
+       * If not, you just stay waiting until someone else joins.
+       */
+      async function tryHeadToHeadMatchmaking(db, myQueueRef, myData) {
+        const queueRef = collection(db, "headtoheadQueue");
+
+        // cutoff: 10 minutes ago
+        const cutoff = Timestamp.fromMillis(Date.now() - 10 * 60 * 1000);
+
+        const q = query(
+          queueRef,
+          where("status", "==", "waiting"),
+          orderBy("createdAt", "asc"),
+          limit(20)
+        );
+
+        const snap = await getDocs(q);
+
+        let opponentDoc = null;
+
+        for (const docSnap of snap.docs) {
+          const data = docSnap.data();
+          if (!data) continue;
+
+          const createdAt =
+            data.createdAt && data.createdAt.toMillis
+              ? data.createdAt.toMillis()
+              : null;
+
+          // If older than cutoff, delete it and skip
+          if (createdAt && createdAt < cutoff.toMillis()) {
+            try {
+              await deleteDoc(docSnap.ref);
+            } catch (e) {
+              console.error("Error deleting stale queue entry", e);
+            }
+            continue;
+          }
+
+          // skip myself and any same-client entries for safety
+          if (
+            docSnap.id !== myQueueRef.id &&
+            data.clientId &&
+            data.clientId !== myData.clientId
+          ) {
+            opponentDoc = docSnap;
+            break;
+          }
+        }
+
+        if (!opponentDoc) {
+          // nobody else waiting yet
+          return;
+        }
+
+        const oppData = opponentDoc.data();
+
+        // Create match and update both queue docs in a batch
+        const batch = writeBatch(db);
+        const matchesRef = collection(db, "headtoheadMatches");
+        const matchRef = doc(matchesRef);
+
+        const quizUrl = await getRandomQuizUrl(db);
+
+        batch.set(matchRef, {
+          quizUrl,
+          status: "active",
+          createdAt: serverTimestamp(),
+          playerA: {
+            clientId: myData.clientId,
+            displayName: myData.displayName,
+            alias: myData.alias,
+          },
+          playerB: {
+            clientId: oppData.clientId,
+            displayName: oppData.displayName,
+            alias: oppData.alias,
+          },
+          scores: {
+            playerA: null,
+            playerB: null,
+          },
+          winnerAlias: null,
+          loserAlias: null,
+          tie: false,
+          resolvedAt: null,
+          ready: {
+            playerA: false,
+            playerB: false,
+          },
+        });
+
+        batch.update(myQueueRef, {
+          status: "matched",
+          matchId: matchRef.id,
+        });
+
+        batch.update(opponentDoc.ref, {
+          status: "matched",
+          matchId: matchRef.id,
+        });
+
+        await batch.commit();
+      }
+
+      function renderHeadToHeadResult(match, youData, sideKey) {
+        const scores = match.scores || {};
+        const myScore = scores[sideKey];
+        const oppScore = scores[sideKey === "playerA" ? "playerB" : "playerA"];
+
+        if (!myScore || !oppScore) return; // just in case
+
+        let summary;
+        if (match.tie) {
+          summary = "This match ended in a tie.";
+        } else if (match.winnerAlias === youData.alias) {
+          summary = "You won this match!";
+        } else if (match.loserAlias === youData.alias) {
+          summary = "You lost this match.";
+        } else {
+          summary = "Match completed.";
+        }
+
+        h2hResultSummary.textContent = summary;
+
+        const detailLines = [];
+        detailLines.push(
+          `Your score: ${myScore.rawScore} (${Math.round(
+            myScore.pct * 100
+          )}%), time left: ${formatSecondsAsMMSS(myScore.timeLeftSeconds)}`
+        );
+        detailLines.push(
+          `Opponent score: ${oppScore.rawScore} (${Math.round(
+            oppScore.pct * 100
+          )}%), time left: ${formatSecondsAsMMSS(oppScore.timeLeftSeconds)}`
+        );
+
+        h2hResultDetail.innerHTML = "";
+        detailLines.forEach((t) => {
+          const li = document.createElement("li");
+          li.textContent = t;
+          h2hResultDetail.appendChild(li);
+        });
+
+        h2hResultCard.classList.remove("d-none");
+      }
+
+      /**
+       * Listen for changes on this user's queue doc.
+       * When status becomes 'matched', load the match and show UI.
+       */
+      function listenForHeadToHeadMatch(db, queueRef, youData) {
+        if (h2hQueueUnsub) {
+          h2hQueueUnsub();
+          h2hQueueUnsub = null;
+        }
+        h2hQueueUnsub = onSnapshot(queueRef, async (snap) => {
+          if (!snap.exists()) {
+            setH2HStatus("Your matchmaking request was removed.");
+            return;
+          }
+          const data = snap.data();
+          if (data.status === "waiting") {
+            setH2HStatus("Waiting for an opponent...");
+            return;
+          }
+          if (data.status === "matched" && data.matchId) {
+            if (h2hCancelBtn) h2hCancelBtn.classList.add("d-none");
+            clearHeadToHeadQueueTimers();
+            setH2HStatus("Match found!");
+            const matchRef = doc(db, "headtoheadMatches", data.matchId);
+            h2hCurrentMatchRef = matchRef;
+            const matchSnap = await getDoc(matchRef);
+            if (!matchSnap.exists()) {
+              setH2HStatus("Match could not be loaded.");
+              return;
+            }
+            const match = matchSnap.data();
+            let opp, sideKey;
+            if (match.playerA.clientId === youData.clientId) {
+              opp = match.playerB;
+              sideKey = "playerA";
+            } else {
+              opp = match.playerA;
+              sideKey = "playerB";
+            }
+            h2hYouData = youData;
+            showH2HMatch(match, youData, opp, sideKey);
+
+            // Also listen to the match document itself for score/result updates
+            onSnapshot(matchRef, (mSnap) => {
+              if (!mSnap.exists()) return;
+              const mData = mSnap.data();
+
+              const scores = mData.scores || {};
+              const mySide = sideKey;
+              const oppSide = mySide === "playerA" ? "playerB" : "playerA";
+
+              // Show the match & score form once per match
+              if (!h2hMatchShownOnce) {
+                h2hMatchShownOnce = true;
+                showH2HMatch(mData, youData, opp, mySide);
+                clearHeadToHeadQueueTimers();
+                setH2HStatus(
+                  "Match found! Play the quiz and submit your score."
+                );
+              }
+
+              const myScore = scores[mySide];
+              const oppScore = scores[oppSide];
+
+              // Status text for my score
+              if (myScore && !mData.winnerAlias && !mData.tie) {
+                h2hScoreStatus.textContent =
+                  "Score submitted. Waiting for opponent...";
+              }
+
+              // When resolved, show final result
+              if (
+                mData.status === "completed" ||
+                mData.winnerAlias ||
+                mData.tie
+              ) {
+                renderHeadToHeadResult(mData, youData, mySide);
+              }
+            });
+          }
+        });
+      }
+
+      if (h2hScoreForm) {
+        h2hScoreForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          if (!h2hCurrentMatchRef || !h2hCurrentSide || !h2hYouData) {
+            h2hScoreStatus.textContent = "No active match.";
+            return;
+          }
+          const parsed = parseScoreString(h2hScoreInput.value);
+          if (!parsed) {
+            h2hScoreStatus.textContent =
+              "Invalid score format. Use num/den, e.g., 10/15.";
+            return;
+          }
+          const seconds = parseTimeString(h2hTimeInput.value);
+          if (seconds === null) {
+            h2hScoreStatus.textContent =
+              "Invalid time. Use mm:ss (e.g., 01:23).";
+            return;
+          }
+
+          const scoreObj = {
+            ...parsed,
+            timeLeftSeconds: seconds,
+            submittedAt: serverTimestamp(),
+          };
+
+          try {
+            const fieldPath = `scores.${h2hCurrentSide}`;
+            h2hScoreStatus.textContent = "Submitting...";
+            await updateDoc(h2hCurrentMatchRef, {
+              [fieldPath]: scoreObj,
+            });
+            h2hScoreStatus.textContent =
+              "Score submitted. Waiting for opponent...";
+            h2hScoreInput.disabled = true;
+            h2hTimeInput.disabled = true;
+            document.getElementById("h2h-score-submit-btn").disabled = true;
+
+            // Attempt to resolve match (this is safe via transaction below)
+            await resolveHeadToHeadMatch(db, h2hCurrentMatchRef);
+          } catch (err) {
+            console.error("Error submitting score", err);
+            h2hScoreStatus.textContent = "Error submitting score.";
+          }
+        });
+      }
+
+      // Handle form submission
+      if (h2hForm) {
+        h2hForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          if (!h2hNameInput.value.trim() || !h2hAliasInput.value.trim()) {
+            return;
+          }
+
+          const displayName = h2hNameInput.value.trim();
+          const alias = h2hAliasInput.value.trim();
+          const clientId = getOrCreateHeadToHeadClientId();
+
+          const youData = { displayName, alias, clientId };
+
+          setH2HStatus("Joining matchmaking queue...");
+          h2hMatchCard.classList.add("d-none");
+          h2hScoreCard.classList.add("d-none");
+          h2hResultCard.classList.add("d-none");
+
+          // remove any old "waiting" entries for this client
+          await cleanupOldQueueEntries(db, clientId);
+
+          const queueRef = collection(db, "headtoheadQueue");
+
+          // create or replace this client's queue entry
+          const myDocRef = await addDoc(queueRef, {
+            clientId,
+            displayName,
+            alias,
+            status: "waiting",
+            matchId: null,
+            createdAt: serverTimestamp(),
+          });
+
+          h2hQueueDocRef = myDocRef;
+          h2hMatchShownOnce = false;
+
+          if (h2hCancelBtn) h2hCancelBtn.classList.remove("d-none");
+
+          // START the queue timers here:
+          startHeadToHeadQueueTimers();
+
+          // start listening and try to match...
+          listenForHeadToHeadMatch(db, myDocRef, youData);
+          try {
+            await tryHeadToHeadMatchmaking(db, myDocRef, youData);
+            // do NOT override status in catch; timers are updating it
+          } catch (err) {
+            console.error("Error during matchmaking", err);
+          }
+        });
+      }
+
+      async function resolveHeadToHeadMatch(db, matchRef) {
+        // 1) Read the match once
+        const matchSnap = await getDoc(matchRef);
+        if (!matchSnap.exists()) return;
+
+        const match = matchSnap.data();
+        const scores = match.scores || {};
+        const sA = scores.playerA;
+        const sB = scores.playerB;
+
+        // Need both scores to resolve
+        if (!sA || !sB) return;
+
+        // Already resolved? Do nothing
+        if (match.status === "completed" || match.winnerAlias || match.tie) {
+          return;
+        }
+
+        const pA = match.playerA;
+        const pB = match.playerB;
+
+        // 2) Decide winner / loser / tie
+        const pctA = sA.pct || 0;
+        const pctB = sB.pct || 0;
+        const timeA = sA.timeLeftSeconds || 0;
+        const timeB = sB.timeLeftSeconds || 0;
+
+        let winnerAlias = null;
+        let loserAlias = null;
+        let tie = false;
+
+        if (pctA > pctB) {
+          winnerAlias = pA.alias;
+          loserAlias = pB.alias;
+        } else if (pctB > pctA) {
+          winnerAlias = pB.alias;
+          loserAlias = pA.alias;
+        } else {
+          // same percent, use time left
+          if (timeA > timeB) {
+            winnerAlias = pA.alias;
+            loserAlias = pB.alias;
+          } else if (timeB > timeA) {
+            winnerAlias = pB.alias;
+            loserAlias = pA.alias;
+          } else {
+            tie = true;
+          }
+        }
+
+        // 3) Load existing records for both players
+        const recordsRef = collection(db, "headtoheadRecords");
+        const refA = doc(recordsRef, pA.alias);
+        const refB = doc(recordsRef, pB.alias);
+
+        const [recASnap, recBSnap] = await Promise.all([
+          getDoc(refA),
+          getDoc(refB),
+        ]);
+
+        let recA = recASnap.exists()
+          ? recASnap.data()
+          : {
+              alias: pA.alias,
+              displayName: pA.displayName,
+              wins: 0,
+              losses: 0,
+              ties: 0,
+              streakType: null, // "W" or "L"
+              streakCount: 0,
+              bestStreakType: null, // "W" or "L"
+              bestStreakCount: 0,
+            };
+
+        let recB = recBSnap.exists()
+          ? recBSnap.data()
+          : {
+              alias: pB.alias,
+              displayName: pB.displayName,
+              wins: 0,
+              losses: 0,
+              ties: 0,
+              streakType: null,
+              streakCount: 0,
+              bestStreakType: null,
+              bestStreakCount: 0,
+            };
+
+        // Ensure streak fields exist on old docs
+        if (recA.streakType === undefined) recA.streakType = null;
+        if (recA.streakCount === undefined) recA.streakCount = 0;
+        if (recA.bestStreakType === undefined) recA.bestStreakType = null;
+        if (recA.bestStreakCount === undefined) recA.bestStreakCount = 0;
+
+        if (recB.streakType === undefined) recB.streakType = null;
+        if (recB.streakCount === undefined) recB.streakCount = 0;
+        if (recB.bestStreakType === undefined) recB.bestStreakType = null;
+        if (recB.bestStreakCount === undefined) recB.bestStreakCount = 0;
+
+        // 4) Update their records in memory
+        if (tie) {
+          recA.ties = (recA.ties || 0) + 1;
+          recB.ties = (recB.ties || 0) + 1;
+        } else {
+          if (winnerAlias === pA.alias) {
+            // A wins, B loses
+            recA.wins = (recA.wins || 0) + 1;
+            recB.losses = (recB.losses || 0) + 1;
+
+            // A current streak (wins)
+            if (recA.streakType === "W") {
+              recA.streakCount = (recA.streakCount || 0) + 1;
+            } else {
+              recA.streakType = "W";
+              recA.streakCount = 1;
+            }
+
+            // B current streak (losses)
+            if (recB.streakType === "L") {
+              recB.streakCount = (recB.streakCount || 0) + 1;
+            } else {
+              recB.streakType = "L";
+              recB.streakCount = 1;
+            }
+
+            // BEST streak: only track BEST WIN streaks
+            if (
+              recA.streakType === "W" &&
+              recA.streakCount > (recA.bestStreakCount || 0)
+            ) {
+              recA.bestStreakType = "W";
+              recA.bestStreakCount = recA.streakCount;
+            }
+            // Do NOT update best streak for B on losses
+          } else {
+            // B wins, A loses
+            recB.wins = (recB.wins || 0) + 1;
+            recA.losses = (recA.losses || 0) + 1;
+
+            if (recB.streakType === "W") {
+              recB.streakCount = (recB.streakCount || 0) + 1;
+            } else {
+              recB.streakType = "W";
+              recB.streakCount = 1;
+            }
+
+            if (recA.streakType === "L") {
+              recA.streakCount = (recA.streakCount || 0) + 1;
+            } else {
+              recA.streakType = "L";
+              recA.streakCount = 1;
+            }
+
+            if (
+              recB.streakType === "W" &&
+              recB.streakCount > (recB.bestStreakCount || 0)
+            ) {
+              recB.bestStreakType = "W";
+              recB.bestStreakCount = recB.streakCount;
+            }
+            // Do NOT update best streak for A on losses
+          }
+        }
+
+        // 5) Write everything in one batch
+        const batch = writeBatch(db);
+
+        const matchUpdate = {
+          status: "completed",
+          resolvedAt: serverTimestamp(),
+          tie,
+        };
+        if (!tie) {
+          matchUpdate.winnerAlias = winnerAlias;
+          matchUpdate.loserAlias = loserAlias;
+        }
+
+        batch.update(matchRef, matchUpdate);
+        batch.set(refA, recA, { merge: true });
+        batch.set(refB, recB, { merge: true });
+
+        await batch.commit();
+      }
+
+      function renderHeadToHeadStandings(rows) {
+        if (!h2hStandingsBody) return;
+        h2hStandingsBody.innerHTML = "";
+
+        // compute win pct & games
+        // compute games and win% (still useful to show)
+        rows.forEach((r) => {
+          const w = r.wins || 0;
+          const l = r.losses || 0;
+          const t = r.ties || 0; // kept for compatibility, but not used in % now
+
+          // Win% is based ONLY on wins + losses
+          const wlGames = w + l;
+          r.games = wlGames; // use this for the Win% denominator
+          r.winPct = wlGames > 0 ? w / wlGames : 0;
+        });
+
+        // sort: more wins first, then higher win%, then fewer games, then alias
+        rows.sort((a, b) => {
+          if ((b.wins || 0) !== (a.wins || 0))
+            return (b.wins || 0) - (a.wins || 0);
+          if ((b.winPct || 0) !== (a.winPct || 0))
+            return (b.winPct || 0) - (a.winPct || 0);
+          if ((a.games || 0) !== (b.games || 0))
+            return (a.games || 0) - (b.games || 0);
+          return (a.alias || "").localeCompare(b.alias || "");
+        });
+
+        rows.forEach((r, idx) => {
+          const tr = document.createElement("tr");
+          const winPctStr =
+            r.games > 0 ? (r.winPct * 100).toFixed(1) + "%" : "–";
+
+          const streakType = r.streakType || null;
+          const streakCount = r.streakCount || 0;
+          const streakLabel =
+            streakType && streakCount > 0 ? `${streakType}${streakCount}` : "–";
+
+          const bestType = r.bestStreakType || null;
+          const bestCount = r.bestStreakCount || 0;
+          const bestLabel =
+            bestType === "W" && bestCount > 0 ? `W${bestCount}` : "–";
+
+          tr.innerHTML = `
+    <td>${idx + 1}</td>
+    <td>${r.displayName || ""}</td>
+    <td>${r.alias || ""}</td>
+    <td>${r.wins || 0}</td>
+    <td>${r.losses || 0}</td>
+    <td>${streakLabel}</td>
+    <td>${bestLabel}</td>
+    <td>${winPctStr}</td>
+  `;
+          h2hStandingsBody.appendChild(tr);
+        });
+      }
+
+      // Subscribe to records
+      (function subscribeHeadToHeadStandings() {
+        const ref = collection(db, "headtoheadRecords");
+        onSnapshot(ref, (snap) => {
+          const rows = [];
+          snap.forEach((d) => {
+            rows.push({ id: d.id, ...(d.data() || {}) });
+          });
+          renderHeadToHeadStandings(rows);
+        });
+      })();
+    </script>
+
+    <!-- Bootstrap JS bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Your app logic -->
+    <script src="app.js" defer></script>
+  </body>
+</html>

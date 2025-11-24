@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sporcle Quiz Collector – Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootswatch Minty (same theme as your main app) -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootswatch@5/dist/minty/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        padding-top: 20px;
+      }
+      .container-narrow {
+        max-width: 640px;
+      }
+      #quizUrlInput {
+        font-family: monospace;
+      }
+      .url-list-item {
+        font-size: 0.9rem;
+        white-space: nowrap;
+        overflow-x: auto;
+      }
+      .url-list-item::-webkit-scrollbar {
+        height: 6px;
+      }
+      .url-list-item::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container container-narrow">
+      <h1 class="h3 mb-3">Sporcle Quiz Collector (Admin)</h1>
+
+      <div id="auth-section" class="mb-3">
+        <button id="signInBtn" class="btn btn-outline-primary btn-sm">
+          Admin: Sign in with Google
+        </button>
+        <button id="signOutBtn" class="btn btn-outline-secondary btn-sm d-none">
+          Sign out
+        </button>
+        <span id="userInfo" class="ms-2 text-muted"></span>
+      </div>
+
+      <div id="notAdminMsg" class="alert alert-warning d-none">
+        You are signed in but do not have admin permissions for this tool.
+      </div>
+
+      <section id="adminUi" class="card d-none">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Add Random Sporcle Quiz URL</h2>
+
+          <form id="quizForm" class="mb-3">
+            <label for="quizUrlInput" class="form-label">Quiz URL</label>
+            <input
+              id="quizUrlInput"
+              type="url"
+              class="form-control"
+              placeholder="https://www.sporcle.com/games/..."
+              required
+            />
+            <button type="submit" class="btn btn-primary mt-2">Add Quiz</button>
+            <div id="status" class="form-text mt-1"></div>
+          </form>
+
+          <h3 class="h6">Most Recently Added (latest 20)</h3>
+          <ul id="recentList" class="list-group small"></ul>
+        </div>
+      </section>
+    </main>
+
+    <!-- Firebase + Firestore + Auth (CDN, v10) -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+      import {
+        getFirestore,
+        collection,
+        addDoc,
+        serverTimestamp,
+        query,
+        orderBy,
+        limit,
+        onSnapshot,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+      import {
+        getAuth,
+        GoogleAuthProvider,
+        signInWithPopup,
+        signOut,
+        onAuthStateChanged,
+        getIdTokenResult,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+      // TODO: paste the SAME config you use in your main app:
+      const firebaseConfig = {
+        apiKey: "AIzaSyCljmg5V4r0q7vZ5X6K5Wn78iTT7PtKIqU",
+        authDomain: "sporcle-league-ced80.firebaseapp.com",
+        projectId: "sporcle-league-ced80",
+        storageBucket: "sporcle-league-ced80.firebasestorage.app",
+        messagingSenderId: "34922576123",
+        appId: "1:34922576123:web:429c7e4568455c6d4d185e",
+        measurementId: "G-8V028YY2NK",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+      const auth = getAuth(app);
+      const provider = new GoogleAuthProvider();
+
+      const signInBtn = document.getElementById("signInBtn");
+      const signOutBtn = document.getElementById("signOutBtn");
+      const userInfo = document.getElementById("userInfo");
+      const notAdminMsg = document.getElementById("notAdminMsg");
+      const adminUi = document.getElementById("adminUi");
+      const quizForm = document.getElementById("quizForm");
+      const quizUrlInput = document.getElementById("quizUrlInput");
+      const status = document.getElementById("status");
+      const recentList = document.getElementById("recentList");
+
+      let isAdmin = false;
+      let unsubscribeQuizzes = null;
+
+      // ---------- Auth state / admin check ----------
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          isAdmin = false;
+          userInfo.textContent = "";
+          signInBtn.classList.remove("d-none");
+          signOutBtn.classList.add("d-none");
+          adminUi.classList.add("d-none");
+          notAdminMsg.classList.add("d-none");
+
+          // stop listening when signed out
+          if (unsubscribeQuizzes) {
+            unsubscribeQuizzes();
+            unsubscribeQuizzes = null;
+          }
+          return;
+        }
+
+        signInBtn.classList.add("d-none");
+        signOutBtn.classList.remove("d-none");
+        userInfo.textContent = `Signed in as ${user.email || user.uid}`;
+
+        try {
+          const token = await getIdTokenResult(user, true);
+          isAdmin = !!token?.claims?.admin;
+        } catch (e) {
+          console.error("Error getting claims", e);
+          isAdmin = false;
+        }
+
+        if (isAdmin) {
+          adminUi.classList.remove("d-none");
+          notAdminMsg.classList.add("d-none");
+
+          // start listening now that we are allowed
+          subscribeQuizzesForAdmin();
+
+          setTimeout(() => quizUrlInput?.focus(), 50);
+        } else {
+          adminUi.classList.add("d-none");
+          notAdminMsg.classList.remove("d-none");
+
+          if (unsubscribeQuizzes) {
+            unsubscribeQuizzes();
+            unsubscribeQuizzes = null;
+          }
+        }
+      });
+
+      signInBtn.addEventListener("click", async () => {
+        try {
+          await signInWithPopup(auth, provider);
+        } catch (e) {
+          console.error("Sign-in error", e);
+          alert("Error signing in: " + e.message);
+        }
+      });
+
+      signOutBtn.addEventListener("click", async () => {
+        await signOut(auth);
+      });
+
+      // ---------- Form submit: add quiz URL ----------
+      quizForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const url = quizUrlInput.value.trim();
+        if (!url) return;
+        if (!isAdmin) {
+          status.textContent = "You are not an admin.";
+          return;
+        }
+
+        try {
+          status.textContent = "Saving...";
+          const user = auth.currentUser;
+          await addDoc(collection(db, "quizzes"), {
+            url,
+            createdAt: serverTimestamp(),
+            addedByUid: user ? user.uid : null,
+          });
+          quizUrlInput.value = "";
+          status.textContent = "Saved!";
+          // re-focus for AutoHotkey next paste
+          quizUrlInput.focus();
+        } catch (err) {
+          console.error("Error adding quiz", err);
+          status.textContent = "Error saving quiz.";
+        }
+      });
+
+      // ---------- Live list of latest 20 quizzes ----------
+      function subscribeQuizzesForAdmin() {
+        // clean up any previous subscription
+        if (unsubscribeQuizzes) {
+          unsubscribeQuizzes();
+          unsubscribeQuizzes = null;
+        }
+
+        const q = query(
+          collection(db, "quizzes"),
+          orderBy("createdAt", "desc"),
+          limit(20)
+        );
+
+        unsubscribeQuizzes = onSnapshot(q, (snap) => {
+          recentList.innerHTML = "";
+          if (snap.empty) {
+            const li = document.createElement("li");
+            li.className = "list-group-item";
+            li.textContent = "No quizzes added yet.";
+            recentList.appendChild(li);
+            return;
+          }
+          snap.forEach((doc) => {
+            const data = doc.data();
+            const li = document.createElement("li");
+            li.className =
+              "list-group-item d-flex justify-content-between align-items-center";
+
+            const urlSpan = document.createElement("span");
+            urlSpan.className = "url-list-item";
+            urlSpan.textContent = data.url || "";
+
+            const tsSpan = document.createElement("span");
+            tsSpan.className = "badge bg-secondary";
+            if (data.createdAt?.toDate) {
+              tsSpan.textContent = data.createdAt.toDate().toLocaleString();
+            } else {
+              tsSpan.textContent = "";
+            }
+
+            li.appendChild(urlSpan);
+            li.appendChild(tsSpan);
+            recentList.appendChild(li);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

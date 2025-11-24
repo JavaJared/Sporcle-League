@@ -1,0 +1,295 @@
+/* ========= General helpers (non-color) ========= */
+
+/* Hide with JS without fighting Bootstrap utilities */
+.hidden {
+  display: none !important;
+}
+
+/* Subtle secondary text using Bootstrap token */
+.note,
+.muted {
+  color: var(--bs-secondary-color);
+}
+
+/* Card/table small polish without setting colors */
+.card {
+  border-radius: 12px;
+}
+.card .card-body {
+  padding: 16px;
+}
+
+.table td,
+.table th {
+  vertical-align: middle;
+}
+
+/* Make narrow number columns consistent */
+th[style*="width:64px"],
+td[style*="width:64px"] {
+  text-align: center;
+}
+
+/* Forms laid out nicely on small screens */
+form.d-flex.gap-2 > * {
+  min-width: 180px;
+}
+@media (max-width: 576px) {
+  form.d-flex.gap-2 > * {
+    min-width: 140px;
+  }
+}
+
+/* ========= “Today’s Quiz” compact row ========= */
+
+#tab-quiz .card-body,
+.quiz-compact {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#quiz-form input[type="url"] {
+  max-width: 420px;
+}
+
+/* ========= Admin area tweaks ========= */
+
+#admin-panel .btn + .btn {
+  margin-left: 6px;
+}
+#admin-panel h3 {
+  margin: 10px 0 6px;
+}
+
+/* Keep action buttons in rows tidy */
+.actions-cell .btn {
+  padding: 2px 8px;
+}
+
+/* --- Make the bracket centered and fully visible --- */
+
+/* ========== Playoffs Bracket (pure CSS) ========== */
+
+#playoffs-bracket {
+  margin-top: 4px;
+}
+
+/* Each round = one column in the Bootstrap row */
+.br-round-col {
+  min-width: 200px;
+  max-width: 220px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Title at the top of each round */
+.br-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+  opacity: 0.85;
+  text-align: center;
+}
+
+.br-round-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* no auto spacing */
+}
+
+/* default gap between matches */
+.br-round-inner .br-match {
+  margin-bottom: 20px;
+}
+
+/* Match “card” */
+.br-match {
+  border: 1px solid var(--bs-border-color);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: var(--bs-body-bg);
+}
+
+/* Two-line layout inside each match */
+.br-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.br-seed {
+  font-weight: 600;
+  opacity: 0.7;
+  min-width: 28px;
+  text-align: right;
+}
+
+/* The name area itself */
+.br-name {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.br-bye {
+  opacity: 0.6;
+  font-style: italic;
+}
+
+.br-tbd {
+  opacity: 0.6;
+}
+
+/* Responsive: reduce columns per row on small screens */
+@media (max-width: 1200px) {
+  #playoffs-bracket .br-round-col {
+    flex: 0 0 33.333%;
+    max-width: 33.333%;
+  }
+}
+@media (max-width: 768px) {
+  #playoffs-bracket .br-round-col {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
+@media (max-width: 576px) {
+  #playoffs-bracket .br-round-col {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+/* ========= Tabs spacing (Bootstrap-based) ========= */
+
+/* Give the pills bar some breathing room without changing colors */
+#mainTabs {
+  margin-top: 8px;
+}
+
+/* ========= Status badge spacing ========= */
+#status {
+  margin-left: 6px;
+}
+
+/* --- tweak column widths / gaps --- */
+#playoffs-bracket .br-round-col {
+  min-width: 180px;
+  max-width: 190px;
+  padding-inline: 4px; /* tighter horizontal spacing */
+}
+
+/* --- make matches a hair shorter --- */
+.br-match {
+  padding: 6px 8px;
+}
+
+/* --- vertical offsets so later rounds sit between earlier games --- */
+/* Sweet 16 column */
+#playoffs-bracket
+  .br-round-col:nth-child(2)
+  .br-round-inner
+  .br-match:nth-child(1) {
+  margin-top: 54px;
+}
+#playoffs-bracket
+  .br-round-col:nth-child(2)
+  .br-round-inner
+  .br-match:nth-child(2) {
+  margin-top: 106px;
+}
+#playoffs-bracket
+  .br-round-col:nth-child(2)
+  .br-round-inner
+  .br-match:nth-child(3) {
+  margin-top: 104px;
+}
+#playoffs-bracket
+  .br-round-col:nth-child(2)
+  .br-round-inner
+  .br-match:nth-child(4) {
+  margin-top: 105px;
+}
+/* Sweet 16 column */
+#playoffs-bracket
+  .br-round-col:nth-child(2)
+  .br-round-inner
+  .br-match:nth-child(5) {
+  margin-top: 106px;
+}
+#playoffs-bracket
+  .br-round-col:nth-child(2)
+  .br-round-inner
+  .br-match:nth-child(6) {
+  margin-top: 108px;
+}
+#playoffs-bracket
+  .br-round-col:nth-child(2)
+  .br-round-inner
+  .br-match:nth-child(7) {
+  margin-top: 100px;
+}
+#playoffs-bracket
+  .br-round-col:nth-child(2)
+  .br-round-inner
+  .br-match:nth-child(8) {
+  margin-top: 110px;
+}
+
+/* Elite 8 */
+#playoffs-bracket
+  .br-round-col:nth-child(3)
+  .br-round-inner
+  .br-match:nth-child(1) {
+  margin-top: 130px;
+}
+#playoffs-bracket
+  .br-round-col:nth-child(3)
+  .br-round-inner
+  .br-match:nth-child(2) {
+  margin-top: 275px;
+}
+#playoffs-bracket
+  .br-round-col:nth-child(3)
+  .br-round-inner
+  .br-match:nth-child(3) {
+  margin-top: 265px;
+}
+#playoffs-bracket
+  .br-round-col:nth-child(3)
+  .br-round-inner
+  .br-match:nth-child(4) {
+  margin-top: 265px;
+}
+
+/* Final 4 */
+#playoffs-bracket
+  .br-round-col:nth-child(4)
+  .br-round-inner
+  .br-match:nth-child(1) {
+  margin-top: 290px;
+}
+#playoffs-bracket
+  .br-round-col:nth-child(4)
+  .br-round-inner
+  .br-match:nth-child(2) {
+  margin-top: 610px;
+}
+
+/* Final */
+#playoffs-bracket
+  .br-round-col:nth-child(5)
+  .br-round-inner
+  .br-match:nth-child(1) {
+  margin-top: 630px;
+}
+
+/* Champion */
+#playoffs-bracket .br-round-col:nth-child(6) .br-round-inner {
+  margin-top: 630px;
+}
