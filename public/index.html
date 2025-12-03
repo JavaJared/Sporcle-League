@@ -1438,7 +1438,6 @@
         if (!oppDoc) return; // no opponent yet
 
         const oppData = oppDoc.data();
-
         const series = seriesDocSnap.data();
         const matchesRef = collection(db, "headtoheadMatches");
         const matchRef = doc(matchesRef);
@@ -1450,33 +1449,34 @@
         const higherName = series.higherDisplayName || higherAlias;
         const lowerName = series.lowerDisplayName || lowerAlias;
 
+        // Determine which player is higher seed
         const isMyHigher = myData.alias === higherAlias;
+        const isOppHigher = oppData.alias === higherAlias;
 
         let playerA;
         let playerB;
 
+        // playerA should always be the higher seed
         if (isMyHigher) {
-          // You are the higher seed (playerA)
           playerA = {
             clientId: myData.clientId,
-            alias: higherAlias,
+            alias: higherAlias, // use series data, not myData.alias
             displayName: higherName,
           };
           playerB = {
             clientId: oppData.clientId,
-            alias: lowerAlias,
+            alias: lowerAlias, // use series data, not oppData.alias
             displayName: lowerName,
           };
         } else {
-          // You are the lower seed (playerB)
           playerA = {
             clientId: oppData.clientId,
-            alias: higherAlias,
+            alias: higherAlias, // use series data
             displayName: higherName,
           };
           playerB = {
             clientId: myData.clientId,
-            alias: lowerAlias,
+            alias: lowerAlias, // use series data
             displayName: lowerName,
           };
         }
@@ -1489,16 +1489,8 @@
           quizUrl,
           status: "active",
           createdAt: serverTimestamp(),
-          playerA: {
-            clientId: playerA.clientId,
-            alias: playerA.alias,
-            displayName: playerA.displayName,
-          },
-          playerB: {
-            clientId: playerB.clientId,
-            alias: playerB.alias,
-            displayName: playerB.displayName,
-          },
+          playerA: playerA,
+          playerB: playerB,
           scores: {
             playerA: null,
             playerB: null,
