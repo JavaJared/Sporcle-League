@@ -1582,60 +1582,83 @@
           playoffCurrentMatchUnsub = null;
         }
 
-        playoffCurrentMatchUnsub = onSnapshot(matchRef, async (snap) => {
-          if (!snap.exists()) {
-            playoffJoinStatus.textContent = "Match was removed.";
-            return;
-          }
+        playoffCurrentMatchUnsub = onSnapshot(
+          matchRef,
+          async (snap) => {
+            if (!snap.exists()) {
+              playoffJoinStatus.textContent = "Match was removed.";
+              return;
+            }
 
-          const match = snap.data();
-          const isHigherSeed = match.higherAlias === myAlias;
-          const mySide = isHigherSeed ? "higher" : "lower";
-          const oppSide = isHigherSeed ? "lower" : "higher";
+            const match = snap.data();
+            const isHigherSeed = match.higherAlias === myAlias;
+            const mySide = isHigherSeed ? "higher" : "lower";
+            const oppSide = isHigherSeed ? "lower" : "higher";
 
-          // Update join status if opponent hasn't joined yet
-          const oppJoined = match[`${oppSide}Joined`];
-          if (!oppJoined) {
-            playoffJoinStatus.textContent = "Waiting for opponent to join...";
-          } else {
-            playoffJoinStatus.textContent = "Both players joined!";
-          }
+            // Update join status if opponent hasn't joined yet
+            const oppJoined = match[`${oppSide}Joined`];
+            if (!oppJoined) {
+              playoffJoinStatus.textContent = "Waiting for opponent to join...";
+            } else {
+              playoffJoinStatus.textContent = "Both players joined!";
+            }
 
-          // Update match document with my client ID if not set
-          if (!match[`${mySide}ClientId`]) {
-            const clientId = getOrCreateHeadToHeadClientId();
-            await updateDoc(matchRef, {
-              [`${mySide}ClientId`]: clientId,
-              [`${mySide}Joined`]: true,
-            });
-          }
+            // Update match document with my client ID if not set
+            if (!match[`${mySide}ClientId`] || !match[`${mySide}Joined`]) {
+              const clientId = getOrCreateHeadToHeadClientId();
+              try {
+                await updateDoc(matchRef, {
+                  [`${mySide}ClientId`]: clientId,
+                  [`${mySide}Joined`]: true,
+                });
+              } catch (err) {
+                if (err.code === "permission-denied") {
+                  console.error("Permission denied updating match join status");
+                  // Continue anyway - the match can still work
+                } else {
+                  console.error("Error updating match join status", err);
+                }
+              }
+            }
 
-          // Handle veto phase (only higher seed sees quiz initially)
-          if (match.status === "waiting_for_veto") {
-            if (isHigherSeed && oppJoined) {
-              // Show veto UI to higher seed
-              showPlayoffVetoUI(matchRef, match, myAlias);
-            } else if (!isHigherSeed) {
-              // Lower seed waits
-              showPlayoffWaitingForVeto(match);
+            // Handle veto phase (only higher seed sees quiz initially)
+            if (match.status === "waiting_for_veto") {
+              if (isHigherSeed && oppJoined) {
+                // Show veto UI to higher seed
+                showPlayoffVetoUI(matchRef, match, myAlias);
+              } else if (!isHigherSeed) {
+                // Lower seed waits
+                showPlayoffWaitingForVeto(match);
+              }
+            }
+
+            // Handle active match (after veto decision)
+            if (match.status === "active") {
+              showPlayoffActiveMatch(matchRef, match, myAlias, mySide);
+            }
+
+            // Handle completed match
+            if (match.status === "completed") {
+              showPlayoffMatchResult(match, myAlias);
+
+              // If there's a winner, check if we need to create next round match
+              if (match.winnerAlias) {
+                await advanceWinnerToNextRound(db, seriesDoc, match);
+              }
+            }
+          },
+          (err) => {
+            // Error handler for the listener
+            if (err.code === "permission-denied") {
+              console.error("Permission denied listening to playoff match");
+              playoffJoinStatus.textContent =
+                "Permission denied. Check Firestore rules.";
+            } else {
+              console.error("Error listening to playoff match", err);
+              playoffJoinStatus.textContent = "Error loading match.";
             }
           }
-
-          // Handle active match (after veto decision)
-          if (match.status === "active") {
-            showPlayoffActiveMatch(matchRef, match, myAlias, mySide);
-          }
-
-          // Handle completed match
-          if (match.status === "completed") {
-            showPlayoffMatchResult(match, myAlias);
-
-            // If there's a winner, check if we need to create next round match
-            if (match.winnerAlias) {
-              await advanceWinnerToNextRound(db, seriesDoc, match);
-            }
-          }
-        });
+        );
 
         // Store match data for score submission
         playoffMyMatchData = {
