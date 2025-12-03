@@ -1230,7 +1230,13 @@
         h2hCurrentSide = yourSideKey; // "playerA" or "playerB"
       }
 
+      // ============================================================================
+      // PLAYOFF SYSTEM - REWRITTEN
+      // ============================================================================
+
       let __playoffsFinalized = false;
+      let playoffCurrentMatchUnsub = null;
+      let playoffMyMatchData = null; // stores {seriesId, matchDoc, myAlias, mySide}
 
       const playoffsConfigRef = doc(db, "config", "playoffs");
       const playoffsFinalizeBtn = document.getElementById(
@@ -1242,26 +1248,74 @@
       const playoffsFinalizeStatus = document.getElementById(
         "playoffs-finalize-status"
       );
-
-      // Elements controlling playoff visibility
-      const playoffsTabBtn = document.querySelector(
-        '.tab-btn[data-tab="playoffs"]'
-      );
-      const playoffsTabPane = document.getElementById("tab-playoffs");
-      const playoffJoinBlock = document
-        .getElementById("playoff-join-form")
-        ?.closest(".card");
-
+      const playoffJoinCard = document.getElementById("playoff-join-card");
       const playoffJoinForm = document.getElementById("playoff-join-form");
       const playoffAliasInput = document.getElementById("playoff-alias");
       const playoffJoinStatus = document.getElementById("playoff-join-status");
+      const h2hVetoBtn = document.getElementById("h2h-veto-btn");
 
-      let playoffQueueUnsub = null;
-      let playoffQueueDocRef = null;
-      let playoffCurrentMatchRef = null;
-      let playoffCurrentSide = null;
-      let playoffYouData = null;
+      // Listen to playoffs config to show/hide join form
+      onSnapshot(
+        playoffsConfigRef,
+        (snap) => {
+          const data = snap.exists() ? snap.data() : {};
+          __playoffsFinalized = !!data.finalized;
+          updatePlayoffsUIFromFlag();
+        },
+        (err) => {
+          console.error("Error listening to playoffs config", err);
+        }
+      );
 
+      function updatePlayoffsUIFromFlag() {
+        if (playoffJoinCard) {
+          playoffJoinCard.classList.toggle("d-none", !__playoffsFinalized);
+        }
+      }
+
+      // Admin: Finalize playoffs
+      if (playoffsFinalizeBtn) {
+        playoffsFinalizeBtn.addEventListener("click", async (e) => {
+          e.preventDefault();
+          try {
+            await setDoc(
+              playoffsConfigRef,
+              { finalized: true, finalizedAt: serverTimestamp() },
+              { merge: true }
+            );
+            if (playoffsFinalizeStatus) {
+              playoffsFinalizeStatus.textContent = "Playoffs finalized!";
+            }
+          } catch (err) {
+            console.error("Error finalizing playoffs", err);
+            if (playoffsFinalizeStatus) {
+              playoffsFinalizeStatus.textContent = "Error finalizing playoffs.";
+            }
+          }
+        });
+      }
+
+      // Admin: Unfinalize playoffs
+      if (playoffsUnfinalizeBtn) {
+        playoffsUnfinalizeBtn.addEventListener("click", async (e) => {
+          e.preventDefault();
+          if (!confirm("Reopen playoffs for editing?")) return;
+          try {
+            await setDoc(
+              playoffsConfigRef,
+              { finalized: false },
+              { merge: true }
+            );
+            if (playoffsFinalizeStatus) {
+              playoffsFinalizeStatus.textContent = "Playoffs reopened.";
+            }
+          } catch (err) {
+            console.error("Error unfinalizing playoffs", err);
+          }
+        });
+      }
+
+      // Player: Join playoff match
       if (playoffJoinForm) {
         playoffJoinForm.addEventListener("submit", async (e) => {
           e.preventDefault();
@@ -1271,46 +1325,68 @@
             return;
           }
 
-          const raw = playoffAliasInput.value.trim();
-          if (!raw) {
+          const rawAlias = playoffAliasInput.value.trim();
+          if (!rawAlias) {
             playoffJoinStatus.textContent = "Please enter your alias.";
             return;
           }
-          const alias = raw.toLowerCase();
+          const alias = rawAlias.toLowerCase();
 
           try {
-            playoffJoinStatus.textContent =
-              "Looking up your playoff matchup...";
-            const matchDoc = await findCurrentPlayoffMatchForAlias(db, alias);
-            if (!matchDoc) {
+            playoffJoinStatus.textContent = "Finding your playoff matchup...";
+
+            // Find the player's current playoff series
+            const seriesDoc = await findActivePlayoffSeriesForAlias(db, alias);
+            if (!seriesDoc) {
               playoffJoinStatus.textContent =
-                "No active or pending playoff matchup found for that alias.";
+                "No active playoff matchup found for that alias.";
               return;
             }
 
-            const series = matchDoc.data();
+            const series = seriesDoc.data();
             const clientId = getOrCreateHeadToHeadClientId();
 
-            const isHigher = series.higherAlias === alias;
-            const myDisplayName = isHigher
-              ? series.higherDisplayName || series.higherAlias
-              : series.lowerDisplayName || series.lowerAlias;
+            // Determine player info
+            const aliases = series.aliases || [];
+            if (!aliases.includes(alias)) {
+              playoffJoinStatus.textContent =
+                "Alias not found in this matchup.";
+              return;
+            }
 
-            const oppAlias = isHigher ? series.lowerAlias : series.higherAlias;
-            const oppDisplayName = isHigher
-              ? series.lowerDisplayName || series.lowerAlias
-              : series.higherDisplayName || series.higherAlias;
+            const oppAlias = aliases.find((a) => a !== alias);
+            if (!oppAlias) {
+              playoffJoinStatus.textContent = "Could not determine opponent.";
+              return;
+            }
 
-            playoffYouData = {
+            // Get display names from points collection
+            const myPointsDoc = await getDoc(
+              doc(collection(db, "points"), alias)
+            );
+            const oppPointsDoc = await getDoc(
+              doc(collection(db, "points"), oppAlias)
+            );
+
+            const myDisplayName = myPointsDoc.exists()
+              ? myPointsDoc.data().displayName || alias
+              : alias;
+            const oppDisplayName = oppPointsDoc.exists()
+              ? oppPointsDoc.data().displayName || oppAlias
+              : oppAlias;
+
+            playoffJoinStatus.textContent = `Joining match vs ${oppDisplayName}...`;
+
+            // Join the queue and start match
+            await joinPlayoffMatchQueue(
+              db,
+              seriesDoc,
               alias,
-              displayName: myDisplayName,
-              clientId,
-              matchId: matchDoc.id,
-            };
-
-            playoffJoinStatus.textContent = `Joining playoff match vs ${oppDisplayName}...`;
-
-            await joinPlayoffQueue(db, matchDoc, playoffYouData);
+              myDisplayName,
+              oppAlias,
+              oppDisplayName,
+              clientId
+            );
           } catch (err) {
             console.error("Error joining playoff match", err);
             playoffJoinStatus.textContent =
@@ -1319,18 +1395,25 @@
         });
       }
 
-      async function findCurrentPlayoffMatchForAlias(db, alias) {
+      /**
+       * Find the active playoff series for a given alias
+       * Returns the series document with lowest round that is not completed
+       */
+      async function findActivePlayoffSeriesForAlias(db, alias) {
         const ref = collection(db, "playoffSeries");
-        const q = query(ref, where("aliases", "array-contains", alias));
+        const q = query(
+          ref,
+          where("aliases", "array-contains", alias),
+          where("status", "in", ["pending", "active"])
+        );
         const snap = await getDocs(q);
+
         if (snap.empty) return null;
 
-        // Simple approach: pick the earliest round that is not completed
+        // Find earliest round that's not completed
         let best = null;
         snap.forEach((docSnap) => {
           const d = docSnap.data();
-          if (!d) return;
-          if (d.status === "completed") return;
           if (!best) {
             best = docSnap;
           } else {
@@ -1344,304 +1427,542 @@
         return best;
       }
 
-      async function joinPlayoffQueue(db, seriesDocSnap, youData) {
-        // Clean up any old listener
-        if (playoffQueueUnsub) {
-          playoffQueueUnsub();
-          playoffQueueUnsub = null;
-        }
+      /**
+       * Join the playoff queue and attempt to create match
+       */
+      async function joinPlayoffMatchQueue(
+        db,
+        seriesDoc,
+        myAlias,
+        myDisplayName,
+        oppAlias,
+        oppDisplayName,
+        clientId
+      ) {
+        const seriesId = seriesDoc.id;
+        const series = seriesDoc.data();
 
-        const seriesId = seriesDocSnap.id;
-        const series = seriesDocSnap.data();
-        const queueRef = collection(db, "playoffQueue");
-        const queueDocId = `${seriesId}_${youData.alias}`;
-        const queueDoc = doc(queueRef, queueDocId);
+        // Use a single match document per series
+        const matchRef = doc(collection(db, "playoffMatches"), seriesId);
 
-        // Single doc per alias per match
-        await setDoc(queueDoc, {
-          matchId: seriesId,
-          alias: youData.alias,
-          clientId: youData.clientId,
-          status: "waiting",
-          createdAt: serverTimestamp(),
-        });
+        // Check if match already exists
+        const matchSnap = await getDoc(matchRef);
 
-        playoffQueueDocRef = queueDoc;
-
-        // Listen for status changes
-        playoffQueueUnsub = onSnapshot(queueDoc, async (snap) => {
-          if (!snap.exists()) {
-            playoffJoinStatus.textContent = "You left the playoff queue.";
-            return;
-          }
-          const data = snap.data();
-          if (data.status === "matched" && data.matchId) {
-            playoffJoinStatus.textContent = "Playoff match found!";
-            // Start listening to the playoff head to head match
-            const matchRef = doc(
-              collection(db, "headtoheadMatches"),
-              data.matchId
-            );
-            playoffCurrentMatchRef = matchRef;
-
-            const isHigher = series.higherAlias === youData.alias;
-            const sideKey = isHigher ? "playerA" : "playerB";
-
-            listenForPlayoffHeadToHeadMatch(
-              db,
-              matchRef,
-              series,
-              youData,
-              sideKey
-            );
-
-            // You can also stop the queue listener at this point if you want
-            // playoffQueueUnsub(); playoffQueueUnsub = null;
-          } else {
-            playoffJoinStatus.textContent =
-              "In playoff queue, waiting for opponent...";
-          }
-        });
-
-        // Kick off matching
-        await tryPlayoffMatchmaking(db, seriesDocSnap, youData);
-      }
-
-      async function tryPlayoffMatchmaking(db, seriesDocSnap, myData) {
-        const seriesId = seriesDocSnap.id;
-        const queueRef = collection(db, "playoffQueue");
-
-        const q = query(
-          queueRef,
-          where("matchId", "==", seriesId),
-          where("status", "==", "waiting"),
-          orderBy("createdAt", "asc"),
-          limit(10)
-        );
-        const snap = await getDocs(q);
-        if (snap.empty) return;
-
-        // Find myself and an opponent
-        const all = snap.docs;
-        const meDoc = all.find((d) => (d.data() || {}).alias === myData.alias);
-        if (!meDoc) return; // my queue write not visible yet
-
-        let oppDoc = null;
-        for (const docSnap of all) {
-          const d = docSnap.data();
-          if (!d) continue;
-          if (d.alias === myData.alias) continue;
-          if (d.clientId === myData.clientId) continue;
-          oppDoc = docSnap;
-          break;
-        }
-        if (!oppDoc) return; // no opponent yet
-
-        const oppData = oppDoc.data();
-        const series = seriesDocSnap.data();
-        const matchesRef = collection(db, "headtoheadMatches");
-        const matchRef = doc(matchesRef);
-
-        const quizUrl = await getRandomPlayoffQuizUrl(db);
-
-        const higherAlias = series.higherAlias;
-        const lowerAlias = series.lowerAlias;
-        const higherName = series.higherDisplayName || higherAlias;
-        const lowerName = series.lowerDisplayName || lowerAlias;
-
-        // Determine which player is higher seed
-        const isMyHigher = myData.alias === higherAlias;
-        const isOppHigher = oppData.alias === higherAlias;
-
-        let playerA;
-        let playerB;
-
-        // playerA should always be the higher seed
-        if (isMyHigher) {
-          playerA = {
-            clientId: myData.clientId,
-            alias: higherAlias, // use series data, not myData.alias
-            displayName: higherName,
-          };
-          playerB = {
-            clientId: oppData.clientId,
-            alias: lowerAlias, // use series data, not oppData.alias
-            displayName: lowerName,
-          };
+        if (matchSnap.exists()) {
+          // Match already created, just listen to it
+          playoffJoinStatus.textContent = "Joining existing match...";
+          listenToPlayoffMatch(db, matchRef, seriesDoc, myAlias, myDisplayName);
         } else {
-          playerA = {
-            clientId: oppData.clientId,
-            alias: higherAlias, // use series data
-            displayName: higherName,
-          };
-          playerB = {
-            clientId: myData.clientId,
-            alias: lowerAlias, // use series data
-            displayName: lowerName,
-          };
+          // Try to create the match
+          await createPlayoffMatch(
+            db,
+            matchRef,
+            seriesDoc,
+            myAlias,
+            myDisplayName,
+            oppAlias,
+            oppDisplayName,
+            clientId
+          );
         }
-
-        const batch = writeBatch(db);
-
-        batch.set(matchRef, {
-          mode: "playoff",
-          playoffMatchId: seriesId,
-          quizUrl,
-          status: "active",
-          createdAt: serverTimestamp(),
-          playerA: playerA,
-          playerB: playerB,
-          scores: {
-            playerA: null,
-            playerB: null,
-          },
-          winnerAlias: null,
-          loserAlias: null,
-          tie: false,
-          resolvedAt: null,
-          vetoAllowedForAlias: higherAlias,
-          vetoUsed: false,
-          vetoUsedByAlias: null,
-        });
-
-        batch.update(doc(queueRef, `${seriesId}_${playerA.alias}`), {
-          status: "matched",
-          matchId: matchRef.id,
-        });
-        batch.update(doc(queueRef, `${seriesId}_${playerB.alias}`), {
-          status: "matched",
-          matchId: matchRef.id,
-        });
-
-        batch.update(doc(collection(db, "playoffSeries"), seriesId), {
-          status: "active",
-          currentMatchId: matchRef.id,
-        });
-
-        await batch.commit();
       }
 
-      const h2hVetoBtn = document.getElementById("h2h-veto-btn"); // add this button in HTML
-
-      function listenForPlayoffHeadToHeadMatch(
+      /**
+       * Create a new playoff match document
+       */
+      async function createPlayoffMatch(
         db,
         matchRef,
-        series,
-        youData,
-        sideKey
+        seriesDoc,
+        myAlias,
+        myDisplayName,
+        oppAlias,
+        oppDisplayName,
+        clientId
       ) {
-        h2hMatchShownOnce = false; // reuse your existing flag
+        const series = seriesDoc.data();
+        const seriesId = seriesDoc.id;
 
-        onSnapshot(matchRef, async (mSnap) => {
-          if (!mSnap.exists()) return;
-          const mData = mSnap.data();
+        // Determine who is higher seed (assume first in aliases array is higher seed)
+        const aliases = series.aliases || [];
+        const higherAlias = aliases[0];
+        const lowerAlias = aliases[1];
 
-          const scores = mData.scores || {};
-          const mySide = sideKey;
-          const oppSide = mySide === "playerA" ? "playerB" : "playerA";
+        const higherDisplayName =
+          higherAlias === myAlias ? myDisplayName : oppDisplayName;
+        const lowerDisplayName =
+          lowerAlias === myAlias ? myDisplayName : oppDisplayName;
 
-          // Show match once
-          if (!h2hMatchShownOnce) {
-            h2hMatchShownOnce = true;
-            const you = mData[mySide === "playerA" ? "playerA" : "playerB"];
-            const opp = mData[oppSide === "playerA" ? "playerA" : "playerB"];
+        // Get a quiz URL (will be shown only to higher seed initially)
+        const quizUrl = await getRandomPlayoffQuizUrl(db);
 
-            showH2HMatch(mData, you, opp, mySide);
-            clearHeadToHeadQueueTimers();
-            setH2HStatus(
-              "Playoff match found! Play the quiz and submit your score."
-            );
+        const matchData = {
+          seriesId: seriesId,
+          round: series.round || 1,
+          matchIndex: series.matchIndex || 0,
+          status: "waiting_for_veto", // waiting for higher seed to veto or accept
+          createdAt: serverTimestamp(),
 
-            setupPlayoffVeto(matchRef, mData, series, youData, mySide);
+          higherAlias: higherAlias,
+          higherDisplayName: higherDisplayName,
+          higherClientId: higherAlias === myAlias ? clientId : null,
+          higherJoined: higherAlias === myAlias,
+
+          lowerAlias: lowerAlias,
+          lowerDisplayName: lowerDisplayName,
+          lowerClientId: lowerAlias === myAlias ? clientId : null,
+          lowerJoined: lowerAlias === myAlias,
+
+          quizUrl: quizUrl,
+          vetoDecisionMade: false,
+          vetoUsed: false,
+
+          higherScore: null,
+          lowerScore: null,
+
+          winnerAlias: null,
+          completedAt: null,
+        };
+
+        try {
+          await setDoc(matchRef, matchData);
+
+          // Update series status
+          await updateDoc(doc(collection(db, "playoffSeries"), seriesId), {
+            status: "active",
+            matchId: matchRef.id,
+          });
+
+          playoffJoinStatus.textContent =
+            "Match created! Waiting for opponent...";
+
+          // Start listening
+          listenToPlayoffMatch(db, matchRef, seriesDoc, myAlias, myDisplayName);
+        } catch (err) {
+          console.error("Error creating playoff match", err);
+          playoffJoinStatus.textContent = "Error creating match.";
+        }
+      }
+
+      /**
+       * Listen to playoff match updates
+       */
+      function listenToPlayoffMatch(
+        db,
+        matchRef,
+        seriesDoc,
+        myAlias,
+        myDisplayName
+      ) {
+        // Clean up previous listener
+        if (playoffCurrentMatchUnsub) {
+          playoffCurrentMatchUnsub();
+          playoffCurrentMatchUnsub = null;
+        }
+
+        playoffCurrentMatchUnsub = onSnapshot(matchRef, async (snap) => {
+          if (!snap.exists()) {
+            playoffJoinStatus.textContent = "Match was removed.";
+            return;
+          }
+
+          const match = snap.data();
+          const isHigherSeed = match.higherAlias === myAlias;
+          const mySide = isHigherSeed ? "higher" : "lower";
+          const oppSide = isHigherSeed ? "lower" : "higher";
+
+          // Update join status if opponent hasn't joined yet
+          const oppJoined = match[`${oppSide}Joined`];
+          if (!oppJoined) {
+            playoffJoinStatus.textContent = "Waiting for opponent to join...";
           } else {
-            // Update quiz link if veto changed it
-            if (mData.quizUrl && h2hQuizLink) {
-              h2hQuizLink.href = mData.quizUrl;
-              h2hQuizLink.textContent = mData.quizUrl;
+            playoffJoinStatus.textContent = "Both players joined!";
+          }
+
+          // Update match document with my client ID if not set
+          if (!match[`${mySide}ClientId`]) {
+            const clientId = getOrCreateHeadToHeadClientId();
+            await updateDoc(matchRef, {
+              [`${mySide}ClientId`]: clientId,
+              [`${mySide}Joined`]: true,
+            });
+          }
+
+          // Handle veto phase (only higher seed sees quiz initially)
+          if (match.status === "waiting_for_veto") {
+            if (isHigherSeed && oppJoined) {
+              // Show veto UI to higher seed
+              showPlayoffVetoUI(matchRef, match, myAlias);
+            } else if (!isHigherSeed) {
+              // Lower seed waits
+              showPlayoffWaitingForVeto(match);
             }
           }
 
-          const myScore = scores[mySide];
-          const oppScore = scores[oppSide];
-
-          if (myScore && !mData.winnerAlias && !mData.tie) {
-            h2hScoreStatus.textContent =
-              "Score submitted. Waiting for opponent...";
+          // Handle active match (after veto decision)
+          if (match.status === "active") {
+            showPlayoffActiveMatch(matchRef, match, myAlias, mySide);
           }
 
-          if (mData.status === "completed" || mData.winnerAlias || mData.tie) {
-            renderHeadToHeadResult(mData, youData, mySide);
+          // Handle completed match
+          if (match.status === "completed") {
+            showPlayoffMatchResult(match, myAlias);
 
-            // Update playoffSeries with winner if this is a playoff match
-            if (
-              mData.mode === "playoff" &&
-              mData.playoffMatchId &&
-              mData.winnerAlias
-            ) {
-              const seriesRef = doc(
-                collection(db, "playoffSeries"),
-                mData.playoffMatchId
-              );
-              const winnerAlias = mData.winnerAlias;
-              const winnerDisplay =
-                winnerAlias === series.higherAlias
-                  ? series.higherDisplayName
-                  : series.lowerDisplayName;
-
-              try {
-                await updateDoc(seriesRef, {
-                  status: "completed",
-                  winnerAlias,
-                  winnerDisplayName: winnerDisplay,
-                });
-              } catch (e) {
-                console.error("Error updating playoffSeries winner", e);
-              }
+            // If there's a winner, check if we need to create next round match
+            if (match.winnerAlias) {
+              await advanceWinnerToNextRound(db, seriesDoc, match);
             }
           }
         });
-      }
 
-      function setupPlayoffVeto(matchRef, matchData, series, youData, mySide) {
-        if (!h2hVetoBtn) return;
-
-        const canVeto =
-          matchData.mode === "playoff" &&
-          matchData.vetoAllowedForAlias === youData.alias &&
-          !matchData.vetoUsed;
-
-        if (!canVeto) {
-          h2hVetoBtn.classList.add("d-none");
-          return;
-        }
-
-        h2hVetoBtn.classList.remove("d-none");
-        h2hVetoBtn.disabled = false;
-
-        h2hVetoBtn.onclick = async (e) => {
-          e.preventDefault();
-          h2hVetoBtn.disabled = true;
-          try {
-            const newQuiz = await getRandomPlayoffQuizUrl(db);
-            await updateDoc(matchRef, {
-              quizUrl: newQuiz,
-              vetoUsed: true,
-              vetoUsedByAlias: youData.alias,
-            });
-            h2hVetoBtn.classList.add("d-none");
-            setH2HStatus("Veto used. New playoff quiz assigned.");
-          } catch (err) {
-            console.error("Error using veto", err);
-            h2hVetoBtn.disabled = false;
-          }
+        // Store match data for score submission
+        playoffMyMatchData = {
+          matchRef: matchRef,
+          myAlias: myAlias,
+          seriesDoc: seriesDoc,
         };
       }
 
       /**
-       * Pick a random quiz URL from the 'quizzes' collection.
+       * Show veto UI to higher seed
        */
-      let h2hRecentQuizUrls = [];
+      function showPlayoffVetoUI(matchRef, match, myAlias) {
+        h2hMatchCard.classList.remove("d-none");
+        h2hScoreCard.classList.add("d-none");
+        h2hResultCard.classList.add("d-none");
 
+        h2hYouName.textContent = match.higherDisplayName;
+        h2hYouAlias.textContent = match.higherAlias;
+        h2hOppName.textContent = match.lowerDisplayName;
+        h2hOppAlias.textContent = match.lowerAlias;
+        h2hQuizLink.href = match.quizUrl;
+        h2hQuizLink.textContent = match.quizUrl;
+
+        if (h2hVetoBtn && !match.vetoDecisionMade) {
+          h2hVetoBtn.classList.remove("d-none");
+          h2hVetoBtn.disabled = false;
+          h2hVetoBtn.textContent = "Veto this quiz";
+
+          // Add accept button
+          let acceptBtn = document.getElementById("h2h-accept-btn");
+          if (!acceptBtn) {
+            acceptBtn = document.createElement("button");
+            acceptBtn.id = "h2h-accept-btn";
+            acceptBtn.className = "btn btn-success btn-sm ms-2";
+            acceptBtn.textContent = "Accept this quiz";
+            h2hVetoBtn.parentElement.appendChild(acceptBtn);
+          }
+          acceptBtn.classList.remove("d-none");
+          acceptBtn.disabled = false;
+
+          // Veto handler
+          h2hVetoBtn.onclick = async (e) => {
+            e.preventDefault();
+            h2hVetoBtn.disabled = true;
+            acceptBtn.disabled = true;
+
+            try {
+              const newQuizUrl = await getRandomPlayoffQuizUrl(db);
+              await updateDoc(matchRef, {
+                quizUrl: newQuizUrl,
+                vetoUsed: true,
+                vetoDecisionMade: true,
+                status: "active",
+              });
+              playoffJoinStatus.textContent = "Veto used! New quiz assigned.";
+            } catch (err) {
+              console.error("Error using veto", err);
+              h2hVetoBtn.disabled = false;
+              acceptBtn.disabled = false;
+            }
+          };
+
+          // Accept handler
+          acceptBtn.onclick = async (e) => {
+            e.preventDefault();
+            h2hVetoBtn.disabled = true;
+            acceptBtn.disabled = true;
+
+            try {
+              await updateDoc(matchRef, {
+                vetoDecisionMade: true,
+                status: "active",
+              });
+              playoffJoinStatus.textContent = "Quiz accepted!";
+            } catch (err) {
+              console.error("Error accepting quiz", err);
+              h2hVetoBtn.disabled = false;
+              acceptBtn.disabled = false;
+            }
+          };
+        }
+
+        playoffJoinStatus.textContent =
+          "Review the quiz and decide whether to veto or accept.";
+      }
+
+      /**
+       * Show waiting message to lower seed during veto phase
+       */
+      function showPlayoffWaitingForVeto(match) {
+        h2hMatchCard.classList.remove("d-none");
+        h2hScoreCard.classList.add("d-none");
+        h2hResultCard.classList.add("d-none");
+
+        h2hYouName.textContent = match.lowerDisplayName;
+        h2hYouAlias.textContent = match.lowerAlias;
+        h2hOppName.textContent = match.higherDisplayName;
+        h2hOppAlias.textContent = match.higherAlias;
+        h2hQuizLink.textContent = "Waiting for opponent to review quiz...";
+        h2hQuizLink.removeAttribute("href");
+
+        if (h2hVetoBtn) h2hVetoBtn.classList.add("d-none");
+        const acceptBtn = document.getElementById("h2h-accept-btn");
+        if (acceptBtn) acceptBtn.classList.add("d-none");
+
+        playoffJoinStatus.textContent =
+          "Waiting for higher seed to make veto decision...";
+      }
+
+      /**
+       * Show active match (after veto decision)
+       */
+      function showPlayoffActiveMatch(matchRef, match, myAlias, mySide) {
+        h2hMatchCard.classList.remove("d-none");
+        h2hScoreCard.classList.remove("d-none");
+        h2hResultCard.classList.add("d-none");
+
+        const isHigher = mySide === "higher";
+
+        h2hYouName.textContent = isHigher
+          ? match.higherDisplayName
+          : match.lowerDisplayName;
+        h2hYouAlias.textContent = isHigher
+          ? match.higherAlias
+          : match.lowerAlias;
+        h2hOppName.textContent = isHigher
+          ? match.lowerDisplayName
+          : match.higherDisplayName;
+        h2hOppAlias.textContent = isHigher
+          ? match.lowerAlias
+          : match.higherAlias;
+        h2hQuizLink.href = match.quizUrl;
+        h2hQuizLink.textContent = match.quizUrl;
+
+        // Hide veto buttons
+        if (h2hVetoBtn) h2hVetoBtn.classList.add("d-none");
+        const acceptBtn = document.getElementById("h2h-accept-btn");
+        if (acceptBtn) acceptBtn.classList.add("d-none");
+
+        // Enable score submission
+        const myScore = match[`${mySide}Score`];
+        if (myScore) {
+          h2hScoreInput.value = myScore.rawScore;
+          h2hTimeInput.value = formatSecondsAsMMSS(myScore.timeLeftSeconds);
+          h2hScoreInput.disabled = true;
+          h2hTimeInput.disabled = true;
+          document.getElementById("h2h-score-submit-btn").disabled = true;
+          h2hScoreStatus.textContent =
+            "Score submitted. Waiting for opponent...";
+        } else {
+          h2hScoreInput.disabled = false;
+          h2hTimeInput.disabled = false;
+          h2hScoreInput.value = "";
+          h2hTimeInput.value = "";
+          document.getElementById("h2h-score-submit-btn").disabled = false;
+          h2hScoreStatus.textContent = "Play the quiz and submit your score.";
+        }
+
+        playoffJoinStatus.textContent = match.vetoUsed
+          ? "Veto was used. Quiz is now active!"
+          : "Quiz accepted! Take the quiz and submit your score.";
+      }
+
+      /**
+       * Show match result
+       */
+      function showPlayoffMatchResult(match, myAlias) {
+        h2hResultCard.classList.remove("d-none");
+
+        const isWinner = match.winnerAlias === myAlias;
+        const isHigher = match.higherAlias === myAlias;
+        const mySide = isHigher ? "higher" : "lower";
+        const oppSide = isHigher ? "lower" : "higher";
+
+        const myScore = match[`${mySide}Score`];
+        const oppScore = match[`${oppSide}Score`];
+
+        let summary;
+        if (isWinner) {
+          summary = `🎉 You won and advance to the next round!`;
+        } else {
+          summary = `You lost. Better luck next time!`;
+        }
+
+        h2hResultSummary.textContent = summary;
+
+        const detailLines = [];
+        if (myScore) {
+          detailLines.push(
+            `Your score: ${myScore.rawScore} (${Math.round(
+              myScore.pct * 100
+            )}%), time: ${formatSecondsAsMMSS(myScore.timeLeftSeconds)}`
+          );
+        }
+        if (oppScore) {
+          detailLines.push(
+            `Opponent: ${oppScore.rawScore} (${Math.round(
+              oppScore.pct * 100
+            )}%), time: ${formatSecondsAsMMSS(oppScore.timeLeftSeconds)}`
+          );
+        }
+
+        h2hResultDetail.innerHTML = "";
+        detailLines.forEach((t) => {
+          const li = document.createElement("li");
+          li.textContent = t;
+          h2hResultDetail.appendChild(li);
+        });
+
+        playoffJoinStatus.textContent = "Match completed!";
+      }
+
+      /**
+       * Submit playoff score
+       */
+      if (h2hScoreForm) {
+        h2hScoreForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          if (!playoffMyMatchData) {
+            h2hScoreStatus.textContent = "No active playoff match.";
+            return;
+          }
+
+          const { matchRef, myAlias } = playoffMyMatchData;
+
+          const parsed = parseScoreString(h2hScoreInput.value);
+          if (!parsed) {
+            h2hScoreStatus.textContent =
+              "Invalid score format. Use num/den (e.g., 7/9).";
+            return;
+          }
+
+          const seconds = parseTimeString(h2hTimeInput.value);
+          if (seconds === null) {
+            h2hScoreStatus.textContent =
+              "Invalid time format. Use mm:ss (e.g., 01:23).";
+            return;
+          }
+
+          const scoreObj = {
+            ...parsed,
+            timeLeftSeconds: seconds,
+            submittedAt: serverTimestamp(),
+          };
+
+          try {
+            h2hScoreStatus.textContent = "Submitting score...";
+
+            // Determine which side I am
+            const matchSnap = await getDoc(matchRef);
+            if (!matchSnap.exists()) {
+              h2hScoreStatus.textContent = "Match not found.";
+              return;
+            }
+
+            const match = matchSnap.data();
+            const isHigher = match.higherAlias === myAlias;
+            const mySide = isHigher ? "higher" : "lower";
+
+            await updateDoc(matchRef, {
+              [`${mySide}Score`]: scoreObj,
+            });
+
+            h2hScoreInput.disabled = true;
+            h2hTimeInput.disabled = true;
+            document.getElementById("h2h-score-submit-btn").disabled = true;
+            h2hScoreStatus.textContent = "Score submitted!";
+
+            // Try to resolve match
+            await resolvePlayoffMatch(db, matchRef);
+          } catch (err) {
+            console.error("Error submitting playoff score", err);
+            h2hScoreStatus.textContent = "Error submitting score.";
+          }
+        });
+      }
+
+      /**
+       * Resolve playoff match when both scores are in
+       */
+      async function resolvePlayoffMatch(db, matchRef) {
+        const matchSnap = await getDoc(matchRef);
+        if (!matchSnap.exists()) return;
+
+        const match = matchSnap.data();
+        const higherScore = match.higherScore;
+        const lowerScore = match.lowerScore;
+
+        // Need both scores
+        if (!higherScore || !lowerScore) return;
+
+        // Already resolved
+        if (match.status === "completed") return;
+
+        // Determine winner
+        let winnerAlias = null;
+
+        const higherPct = higherScore.pct || 0;
+        const lowerPct = lowerScore.pct || 0;
+
+        if (higherPct > lowerPct) {
+          winnerAlias = match.higherAlias;
+        } else if (lowerPct > higherPct) {
+          winnerAlias = match.lowerAlias;
+        } else {
+          // Tie on percentage, use time
+          const higherTime = higherScore.timeLeftSeconds || 0;
+          const lowerTime = lowerScore.timeLeftSeconds || 0;
+
+          if (higherTime > lowerTime) {
+            winnerAlias = match.higherAlias;
+          } else if (lowerTime > higherTime) {
+            winnerAlias = match.lowerAlias;
+          } else {
+            // Still tied - higher seed wins
+            winnerAlias = match.higherAlias;
+          }
+        }
+
+        // Update match
+        await updateDoc(matchRef, {
+          status: "completed",
+          winnerAlias: winnerAlias,
+          completedAt: serverTimestamp(),
+        });
+
+        // Update series
+        await updateDoc(doc(collection(db, "playoffSeries"), match.seriesId), {
+          status: "completed",
+          winnerAlias: winnerAlias,
+        });
+      }
+
+      /**
+       * Advance winner to next round (admin can handle bracket creation separately)
+       */
+      async function advanceWinnerToNextRound(db, seriesDoc, match) {
+        // This function can be expanded to automatically create next round matches
+        // For now, it just marks the series as completed
+        console.log(
+          `Winner ${match.winnerAlias} advances from round ${match.round}`
+        );
+      }
+
+      /**
+       * Get random playoff quiz URL
+       */
       let playoffRecentQuizUrls = [];
 
       async function getRandomPlayoffQuizUrl(db) {
@@ -1658,7 +1979,7 @@
           throw new Error("No playoff quizzes available");
         }
 
-        // Avoid recent repeats on this device
+        // Avoid recent repeats
         let choice = null;
         for (let tries = 0; tries < 5; tries++) {
           const idx = Math.floor(Math.random() * urls.length);
@@ -1681,74 +2002,77 @@
         return choice;
       }
 
-      const playoffJoinCard = document.getElementById("playoff-join-card");
-
-      function updatePlayoffsUIFromFlag() {
-        if (playoffJoinCard) {
-          playoffJoinCard.classList.toggle("d-none", !__playoffsFinalized);
+      // Helper functions (these should already exist in your code)
+      function parseScoreString(raw) {
+        const s = (raw || "").trim();
+        const parts = s.split("/");
+        if (parts.length !== 2) return null;
+        const correct = parseInt(parts[0], 10);
+        const total = parseInt(parts[1], 10);
+        if (
+          !Number.isFinite(correct) ||
+          !Number.isFinite(total) ||
+          total <= 0 ||
+          correct < 0 ||
+          correct > total
+        ) {
+          return null;
         }
+        return {
+          rawScore: s,
+          correct,
+          total,
+          pct: correct / total,
+        };
       }
 
-      onSnapshot(
-        playoffsConfigRef,
-        (snap) => {
-          const data = snap.exists() ? snap.data() : {};
-          __playoffsFinalized = !!data.finalized;
-          updatePlayoffsUIFromFlag();
-        },
-        (err) => {
-          console.error("Error listening to playoffs config", err);
-        }
-      );
-
-      if (playoffsFinalizeBtn) {
-        playoffsFinalizeBtn.addEventListener("click", async (e) => {
-          e.preventDefault();
-          try {
-            await setDoc(
-              playoffsConfigRef,
-              {
-                finalized: true,
-                finalizedAt: serverTimestamp(),
-              },
-              { merge: true }
-            );
-            // onSnapshot will update the UI
-          } catch (err) {
-            console.error("Error finalizing playoffs", err);
-            if (playoffsFinalizeStatus) {
-              playoffsFinalizeStatus.textContent =
-                "Error finalizing playoffs. See console.";
-            }
-          }
-        });
-      }
-
-      if (playoffsUnfinalizeBtn) {
-        playoffsUnfinalizeBtn.addEventListener("click", async (e) => {
-          e.preventDefault();
+      function parseTimeString(raw) {
+        const s = (raw || "").trim();
+        if (!s) return null;
+        const parts = s.split(":");
+        let seconds;
+        if (parts.length === 1) {
+          const sec = Number(parts[0]);
+          if (!Number.isFinite(sec) || sec < 0) return null;
+          seconds = Math.floor(sec);
+        } else if (parts.length === 2) {
+          const min = Number(parts[0]);
+          const sec = Number(parts[1]);
           if (
-            !confirm(
-              "Reopen playoffs for editing? This hides playoff features again."
-            )
-          )
-            return;
-          try {
-            await setDoc(
-              playoffsConfigRef,
-              {
-                finalized: false,
-              },
-              { merge: true }
-            );
-          } catch (err) {
-            console.error("Error unfinalizing playoffs", err);
-            if (playoffsFinalizeStatus) {
-              playoffsFinalizeStatus.textContent =
-                "Error reopening playoffs. See console.";
-            }
+            !Number.isFinite(min) ||
+            !Number.isFinite(sec) ||
+            min < 0 ||
+            sec < 0 ||
+            sec >= 60
+          ) {
+            return null;
           }
-        });
+          seconds = Math.floor(min * 60 + sec);
+        } else {
+          return null;
+        }
+        return seconds;
+      }
+
+      function formatSecondsAsMMSS(totalSeconds) {
+        const s = Math.max(0, Math.floor(totalSeconds || 0));
+        const m = Math.floor(s / 60);
+        const sec = s % 60;
+        const mm = String(m).padStart(2, "0");
+        const ss = String(sec).padStart(2, "0");
+        return `${mm}:${ss}`;
+      }
+
+      function getOrCreateHeadToHeadClientId() {
+        const key = "h2hClientId";
+        const existing = window.localStorage.getItem(key);
+        if (existing) return existing;
+        const newId =
+          "h2h_" +
+          Math.random().toString(36).slice(2) +
+          Date.now().toString(36);
+        window.localStorage.setItem(key, newId);
+        return newId;
       }
 
       async function getRandomQuizUrl(db) {
