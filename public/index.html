@@ -2002,30 +2002,6 @@
         return choice;
       }
 
-      // Helper functions (these should already exist in your code)
-      function parseScoreString(raw) {
-        const s = (raw || "").trim();
-        const parts = s.split("/");
-        if (parts.length !== 2) return null;
-        const correct = parseInt(parts[0], 10);
-        const total = parseInt(parts[1], 10);
-        if (
-          !Number.isFinite(correct) ||
-          !Number.isFinite(total) ||
-          total <= 0 ||
-          correct < 0 ||
-          correct > total
-        ) {
-          return null;
-        }
-        return {
-          rawScore: s,
-          correct,
-          total,
-          pct: correct / total,
-        };
-      }
-
       function parseTimeString(raw) {
         const s = (raw || "").trim();
         if (!s) return null;
