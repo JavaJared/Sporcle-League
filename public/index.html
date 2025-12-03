@@ -2002,34 +2002,6 @@
         return choice;
       }
 
-      function parseTimeString(raw) {
-        const s = (raw || "").trim();
-        if (!s) return null;
-        const parts = s.split(":");
-        let seconds;
-        if (parts.length === 1) {
-          const sec = Number(parts[0]);
-          if (!Number.isFinite(sec) || sec < 0) return null;
-          seconds = Math.floor(sec);
-        } else if (parts.length === 2) {
-          const min = Number(parts[0]);
-          const sec = Number(parts[1]);
-          if (
-            !Number.isFinite(min) ||
-            !Number.isFinite(sec) ||
-            min < 0 ||
-            sec < 0 ||
-            sec >= 60
-          ) {
-            return null;
-          }
-          seconds = Math.floor(min * 60 + sec);
-        } else {
-          return null;
-        }
-        return seconds;
-      }
-
       function formatSecondsAsMMSS(totalSeconds) {
         const s = Math.max(0, Math.floor(totalSeconds || 0));
         const m = Math.floor(s / 60);
