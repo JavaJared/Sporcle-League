@@ -37,7 +37,102 @@
       .note {
         opacity: 0.7;
       }
+      /* Playoff Bracket Styles */
+      .playoff-bracket {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 40px;
+        overflow-x: auto;
+        padding: 20px;
+      }
+
+      .bracket-round {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        min-width: 200px;
+        flex-shrink: 0;
+      }
+
+      .bracket-round-title {
+        text-align: center;
+        font-weight: bold;
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        color: var(--bs-secondary);
+      }
+
+      .bracket-match {
+        background: var(--bs-card-bg);
+        border: 2px solid var(--bs-border-color);
+        border-radius: 8px;
+        margin: 10px 0;
+        padding: 8px;
+        position: relative;
+      }
+
+      .bracket-match.completed {
+        border-color: var(--bs-success);
+      }
+
+      .bracket-match.active {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 10px rgba(13, 110, 253, 0.3);
+      }
+
+      .bracket-player {
+        padding: 8px;
+        margin: 2px 0;
+        border-radius: 4px;
+        background: var(--bs-body-bg);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9rem;
+      }
+
+      .bracket-player.winner {
+        background: var(--bs-success);
+        color: white;
+        font-weight: bold;
+      }
+
+      .bracket-player.loser {
+        opacity: 0.5;
+      }
+
+      .bracket-player.tbd {
+        font-style: italic;
+        opacity: 0.6;
+      }
+
+      .bracket-seed {
+        font-size: 0.8rem;
+        opacity: 0.7;
+        margin-right: 5px;
+      }
+
+      .bracket-connector {
+        position: absolute;
+        right: -40px;
+        top: 50%;
+        width: 40px;
+        height: 2px;
+        background: var(--bs-border-color);
+        transform: translateY(-50%);
+      }
     </style>
+    <!-- React for Playoff Bracket -->
+    <script
+      src="https://unpkg.com/react@18/umd/react.production.min.js"
+      crossorigin
+    ></script>
+    <script
+      src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
+      crossorigin
+    ></script>
   </head>
   <body class="bg-body text-body">
     <!-- Header -->
@@ -343,8 +438,8 @@
             <div class="card-body">
               <h2 class="h5 mb-3">Playoffs</h2>
 
-              <div id="playoffs-bracket" class="row g-3 justify-content-center">
-                <!-- BracketMakerJS / bracket markup injected here -->
+              <div id="playoffs-bracket" class="playoff-bracket">
+                <!-- Dynamic bracket will be rendered here -->
               </div>
 
               <div class="note mt-2">
@@ -643,10 +738,107 @@
                   >
                     Reopen Playoffs (Admin only)
                   </button>
+                  <button id="add-seeds-btn" class="btn btn-info btn-sm ms-2">
+                    Add Seeds to Bracket
+                  </button>
+                  <button
+                    id="reset-bracket-btn"
+                    class="btn btn-outline-danger btn-sm ms-2"
+                  >
+                    🔄 Reset & Initialize Bracket
+                  </button>
                   <div
                     id="playoffs-finalize-status"
                     class="form-text mt-2"
                   ></div>
+                </div>
+              </div>
+
+              <!-- Manual Playoff Result Entry -->
+              <div class="card mb-3">
+                <div class="card-body">
+                  <h5 class="card-title">Manual Playoff Result Entry</h5>
+                  <p class="card-text">
+                    Manually set the winner for a playoff matchup. This is
+                    useful for entering results of matches that were played
+                    offline.
+                  </p>
+
+                  <form id="manual-playoff-result-form" class="row g-2">
+                    <div class="col-md-3">
+                      <label for="playoff-round" class="form-label"
+                        >Round</label
+                      >
+                      <input
+                        type="number"
+                        id="playoff-round"
+                        class="form-control"
+                        placeholder="1"
+                        min="1"
+                        required
+                      />
+                    </div>
+
+                    <div class="col-md-3">
+                      <label for="playoff-match-index" class="form-label"
+                        >Match Index</label
+                      >
+                      <input
+                        type="number"
+                        id="playoff-match-index"
+                        class="form-control"
+                        placeholder="0"
+                        min="0"
+                        required
+                      />
+                    </div>
+
+                    <div class="col-md-4">
+                      <label for="playoff-winner-alias" class="form-label"
+                        >Winner Alias</label
+                      >
+                      <input
+                        type="text"
+                        id="playoff-winner-alias"
+                        class="form-control"
+                        placeholder="jdoe"
+                        required
+                      />
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end">
+                      <button type="submit" class="btn btn-warning w-100">
+                        Set Winner
+                      </button>
+                    </div>
+                  </form>
+
+                  <div id="manual-playoff-status" class="form-text mt-2"></div>
+
+                  <hr class="my-3" />
+
+                  <h6>Quick Match Lookup</h6>
+                  <div class="table-responsive mt-2">
+                    <table
+                      class="table table-sm table-bordered"
+                      id="playoff-matches-table"
+                    >
+                      <thead>
+                        <tr>
+                          <th>Round</th>
+                          <th>Match #</th>
+                          <th>Player 1</th>
+                          <th>Player 2</th>
+                          <th>Status</th>
+                          <th>Winner</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody id="playoff-matches-body">
+                        <!-- Filled by JS -->
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
 
@@ -1995,15 +2187,850 @@
       }
 
       /**
-       * Advance winner to next round (admin can handle bracket creation separately)
+       * Advance winner to next round - creates or updates the next round match
        */
-      async function advanceWinnerToNextRound(db, seriesDoc, match) {
-        // This function can be expanded to automatically create next round matches
-        // For now, it just marks the series as completed
+      async function advanceWinnerToNextRound(db, seriesDoc, matchResult) {
+        const series = seriesDoc.data();
+        const currentRound = series.round || 1;
+        const currentMatchIndex = series.matchIndex || 0;
+        const winnerAlias = matchResult.winnerAlias;
+        const winnerDisplayName = matchResult.winnerDisplayName || winnerAlias;
+
+        // Get winner's seed
+        const currentSeeds = series.seeds || [null, null];
+        const aliases = series.aliases || [];
+        const winnerIndex = aliases.indexOf(winnerAlias);
+        const winnerSeed = winnerIndex >= 0 ? currentSeeds[winnerIndex] : null;
+
         console.log(
-          `Winner ${match.winnerAlias} advances from round ${match.round}`
+          `🏆 Winner ${winnerAlias} (seed ${winnerSeed}) from Round ${currentRound}, Match ${currentMatchIndex}`
+        );
+
+        // Calculate next round parameters
+        const nextRound = currentRound + 1;
+        const nextMatchIndex = Math.floor(currentMatchIndex / 2);
+
+        // Determine which position in the next match (top or bottom)
+        // Even matchIndex (0, 2, 4...) goes to position 0, odd (1, 3, 5...) goes to position 1
+        const positionInNextMatch = currentMatchIndex % 2;
+
+        console.log(
+          `➡️ Should advance to Round ${nextRound}, Match ${nextMatchIndex}, Position ${positionInNextMatch}`
+        );
+
+        // Find if next round match already exists
+        const nextSeriesRef = collection(db, "playoffSeries");
+        const q = query(
+          nextSeriesRef,
+          where("round", "==", nextRound),
+          where("matchIndex", "==", nextMatchIndex)
+        );
+
+        try {
+          const snap = await getDocs(q);
+
+          if (snap.empty) {
+            // Create new next round match
+            console.log(
+              `✨ Creating new match for Round ${nextRound}, Match ${nextMatchIndex}`
+            );
+
+            const newMatchRef = doc(nextSeriesRef);
+
+            const newAliases = ["TBD", "TBD"];
+            const newSeeds = [null, null];
+
+            newAliases[positionInNextMatch] = winnerAlias;
+            newSeeds[positionInNextMatch] = winnerSeed;
+
+            await setDoc(newMatchRef, {
+              round: nextRound,
+              matchIndex: nextMatchIndex,
+              aliases: newAliases,
+              seeds: newSeeds,
+              status: "pending",
+              winnerAlias: null,
+              createdAt: serverTimestamp(),
+            });
+
+            console.log(`✅ Created: ${newAliases[0]} vs ${newAliases[1]}`);
+          } else {
+            // Update existing next round match
+            const nextMatchDoc = snap.docs[0];
+            const nextMatch = nextMatchDoc.data();
+            const currentAliases = nextMatch.aliases || ["TBD", "TBD"];
+            const currentSeeds = nextMatch.seeds || [null, null];
+
+            console.log(
+              `📝 Updating existing match: ${currentAliases[0]} vs ${currentAliases[1]}`
+            );
+
+            const updatedAliases = [...currentAliases];
+            const updatedSeeds = [...currentSeeds];
+
+            updatedAliases[positionInNextMatch] = winnerAlias;
+            updatedSeeds[positionInNextMatch] = winnerSeed;
+
+            const updates = {
+              aliases: updatedAliases,
+              seeds: updatedSeeds,
+            };
+
+            // If both slots are now filled, mark as ready to play
+            if (updatedAliases[0] !== "TBD" && updatedAliases[1] !== "TBD") {
+              updates.status = "pending";
+              console.log(
+                `🎮 Match is now ready: ${updatedAliases[0]} vs ${updatedAliases[1]}`
+              );
+            }
+
+            await updateDoc(nextMatchDoc.ref, updates);
+
+            console.log(
+              `✅ Updated: ${updatedAliases[0]} vs ${updatedAliases[1]}`
+            );
+          }
+        } catch (err) {
+          console.error("❌ Error advancing winner to next round:", err);
+          throw err;
+        }
+      }
+
+      // ============================================================================
+      // DYNAMIC PLAYOFF BRACKET VISUALIZATION
+      // ============================================================================
+
+      const playoffsBracketContainer =
+        document.getElementById("playoffs-bracket");
+      let bracketUnsubscribe = null;
+
+      /**
+       * Start listening to playoff series and render bracket dynamically
+       */
+      function startBracketListener() {
+        if (bracketUnsubscribe) {
+          bracketUnsubscribe();
+        }
+
+        const seriesRef = collection(db, "playoffSeries");
+        bracketUnsubscribe = onSnapshot(seriesRef, (snap) => {
+          const allSeries = [];
+          snap.forEach((doc) => {
+            allSeries.push({ id: doc.id, ...doc.data() });
+          });
+          renderBracket(allSeries);
+        });
+      }
+
+      /**
+       * Render the playoff bracket using React
+       */
+      async function renderBracket(allSeries) {
+        if (!playoffsBracketContainer) return;
+
+        if (allSeries.length === 0) {
+          playoffsBracketContainer.innerHTML =
+            '<p class="text-center text-muted">No playoff matches yet.</p>';
+          return;
+        }
+
+        // Fetch all display names once
+        const allAliases = new Set();
+        allSeries.forEach((series) => {
+          const aliases = series.aliases || [];
+          aliases.forEach((alias) => {
+            if (alias !== "TBD") allAliases.add(alias);
+          });
+        });
+
+        const displayNames = {};
+
+        // Fetch display names from points collection
+        for (const alias of allAliases) {
+          try {
+            const pointsDoc = await getDoc(
+              doc(collection(db, "points"), alias)
+            );
+            if (pointsDoc.exists()) {
+              const data = pointsDoc.data();
+              displayNames[alias] = data.displayName || alias;
+            } else {
+              displayNames[alias] = alias;
+            }
+          } catch (err) {
+            console.error(`Error fetching data for ${alias}`, err);
+            displayNames[alias] = alias;
+          }
+        }
+
+        // Render with React
+        const root = ReactDOM.createRoot(playoffsBracketContainer);
+        root.render(
+          React.createElement(PlayoffBracket, {
+            matches: allSeries,
+            displayNames: displayNames,
+            darkMode: true,
+          })
         );
       }
+
+      // ============== REACT PLAYOFF BRACKET COMPONENT ==============
+
+      function PlayoffBracket({ matches, displayNames, darkMode }) {
+        const rounds = {};
+        let maxRound = 0;
+
+        matches.forEach((match) => {
+          const round = match.round || 1;
+          if (!rounds[round]) rounds[round] = [];
+          rounds[round].push(match);
+          if (round > maxRound) maxRound = round;
+        });
+
+        const sortedRoundNumbers = Object.keys(rounds)
+          .map(Number)
+          .sort((a, b) => a - b);
+
+        sortedRoundNumbers.forEach((roundNum) => {
+          rounds[roundNum].sort(
+            (a, b) => (a.matchIndex || 0) - (b.matchIndex || 0)
+          );
+        });
+
+        // Calculate total rounds based on first round match count
+        // 16 matches in R1 = 32 teams = 5 rounds (R32, S16, E8, F4, Championship)
+        // 8 matches in R1 = 16 teams = 4 rounds (S16, E8, F4, Championship)
+        // 4 matches in R1 = 8 teams = 3 rounds (E8, F4, Championship)
+        const firstRoundMatches = rounds[1] ? rounds[1].length : 0;
+
+        // Calculate total rounds: log2(teams) where teams = firstRoundMatches * 2
+        // 16 matches = 32 teams = log2(32) = 5 rounds
+        const totalExpectedRounds =
+          firstRoundMatches > 0 ? Math.log2(firstRoundMatches * 2) : maxRound;
+
+        const getRoundName = (roundNum) => {
+          // Calculate rounds remaining based on TOTAL expected rounds
+          const roundsRemaining = totalExpectedRounds - roundNum;
+          if (roundsRemaining === 0) return "Championship";
+          if (roundsRemaining === 1) return "Final Four";
+          if (roundsRemaining === 2) return "Elite Eight";
+          if (roundsRemaining === 3) return "Sweet Sixteen";
+          if (roundsRemaining === 4) return "Round of 32";
+          if (roundsRemaining === 5) return "Round of 64";
+          return `Round ${roundNum}`;
+        };
+
+        // Calculate the height of a single match card
+        const MATCH_HEIGHT = 70; // Height of one match card in pixels
+        const MATCH_GAP = 10; // Gap between matches in the same round
+
+        const theme = {
+          bg: darkMode ? "#1a1d23" : "#ffffff",
+          cardBg: darkMode ? "#282c34" : "#f8f9fa",
+          border: darkMode ? "#3d4250" : "#dee2e6",
+          text: darkMode ? "#e9ecef" : "#212529",
+          textMuted: darkMode ? "#8b949e" : "#6c757d",
+          winner: darkMode ? "#3fb97a" : "#198754",
+          winnerBg: darkMode ? "rgba(63, 185, 122, 0.2)" : "#d1e7dd",
+          active: darkMode ? "#4493f8" : "#0d6efd",
+          connector: darkMode ? "#3d4250" : "#dee2e6",
+        };
+
+        if (matches.length === 0) {
+          return React.createElement(
+            "div",
+            {
+              style: {
+                padding: "40px",
+                textAlign: "center",
+                color: theme.textMuted,
+                backgroundColor: theme.bg,
+                borderRadius: "12px",
+              },
+            },
+            "No playoff matches yet."
+          );
+        }
+
+        // Generate all rounds including future ones with TBD placeholders
+        const allRounds = [];
+        for (let r = 1; r <= totalExpectedRounds; r++) {
+          if (rounds[r]) {
+            allRounds.push({ roundNum: r, matches: rounds[r] });
+          } else {
+            // Generate placeholder matches for this round
+            // Number of matches = firstRoundMatches / 2^(r-1)
+            const matchCount = Math.max(
+              1,
+              Math.floor(firstRoundMatches / Math.pow(2, r - 1))
+            );
+            const placeholders = [];
+            for (let m = 0; m < matchCount; m++) {
+              placeholders.push({
+                id: `placeholder-${r}-${m}`,
+                round: r,
+                matchIndex: m,
+                aliases: ["TBD", "TBD"],
+                seeds: [null, null],
+                status: "pending",
+                winnerAlias: null,
+              });
+            }
+            allRounds.push({ roundNum: r, matches: placeholders });
+          }
+        }
+
+        return React.createElement(
+          "div",
+          {
+            style: {
+              display: "flex",
+              flexDirection: "row",
+              overflowX: "auto",
+              padding: "20px",
+              backgroundColor: theme.bg,
+              borderRadius: "12px",
+              alignItems: "flex-start",
+            },
+          },
+          allRounds.map((roundData, roundIndex) => {
+            const roundNum = roundData.roundNum;
+            const roundMatches = roundData.matches;
+
+            // Calculate spacing for proper bracket alignment
+            // Each round should have matches centered between the two matches that feed into it
+            const matchesInRound = roundMatches.length;
+            const spacingMultiplier = Math.pow(2, roundIndex);
+            const totalMatchHeight = MATCH_HEIGHT + MATCH_GAP;
+
+            // Gap between matches in this round
+            const gapBetweenMatches =
+              totalMatchHeight * spacingMultiplier - MATCH_HEIGHT;
+
+            // Initial offset to center this round's matches with the previous round
+            const initialOffset =
+              (totalMatchHeight * (spacingMultiplier - 1)) / 2;
+
+            return React.createElement(
+              "div",
+              {
+                key: roundNum,
+                style: {
+                  display: "flex",
+                  flexDirection: "column",
+                  minWidth: "180px",
+                  flexShrink: 0,
+                  marginRight: "20px",
+                },
+              },
+              [
+                // Round Title
+                React.createElement(
+                  "div",
+                  {
+                    key: "title",
+                    style: {
+                      textAlign: "center",
+                      fontWeight: "600",
+                      fontSize: "0.75rem",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                      color: theme.winner,
+                      marginBottom: "12px",
+                      padding: "6px",
+                    },
+                  },
+                  getRoundName(roundNum)
+                ),
+
+                // Matches Container
+                React.createElement(
+                  "div",
+                  {
+                    key: "matches",
+                    style: {
+                      display: "flex",
+                      flexDirection: "column",
+                      paddingTop: `${initialOffset}px`,
+                    },
+                  },
+                  roundMatches.map((match, matchIndex) =>
+                    React.createElement(
+                      "div",
+                      {
+                        key: match.id || `${roundNum}-${matchIndex}`,
+                        style: {
+                          marginBottom:
+                            matchIndex < roundMatches.length - 1
+                              ? `${gapBetweenMatches}px`
+                              : "0",
+                        },
+                      },
+                      React.createElement(MatchCard, {
+                        match: match,
+                        displayNames: displayNames,
+                        theme: theme,
+                        showConnector: roundIndex < allRounds.length - 1,
+                      })
+                    )
+                  )
+                ),
+              ]
+            );
+          })
+        );
+      }
+
+      function MatchCard({ match, displayNames, theme, showConnector }) {
+        const aliases = match.aliases || [];
+        const seeds = match.seeds || [null, null];
+        const winner = match.winnerAlias;
+        const isCompleted = match.status === "completed";
+        const isActive = match.status === "active";
+
+        const player1Alias = aliases[0] || "TBD";
+        const player2Alias = aliases[1] || "TBD";
+        const player1Name =
+          player1Alias === "TBD"
+            ? "TBD"
+            : displayNames[player1Alias] || player1Alias;
+        const player2Name =
+          player2Alias === "TBD"
+            ? "TBD"
+            : displayNames[player2Alias] || player2Alias;
+
+        return React.createElement(
+          "div",
+          {
+            style: {
+              backgroundColor: theme.cardBg,
+              border: `2px solid ${
+                isActive
+                  ? theme.active
+                  : isCompleted
+                  ? theme.winner
+                  : theme.border
+              }`,
+              borderRadius: "6px",
+              padding: "2px",
+              position: "relative",
+              boxShadow: isActive ? `0 0 12px ${theme.active}40` : "none",
+              height: "66px", // Fixed height for consistent bracket alignment
+              boxSizing: "border-box",
+            },
+          },
+          [
+            React.createElement(PlayerRow, {
+              key: "p1",
+              name: player1Name,
+              seed: seeds[0],
+              isWinner: winner === player1Alias,
+              isLoser:
+                winner && winner !== player1Alias && player1Alias !== "TBD",
+              isTBD: player1Alias === "TBD",
+              theme: theme,
+            }),
+            React.createElement(PlayerRow, {
+              key: "p2",
+              name: player2Name,
+              seed: seeds[1],
+              isWinner: winner === player2Alias,
+              isLoser:
+                winner && winner !== player2Alias && player2Alias !== "TBD",
+              isTBD: player2Alias === "TBD",
+              theme: theme,
+            }),
+            // Horizontal connector line to next round
+            showConnector &&
+              React.createElement("div", {
+                key: "connector",
+                style: {
+                  position: "absolute",
+                  right: "-21px",
+                  top: "50%",
+                  width: "20px",
+                  height: "2px",
+                  backgroundColor: theme.connector,
+                  transform: "translateY(-50%)",
+                },
+              }),
+          ]
+        );
+      }
+
+      function PlayerRow({ name, seed, isWinner, isLoser, isTBD, theme }) {
+        return React.createElement(
+          "div",
+          {
+            style: {
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "6px 8px",
+              margin: "1px",
+              borderRadius: "3px",
+              fontSize: "0.8rem",
+              backgroundColor: isWinner ? theme.winnerBg : "transparent",
+              color: isWinner
+                ? theme.winner
+                : isLoser
+                ? theme.textMuted
+                : isTBD
+                ? theme.textMuted
+                : theme.text,
+              fontWeight: isWinner ? "600" : "400",
+              fontStyle: isTBD ? "italic" : "normal",
+              opacity: isLoser ? 0.5 : 1,
+              height: "28px",
+              boxSizing: "border-box",
+            },
+          },
+          [
+            React.createElement(
+              "span",
+              {
+                key: "info",
+                style: { display: "flex", alignItems: "center", gap: "6px" },
+              },
+              [
+                seed &&
+                  React.createElement(
+                    "span",
+                    {
+                      key: "seed",
+                      style: {
+                        fontSize: "0.7rem",
+                        opacity: 0.7,
+                        minWidth: "16px",
+                        fontWeight: "600",
+                      },
+                    },
+                    seed
+                  ),
+                React.createElement(
+                  "span",
+                  {
+                    key: "name",
+                    style: {
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      maxWidth: "120px",
+                    },
+                  },
+                  name
+                ),
+              ]
+            ),
+            isWinner &&
+              React.createElement(
+                "span",
+                {
+                  key: "check",
+                  style: { color: theme.winner },
+                },
+                "✓"
+              ),
+          ]
+        );
+      }
+
+      // Start the bracket listener when the playoffs tab is shown
+      const playoffsTab = document.querySelector(
+        '[data-bs-target="#tab-playoffs"]'
+      );
+      if (playoffsTab) {
+        playoffsTab.addEventListener("shown.bs.tab", () => {
+          startBracketListener();
+        });
+      }
+
+      // Also start on page load if playoffs are finalized
+      onSnapshot(playoffsConfigRef, (snap) => {
+        const data = snap.exists() ? snap.data() : {};
+        __playoffsFinalized = !!data.finalized;
+        updatePlayoffsUIFromFlag();
+
+        // Start bracket listener if playoffs are active
+        if (__playoffsFinalized) {
+          startBracketListener();
+        }
+      });
+
+      // ============================================================================
+      // ADMIN: Manual Playoff Result Entry
+      // ============================================================================
+
+      const manualPlayoffForm = document.getElementById(
+        "manual-playoff-result-form"
+      );
+      const manualPlayoffStatus = document.getElementById(
+        "manual-playoff-status"
+      );
+      const playoffMatchesBody = document.getElementById(
+        "playoff-matches-body"
+      );
+
+      // Load and display all playoff series
+      async function loadPlayoffMatches() {
+        if (!playoffMatchesBody) return;
+
+        const seriesRef = collection(db, "playoffSeries");
+        const q = query(
+          seriesRef,
+          orderBy("round", "asc"),
+          orderBy("matchIndex", "asc")
+        );
+        const snap = await getDocs(q);
+
+        playoffMatchesBody.innerHTML = "";
+
+        if (snap.empty) {
+          playoffMatchesBody.innerHTML =
+            '<tr><td colspan="7" class="text-center">No playoff series found</td></tr>';
+          return;
+        }
+
+        snap.forEach((docSnap) => {
+          const series = docSnap.data();
+          const tr = document.createElement("tr");
+
+          const aliases = series.aliases || [];
+          const player1 = aliases[0] || "TBD";
+          const player2 = aliases[1] || "TBD";
+          const status = series.status || "pending";
+          const winner = series.winnerAlias || "-";
+
+          tr.innerHTML = `
+      <td>${series.round || "-"}</td>
+      <td>${series.matchIndex || "0"}</td>
+      <td>${player1}</td>
+      <td>${player2}</td>
+      <td>
+        <span class="badge ${
+          status === "completed"
+            ? "bg-success"
+            : status === "active"
+            ? "bg-primary"
+            : "bg-secondary"
+        }">
+          ${status}
+        </span>
+      </td>
+      <td>${winner}</td>
+      <td>
+        ${
+          status !== "completed"
+            ? `
+          <button class="btn btn-sm btn-outline-primary set-winner-btn" 
+                  data-series-id="${docSnap.id}"
+                  data-player1="${player1}"
+                  data-player2="${player2}">
+            Set Winner
+          </button>
+        `
+            : "-"
+        }
+      </td>
+    `;
+
+          playoffMatchesBody.appendChild(tr);
+        });
+
+        // Add click handlers to "Set Winner" buttons
+        document.querySelectorAll(".set-winner-btn").forEach((btn) => {
+          btn.addEventListener("click", async (e) => {
+            const seriesId = e.target.dataset.seriesId;
+            const player1 = e.target.dataset.player1;
+            const player2 = e.target.dataset.player2;
+
+            const winner = prompt(
+              `Who won this match?\n\n1. ${player1}\n2. ${player2}\n\nEnter the winner's alias:`
+            );
+            if (!winner) return;
+
+            const winnerAlias = winner.trim().toLowerCase();
+
+            try {
+              await setPlayoffWinner(seriesId, winnerAlias);
+              alert("Winner set successfully!");
+              loadPlayoffMatches(); // Reload table
+            } catch (err) {
+              console.error("Error setting winner", err);
+              alert("Error: " + err.message);
+            }
+          });
+        });
+      }
+
+      // Manual form submission
+      if (manualPlayoffForm) {
+        manualPlayoffForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const round = parseInt(
+            document.getElementById("playoff-round").value,
+            10
+          );
+          const matchIndex = parseInt(
+            document.getElementById("playoff-match-index").value,
+            10
+          );
+          const winnerAlias = document
+            .getElementById("playoff-winner-alias")
+            .value.trim()
+            .toLowerCase();
+
+          if (!winnerAlias) {
+            manualPlayoffStatus.textContent = "Please enter a winner alias.";
+            return;
+          }
+
+          try {
+            manualPlayoffStatus.textContent = "Finding match...";
+
+            // Find the series by round and matchIndex
+            const seriesRef = collection(db, "playoffSeries");
+            const q = query(
+              seriesRef,
+              where("round", "==", round),
+              where("matchIndex", "==", matchIndex)
+            );
+            const snap = await getDocs(q);
+
+            if (snap.empty) {
+              manualPlayoffStatus.textContent = `No match found for Round ${round}, Match ${matchIndex}.`;
+              return;
+            }
+
+            const seriesDoc = snap.docs[0];
+            const series = seriesDoc.data();
+            const aliases = series.aliases || [];
+
+            if (!aliases.includes(winnerAlias)) {
+              manualPlayoffStatus.textContent = `Winner "${winnerAlias}" is not in this matchup. Players: ${aliases.join(
+                ", "
+              )}`;
+              return;
+            }
+
+            manualPlayoffStatus.textContent = "Setting winner...";
+            await setPlayoffWinner(seriesDoc.id, winnerAlias);
+
+            manualPlayoffStatus.textContent = `✅ Winner set: ${winnerAlias} advances from Round ${round}, Match ${matchIndex}`;
+            manualPlayoffForm.reset();
+
+            // Reload the table
+            loadPlayoffMatches();
+          } catch (err) {
+            console.error("Error setting playoff winner", err);
+            manualPlayoffStatus.textContent = "Error: " + err.message;
+          }
+        });
+      }
+
+      /**
+       * Set the winner for a playoff series and advance them to next round
+       */
+      async function setPlayoffWinner(seriesId, winnerAlias) {
+        console.log(
+          `🎯 setPlayoffWinner called with seriesId=${seriesId}, winnerAlias=${winnerAlias}`
+        );
+
+        const seriesRef = doc(collection(db, "playoffSeries"), seriesId);
+        const seriesSnap = await getDoc(seriesRef);
+
+        if (!seriesSnap.exists()) {
+          throw new Error("Series not found");
+        }
+
+        const series = seriesSnap.data();
+        console.log(`📋 Series data:`, series);
+
+        const aliases = series.aliases || [];
+
+        if (!aliases.includes(winnerAlias)) {
+          throw new Error(
+            `Winner "${winnerAlias}" is not in this matchup. Players: ${aliases.join(
+              ", "
+            )}`
+          );
+        }
+
+        // Validate that round and matchIndex exist
+        if (series.round === undefined || series.matchIndex === undefined) {
+          console.error("❌ Series is missing round or matchIndex!", series);
+          throw new Error(
+            `Series is missing round (${series.round}) or matchIndex (${series.matchIndex})`
+          );
+        }
+
+        // Get winner's display name from points collection
+        const winnerPointsDoc = await getDoc(
+          doc(collection(db, "points"), winnerAlias)
+        );
+        const winnerDisplayName = winnerPointsDoc.exists()
+          ? winnerPointsDoc.data().displayName || winnerAlias
+          : winnerAlias;
+
+        console.log(
+          `📝 Updating series ${seriesId} with winner ${winnerAlias}`
+        );
+
+        // Update series
+        await updateDoc(seriesRef, {
+          status: "completed",
+          winnerAlias: winnerAlias,
+          winnerDisplayName: winnerDisplayName,
+          completedAt: serverTimestamp(),
+        });
+
+        // If there's a match document, update it too
+        const matchRef = doc(collection(db, "playoffMatches"), seriesId);
+        const matchSnap = await getDoc(matchRef);
+
+        if (matchSnap.exists()) {
+          await updateDoc(matchRef, {
+            status: "completed",
+            winnerAlias: winnerAlias,
+            completedAt: serverTimestamp(),
+          });
+        }
+
+        // Advance winner to next round
+        console.log(
+          `🚀 Advancing winner ${winnerAlias} from Round ${series.round}, Match ${series.matchIndex}`
+        );
+
+        try {
+          await advanceWinnerToNextRound(db, seriesSnap, {
+            winnerAlias,
+            winnerDisplayName,
+            round: series.round,
+            matchIndex: series.matchIndex,
+          });
+          console.log(`✅ Successfully advanced winner to next round`);
+        } catch (advanceErr) {
+          console.error(`❌ Error in advanceWinnerToNextRound:`, advanceErr);
+          throw advanceErr;
+        }
+      }
+
+      // Load playoff matches when admin tab is shown (only if user is admin)
+      document
+        .getElementById("admin-tab-btn")
+        ?.addEventListener("click", () => {
+          if (window.__isAdmin) {
+            setTimeout(() => loadPlayoffMatches(), 100);
+          }
+        });
+
+      // Also load on page load if admin
+      window.addEventListener("load", () => {
+        if (window.__isAdmin) {
+          setTimeout(() => loadPlayoffMatches(), 500);
+        }
+      });
 
       /**
        * Get random playoff quiz URL
@@ -2082,6 +3109,376 @@
         }
 
         return choice;
+      }
+
+      // ============================================================================
+      // ADMIN: Initialize Playoff Bracket with Seeds
+      // ============================================================================
+
+      /**
+       * Add seeds to existing playoff series based on points standings
+       */
+      async function addSeedsToPlayoffSeries() {
+        try {
+          // Get all players from points collection, sorted by points
+          const pointsRef = collection(db, "points");
+          const pointsSnap = await getDocs(
+            query(pointsRef, orderBy("points", "desc"))
+          );
+
+          const seedMap = {};
+          let seed = 1;
+          pointsSnap.forEach((doc) => {
+            seedMap[doc.id] = seed;
+            seed++;
+          });
+
+          // Update all playoff series with seeds
+          const seriesRef = collection(db, "playoffSeries");
+          const seriesSnap = await getDocs(seriesRef);
+
+          const batch = writeBatch(db);
+          let updateCount = 0;
+
+          seriesSnap.forEach((doc) => {
+            const series = doc.data();
+            const aliases = series.aliases || [];
+
+            const player1Seed =
+              aliases[0] !== "TBD" ? seedMap[aliases[0]] : null;
+            const player2Seed =
+              aliases[1] !== "TBD" ? seedMap[aliases[1]] : null;
+
+            if (player1Seed || player2Seed) {
+              batch.update(doc.ref, {
+                seeds: [player1Seed, player2Seed],
+              });
+              updateCount++;
+            }
+          });
+
+          if (updateCount > 0) {
+            await batch.commit();
+            console.log(`Updated ${updateCount} playoff series with seeds`);
+            return `✅ Added seeds to ${updateCount} matches`;
+          } else {
+            return "No matches needed seed updates";
+          }
+        } catch (err) {
+          console.error("Error adding seeds", err);
+          throw err;
+        }
+      }
+
+      // Add button to admin panel to trigger seed setup
+      const addSeedsBtn = document.getElementById("add-seeds-btn");
+      if (addSeedsBtn) {
+        addSeedsBtn.addEventListener("click", async () => {
+          if (
+            !confirm(
+              "Add seeds to all playoff matches based on current standings?"
+            )
+          )
+            return;
+
+          try {
+            addSeedsBtn.disabled = true;
+            addSeedsBtn.textContent = "Adding seeds...";
+            const result = await addSeedsToPlayoffSeries();
+            alert(result);
+            loadPlayoffMatches(); // Refresh the table
+          } catch (err) {
+            alert("Error: " + err.message);
+          } finally {
+            addSeedsBtn.disabled = false;
+            addSeedsBtn.textContent = "Add Seeds to Bracket";
+          }
+        });
+      }
+
+      // Reset & Initialize Bracket button
+      const resetBracketBtn = document.getElementById("reset-bracket-btn");
+      if (resetBracketBtn) {
+        resetBracketBtn.addEventListener("click", async () => {
+          if (
+            !confirm(
+              "⚠️ WARNING: This will DELETE all playoff data and create a fresh bracket!\n\n" +
+                "This will:\n" +
+                "• Delete ALL documents in playoffSeries\n" +
+                "• Delete ALL documents in playoffMatches\n" +
+                "• Create fresh Round of 32 matchups based on current standings\n\n" +
+                "Are you sure you want to continue?"
+            )
+          )
+            return;
+
+          // Double confirm
+          if (!confirm("Are you REALLY sure? This cannot be undone!")) return;
+
+          try {
+            resetBracketBtn.disabled = true;
+            resetBracketBtn.textContent = "Resetting...";
+
+            const statusDiv = document.getElementById(
+              "playoffs-finalize-status"
+            );
+            if (statusDiv) statusDiv.textContent = "Deleting existing data...";
+
+            // Step 1: Delete all playoffSeries documents
+            console.log("🗑️ Step 1: Deleting playoffSeries...");
+            const seriesRef = collection(db, "playoffSeries");
+            let seriesSnap;
+            try {
+              seriesSnap = await getDocs(seriesRef);
+              console.log(
+                `  Found ${seriesSnap.docs.length} playoffSeries documents to delete`
+              );
+            } catch (readErr) {
+              console.error("❌ Failed to READ playoffSeries:", readErr);
+              throw new Error("Cannot read playoffSeries: " + readErr.message);
+            }
+
+            let deletedSeries = 0;
+            for (const docSnap of seriesSnap.docs) {
+              try {
+                await deleteDoc(docSnap.ref);
+                deletedSeries++;
+              } catch (delErr) {
+                console.error(
+                  `❌ Failed to DELETE playoffSeries/${docSnap.id}:`,
+                  delErr
+                );
+                throw new Error(
+                  `Cannot delete playoffSeries/${docSnap.id}: ${delErr.message}`
+                );
+              }
+            }
+            console.log(`✅ Deleted ${deletedSeries} playoffSeries documents`);
+
+            // Step 2: Delete all playoffMatches documents
+            console.log("🗑️ Step 2: Deleting playoffMatches...");
+            const matchesRef = collection(db, "playoffMatches");
+            let matchesSnap;
+            try {
+              matchesSnap = await getDocs(matchesRef);
+              console.log(
+                `  Found ${matchesSnap.docs.length} playoffMatches documents to delete`
+              );
+            } catch (readErr) {
+              console.error("❌ Failed to READ playoffMatches:", readErr);
+              throw new Error("Cannot read playoffMatches: " + readErr.message);
+            }
+
+            let deletedMatches = 0;
+            for (const docSnap of matchesSnap.docs) {
+              try {
+                await deleteDoc(docSnap.ref);
+                deletedMatches++;
+              } catch (delErr) {
+                console.error(
+                  `❌ Failed to DELETE playoffMatches/${docSnap.id}:`,
+                  delErr
+                );
+                throw new Error(
+                  `Cannot delete playoffMatches/${docSnap.id}: ${delErr.message}`
+                );
+              }
+            }
+            console.log(
+              `✅ Deleted ${deletedMatches} playoffMatches documents`
+            );
+
+            if (statusDiv) statusDiv.textContent = "Creating fresh bracket...";
+
+            // Step 3: Get current standings to seed the bracket
+            console.log("📊 Step 3: Fetching standings...");
+            const pointsRef = collection(db, "points");
+            let pointsSnap;
+            try {
+              pointsSnap = await getDocs(pointsRef);
+            } catch (readErr) {
+              console.error("❌ Failed to READ points:", readErr);
+              throw new Error("Cannot read points: " + readErr.message);
+            }
+
+            const players = [];
+            pointsSnap.forEach((docSnap) => {
+              const data = docSnap.data();
+              // Log first few to see the data structure
+              if (players.length < 5) {
+                console.log(`  Player ${docSnap.id}:`, JSON.stringify(data));
+              }
+              players.push({
+                alias: docSnap.id,
+                displayName: data.displayName || docSnap.id,
+                pts: data.pts || 0, // Using 'pts' field
+              });
+            });
+
+            // Sort by points descending, then by displayName alphabetically for ties
+            players.sort((a, b) => {
+              if (b.pts !== a.pts) {
+                return b.pts - a.pts; // Higher points first
+              }
+              // Same points - sort alphabetically by displayName
+              return a.displayName
+                .toLowerCase()
+                .localeCompare(b.displayName.toLowerCase());
+            });
+            console.log(`📋 Found ${players.length} players total`);
+
+            // Log the top 10 to verify sorting
+            console.log("🏆 Top 10 by points:");
+            players.slice(0, 10).forEach((p, i) => {
+              console.log(
+                `  ${i + 1}. ${p.displayName} (${p.alias}): ${p.pts} pts`
+              );
+            });
+
+            // Create seeds (top 32, fill with BYE if needed)
+            const seeds = [];
+            for (let i = 0; i < 32; i++) {
+              if (players[i]) {
+                seeds.push({
+                  seed: i + 1,
+                  alias: players[i].alias,
+                  displayName: players[i].displayName,
+                  isBye: false,
+                });
+              } else {
+                seeds.push({
+                  seed: i + 1,
+                  alias: `BYE_${i + 1}`,
+                  displayName: "BYE",
+                  isBye: true,
+                });
+              }
+            }
+
+            console.log("🌱 Seeds created:");
+            seeds.slice(0, 10).forEach((s) => {
+              console.log(
+                `  #${s.seed}: ${s.displayName} (${s.alias})${
+                  s.isBye ? " [BYE]" : ""
+                }`
+              );
+            });
+
+            // Standard bracket pairings for 32-team tournament
+            // This ensures 1 plays 32, 2 plays 31, etc. in proper bracket order
+            const bracketPairs = [
+              [1, 32], // Match 0
+              [16, 17], // Match 1
+              [8, 25], // Match 2
+              [9, 24], // Match 3
+              [4, 29], // Match 4
+              [13, 20], // Match 5
+              [5, 28], // Match 6
+              [12, 21], // Match 7
+              [2, 31], // Match 8
+              [15, 18], // Match 9
+              [7, 26], // Match 10
+              [10, 23], // Match 11
+              [3, 30], // Match 12
+              [14, 19], // Match 13
+              [6, 27], // Match 14
+              [11, 22], // Match 15
+            ];
+
+            // Create seed lookup map
+            const seedMap = {};
+            seeds.forEach((s) => {
+              seedMap[s.seed] = s;
+            });
+
+            // Step 4: Create Round 1 (Round of 32) matchups
+            console.log("🏀 Creating Round of 32 matchups...");
+            let createdMatches = 0;
+
+            for (
+              let matchIndex = 0;
+              matchIndex < bracketPairs.length;
+              matchIndex++
+            ) {
+              const [seed1, seed2] = bracketPairs[matchIndex];
+              const player1 = seedMap[seed1];
+              const player2 = seedMap[seed2];
+
+              const matchData = {
+                round: 1,
+                matchIndex: matchIndex,
+                aliases: [player1.alias, player2.alias],
+                seeds: [seed1, seed2],
+                displayNames: [player1.displayName, player2.displayName],
+                status:
+                  player1.isBye || player2.isBye ? "completed" : "pending",
+                winnerAlias: null,
+                createdAt: serverTimestamp(),
+              };
+
+              // If one player is a BYE, auto-advance the other
+              if (player1.isBye && !player2.isBye) {
+                matchData.winnerAlias = player2.alias;
+                matchData.status = "completed";
+              } else if (player2.isBye && !player1.isBye) {
+                matchData.winnerAlias = player1.alias;
+                matchData.status = "completed";
+              }
+
+              await addDoc(seriesRef, matchData);
+              createdMatches++;
+              console.log(
+                `  ✅ Match ${matchIndex}: #${seed1} ${player1.displayName} vs #${seed2} ${player2.displayName}`
+              );
+            }
+
+            console.log(`🎉 Created ${createdMatches} Round of 32 matchups!`);
+
+            // Step 5: Auto-advance BYE winners to Round 2
+            if (statusDiv) statusDiv.textContent = "Processing BYE advances...";
+
+            // Re-fetch the series to get the document IDs
+            const newSeriesSnap = await getDocs(seriesRef);
+            for (const docSnap of newSeriesSnap.docs) {
+              const data = docSnap.data();
+              if (data.status === "completed" && data.winnerAlias) {
+                console.log(
+                  `🚀 Auto-advancing BYE winner: ${data.winnerAlias}`
+                );
+                await advanceWinnerToNextRound(db, docSnap, {
+                  winnerAlias: data.winnerAlias,
+                  winnerDisplayName: data.displayNames
+                    ? data.aliases[0] === data.winnerAlias
+                      ? data.displayNames[0]
+                      : data.displayNames[1]
+                    : data.winnerAlias,
+                });
+              }
+            }
+
+            if (statusDiv) {
+              statusDiv.textContent = `✅ Bracket reset complete! Created ${createdMatches} Round of 32 matchups.`;
+            }
+
+            alert(
+              `Bracket reset complete!\n\n` +
+                `• Deleted ${deletedSeries} old series\n` +
+                `• Deleted ${deletedMatches} old matches\n` +
+                `• Created ${createdMatches} Round of 32 matchups\n\n` +
+                `BYE winners have been auto-advanced to Round 2.`
+            );
+
+            // Refresh the admin table and bracket
+            loadPlayoffMatches();
+            startBracketListener();
+          } catch (err) {
+            console.error("Error resetting bracket:", err);
+            alert("Error resetting bracket: " + err.message);
+          } finally {
+            resetBracketBtn.disabled = false;
+            resetBracketBtn.textContent = "🔄 Reset & Initialize Bracket";
+          }
+        });
       }
 
       /**

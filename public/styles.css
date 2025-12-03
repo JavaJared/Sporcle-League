@@ -76,6 +76,26 @@ form.d-flex.gap-2 > * {
   margin-top: 4px;
 }
 
+/* ========== New Firestore-based bracket styles ========== */
+/* Override any conflicting styles for the dynamic bracket */
+#playoffs-bracket.playoff-bracket {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  gap: 40px;
+  overflow-x: auto;
+  padding: 20px;
+  align-items: flex-start;
+}
+
+#playoffs-bracket .bracket-round {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  min-width: 200px;
+  flex-shrink: 0;
+}
+
 /* Each round = one column in the Bootstrap row */
 .br-round-col {
   min-width: 200px;
@@ -151,17 +171,34 @@ form.d-flex.gap-2 > * {
     flex: 0 0 33.333%;
     max-width: 33.333%;
   }
+  /* Keep bracket-round horizontal on all screen sizes */
+  #playoffs-bracket .bracket-round {
+    min-width: 180px;
+    flex-shrink: 0;
+  }
 }
 @media (max-width: 768px) {
   #playoffs-bracket .br-round-col {
     flex: 0 0 50%;
     max-width: 50%;
   }
+  #playoffs-bracket .bracket-round {
+    min-width: 160px;
+    flex-shrink: 0;
+  }
 }
 @media (max-width: 576px) {
   #playoffs-bracket .br-round-col {
     flex: 0 0 100%;
     max-width: 100%;
+  }
+  /* For new bracket system, keep horizontal layout with scroll */
+  #playoffs-bracket.playoff-bracket {
+    flex-wrap: nowrap !important;
+  }
+  #playoffs-bracket .bracket-round {
+    min-width: 150px;
+    flex-shrink: 0;
   }
 }
 
