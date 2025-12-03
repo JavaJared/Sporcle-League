@@ -1270,8 +1270,13 @@
             playoffJoinStatus.textContent = "Playoffs are not finalized yet.";
             return;
           }
-          const alias = playoffAliasInput.value.trim();
-          if (!alias) return;
+
+          const raw = playoffAliasInput.value.trim();
+          if (!raw) {
+            playoffJoinStatus.textContent = "Please enter your alias.";
+            return;
+          }
+          const alias = raw.toLowerCase();
 
           try {
             playoffJoinStatus.textContent =
@@ -1285,23 +1290,25 @@
 
             const series = matchDoc.data();
             const clientId = getOrCreateHeadToHeadClientId();
-            const displayName =
-              series.higherAlias === alias
-                ? series.higherDisplayName
-                : series.lowerDisplayName;
+
+            const isHigher = series.higherAlias === alias;
+            const myDisplayName = isHigher
+              ? series.higherDisplayName || series.higherAlias
+              : series.lowerDisplayName || series.lowerAlias;
+
+            const oppAlias = isHigher ? series.lowerAlias : series.higherAlias;
+            const oppDisplayName = isHigher
+              ? series.lowerDisplayName || series.lowerAlias
+              : series.higherDisplayName || series.higherAlias;
 
             playoffYouData = {
               alias,
-              displayName,
+              displayName: myDisplayName,
               clientId,
               matchId: matchDoc.id,
             };
 
-            playoffJoinStatus.textContent = `Joining playoff match vs ${
-              alias === series.higherAlias
-                ? series.lowerDisplayName
-                : series.higherDisplayName
-            }...`;
+            playoffJoinStatus.textContent = `Joining playoff match vs ${oppDisplayName}...`;
 
             await joinPlayoffQueue(db, matchDoc, playoffYouData);
           } catch (err) {
@@ -1416,7 +1423,7 @@
 
         // Find myself and an opponent
         const all = snap.docs;
-        const meDoc = all.find((d) => d.data().alias === myData.alias);
+        const meDoc = all.find((d) => (d.data() || {}).alias === myData.alias);
         if (!meDoc) return; // my queue write not visible yet
 
         let oppDoc = null;
@@ -1438,9 +1445,41 @@
 
         const quizUrl = await getRandomPlayoffQuizUrl(db);
 
-        const isMyHigher = series.higherAlias === myData.alias;
-        const playerA = isMyHigher ? myData : oppData;
-        const playerB = isMyHigher ? oppData : myData;
+        const higherAlias = series.higherAlias;
+        const lowerAlias = series.lowerAlias;
+        const higherName = series.higherDisplayName || higherAlias;
+        const lowerName = series.lowerDisplayName || lowerAlias;
+
+        const isMyHigher = myData.alias === higherAlias;
+
+        let playerA;
+        let playerB;
+
+        if (isMyHigher) {
+          // You are the higher seed (playerA)
+          playerA = {
+            clientId: myData.clientId,
+            alias: higherAlias,
+            displayName: higherName,
+          };
+          playerB = {
+            clientId: oppData.clientId,
+            alias: lowerAlias,
+            displayName: lowerName,
+          };
+        } else {
+          // You are the lower seed (playerB)
+          playerA = {
+            clientId: oppData.clientId,
+            alias: higherAlias,
+            displayName: higherName,
+          };
+          playerB = {
+            clientId: myData.clientId,
+            alias: lowerAlias,
+            displayName: lowerName,
+          };
+        }
 
         const batch = writeBatch(db);
 
@@ -1468,7 +1507,7 @@
           loserAlias: null,
           tie: false,
           resolvedAt: null,
-          vetoAllowedForAlias: series.higherAlias,
+          vetoAllowedForAlias: higherAlias,
           vetoUsed: false,
           vetoUsedByAlias: null,
         });
