@@ -1493,6 +1493,8 @@
         const lowerDisplayName =
           lowerAlias === myAlias ? myDisplayName : oppDisplayName;
 
+        const isHigher = myAlias === higherAlias;
+
         // Get a quiz URL (will be shown only to higher seed initially)
         const quizUrl = await getRandomPlayoffQuizUrl(db);
 
@@ -1505,13 +1507,13 @@
 
           higherAlias: higherAlias,
           higherDisplayName: higherDisplayName,
-          higherClientId: higherAlias === myAlias ? clientId : null,
-          higherJoined: higherAlias === myAlias,
+          higherClientId: isHigher ? clientId : null,
+          higherJoined: isHigher,
 
           lowerAlias: lowerAlias,
           lowerDisplayName: lowerDisplayName,
-          lowerClientId: lowerAlias === myAlias ? clientId : null,
-          lowerJoined: lowerAlias === myAlias,
+          lowerClientId: !isHigher ? clientId : null,
+          lowerJoined: !isHigher,
 
           quizUrl: quizUrl,
           vetoDecisionMade: false,
@@ -1525,12 +1527,23 @@
         };
 
         try {
-          await setDoc(matchRef, matchData);
+          // Use a transaction to create match and update series atomically
+          await runTransaction(db, async (transaction) => {
+            // Check if match already exists
+            const matchSnap = await transaction.get(matchRef);
+            if (matchSnap.exists()) {
+              // Someone else already created it, just return
+              return;
+            }
 
-          // Update series status
-          await updateDoc(doc(collection(db, "playoffSeries"), seriesId), {
-            status: "active",
-            matchId: matchRef.id,
+            // Create the match
+            transaction.set(matchRef, matchData);
+
+            // Update series status
+            transaction.update(doc(collection(db, "playoffSeries"), seriesId), {
+              status: "active",
+              matchId: matchRef.id,
+            });
           });
 
           playoffJoinStatus.textContent =
@@ -1539,8 +1552,17 @@
           // Start listening
           listenToPlayoffMatch(db, matchRef, seriesDoc, myAlias, myDisplayName);
         } catch (err) {
-          console.error("Error creating playoff match", err);
-          playoffJoinStatus.textContent = "Error creating match.";
+          if (err.code === "permission-denied") {
+            console.error(
+              "Permission denied creating playoff match. Check Firestore rules."
+            );
+            playoffJoinStatus.textContent =
+              "Permission denied. Please sign in as admin or check Firestore rules.";
+          } else {
+            console.error("Error creating playoff match", err);
+            playoffJoinStatus.textContent =
+              "Error creating match: " + err.message;
+          }
         }
       }
 
@@ -2000,27 +2022,6 @@
         }
 
         return choice;
-      }
-
-      function formatSecondsAsMMSS(totalSeconds) {
-        const s = Math.max(0, Math.floor(totalSeconds || 0));
-        const m = Math.floor(s / 60);
-        const sec = s % 60;
-        const mm = String(m).padStart(2, "0");
-        const ss = String(sec).padStart(2, "0");
-        return `${mm}:${ss}`;
-      }
-
-      function getOrCreateHeadToHeadClientId() {
-        const key = "h2hClientId";
-        const existing = window.localStorage.getItem(key);
-        if (existing) return existing;
-        const newId =
-          "h2h_" +
-          Math.random().toString(36).slice(2) +
-          Date.now().toString(36);
-        window.localStorage.setItem(key, newId);
-        return newId;
       }
 
       async function getRandomQuizUrl(db) {
