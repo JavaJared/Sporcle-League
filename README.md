@@ -256,7 +256,7 @@ This project was created for educational purposes as part of a web development c
 
 ## Author
 
-Jared Kramer
+Jared Ellis
 
 ## Acknowledgments
 
