@@ -1,21 +1,89 @@
-// ==============================
-// Daily Scoreboard - app.js
-// Frontend for shared Firestore app with admin UI
-// ==============================
+/**
+ * Sporcle League - Main Application Logic
+ * Handles the frontend UI for the daily quiz scoreboard, season standings,
+ * championship awards, and admin functionality.
+ */
 (function waitForFirebase() {
   if (window.shared && window.shared.listenToday && window.authHelpers) {
-    console.log("✅ Firebase ready, initializing app");
+    console.log("Firebase ready, initializing app");
     initApp();
   } else {
     setTimeout(waitForFirebase, 100);
   }
 })();
+
 function initApp() {
   var __isAdmin = false;
   var _latestTodayRows = [];
 
-  // ---------- UI helpers ----------
+  // Championship winners by alias (lowercase)
+  // Each entry maps to an array of { season, type } objects
+  // Types: 'commissioner' (most points), 'cup' (playoff winner),
+  //        'h2h' (most H2H wins), 'highs' (most first places)
+  var champions = {
+    grifjom: [
+      { season: 1, type: "commissioner" },
+      { season: 1, type: "cup" },
+    ],
+    winkmax: [{ season: 1, type: "h2h" }],
+    moghosh: [{ season: 1, type: "highs" }],
+  };
 
+  // Badge display configuration for each award type
+  var badgeStyles = {
+    commissioner: {
+      emoji: "🏆",
+      label: "CT",
+      title: "Commissioner's Trophy",
+      className: "badge-commissioner",
+    },
+    cup: {
+      emoji: "🥇",
+      label: "SC",
+      title: "Sporcle Cup",
+      className: "badge-cup",
+    },
+    h2h: {
+      emoji: "👹",
+      label: "H2H",
+      title: "Head to Head Demon",
+      className: "badge-h2h",
+    },
+    highs: {
+      emoji: "⭐",
+      label: "HH",
+      title: "Highest Highs",
+      className: "badge-highs",
+    },
+  };
+
+  // Generate badge HTML for a player based on their championships
+  function getChampionBadges(alias) {
+    var aliasLower = String(alias || "").toLowerCase();
+    var titles = champions[aliasLower];
+    if (!titles || titles.length === 0) return "";
+
+    var badges = "";
+    titles.forEach(function (title) {
+      var style = badgeStyles[title.type];
+      if (!style) return;
+      var fullTitle = style.title + " - Season " + title.season;
+      badges +=
+        '<span class="champion-badge ' +
+        style.className +
+        '" title="' +
+        fullTitle +
+        '">' +
+        style.emoji +
+        "</span>";
+    });
+    return badges;
+  }
+
+  // Expose globally for use in H2H standings
+  window.getChampionBadges = getChampionBadges;
+
+  // UI helper functions
   function setStatus(text, kind) {
     var el = document.getElementById("status");
     if (!el) return;
@@ -25,6 +93,7 @@ function initApp() {
     else if (kind === "warn") color = "#f59e0b";
     el.style.color = color;
   }
+
   function escapeHtml(str) {
     return String(str).replace(/[&<>\"']/g, function (s) {
       return {
@@ -36,6 +105,7 @@ function initApp() {
       }[s];
     });
   }
+
   function parseFraction(input) {
     var m = String(input || "")
       .trim()
@@ -46,19 +116,21 @@ function initApp() {
     if (!Number.isFinite(num) || !Number.isFinite(den) || den <= 0) return null;
     return { num: num, den: den };
   }
-  function sortToday(rows) {
-    return rows.slice().sort(function (a, b) {
-      if (b.ratio !== a.ratio) return b.ratio - a.ratio;
-      if (b.num !== a.num) return b.num - a.num;
-      return String(a.name).localeCompare(String(b.name));
-    });
+
+  function titleCase(str) {
+    return String(str || "")
+      .split(/\s+/)
+      .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+      .join(" ");
   }
 
-  // ---------- Renderers ----------
+  // Render today's standings table
+  // Sorted by: ratio (desc), time left (desc), num correct (desc), name (asc)
   function renderStandingsFromShared(rows) {
     const tbody = document.getElementById("standings-body");
     const empty = document.getElementById("empty-standings");
     tbody.innerHTML = "";
+
     if (!rows || rows.length === 0) {
       if (empty) empty.classList.remove("hidden");
       return;
@@ -67,6 +139,9 @@ function initApp() {
 
     rows.sort((a, b) => {
       if (b.ratio !== a.ratio) return b.ratio - a.ratio;
+      const timeA = a.timeLeft || 0;
+      const timeB = b.timeLeft || 0;
+      if (timeB !== timeA) return timeB - timeA;
       if (b.num !== a.num) return b.num - a.num;
       return String(a.displayName || "").localeCompare(
         String(b.displayName || "")
@@ -78,39 +153,49 @@ function initApp() {
         e.displayName && e.displayName.trim()
           ? e.displayName.trim()
           : titleCase(e.alias);
+
+      const timeLeft = e.timeLeft || 0;
+      const mins = Math.floor(timeLeft / 60);
+      const secs = timeLeft % 60;
+      const timeDisplay =
+        timeLeft > 0 ? `${mins}:${secs.toString().padStart(2, "0")}` : "-";
+      const badges = getChampionBadges(e.alias);
+
       const tr = document.createElement("tr");
       tr.innerHTML = `
-      <td><span class="badge">${i + 1}</span></td>
-      <td>${escapeHtml(shown)}</td>
-      <td>${e.num}/${e.den}</td>
-      <td>${(e.ratio * 100).toFixed(2)}%</td>
-      ${
-        __isAdmin
-          ? `<td>
-          <button class="btn ghost act-edit" data-alias="${escapeHtml(
-            e.alias
-          )}" data-display-name="${escapeHtml(shown)}">Edit</button>
-          <button class="btn danger act-del" data-alias="${escapeHtml(
-            e.alias
-          )}">Delete</button>
-        </td>`
-          : "<td></td>"
-      } `;
+        <td><span class="badge">${i + 1}</span></td>
+        <td>${escapeHtml(shown)}${badges}</td>
+        <td>${e.num}/${e.den}</td>
+        <td>${(e.ratio * 100).toFixed(2)}%</td>
+        <td>${timeDisplay}</td>
+        ${
+          __isAdmin
+            ? `<td>
+              <button class="btn ghost act-edit" data-alias="${escapeHtml(
+                e.alias
+              )}" data-display-name="${escapeHtml(shown)}">Edit</button>
+              <button class="btn danger act-del" data-alias="${escapeHtml(
+                e.alias
+              )}">Delete</button>
+            </td>`
+            : "<td></td>"
+        }`;
       tbody.appendChild(tr);
     });
   }
 
+  // Render season standings (cumulative points)
   function renderPointsFromShared(rows) {
     const tbody = document.getElementById("points-body");
     const empty = document.getElementById("empty-points");
     tbody.innerHTML = "";
+
     if (!rows.length) {
       empty.classList.remove("hidden");
       return;
     }
     empty.classList.add("hidden");
 
-    // sort by points, then name (prefer displayName)
     rows.sort(
       (a, b) =>
         b.pts - a.pts ||
@@ -121,81 +206,158 @@ function initApp() {
       const shown =
         r.displayName && r.displayName.trim()
           ? r.displayName.trim()
-          : titleCase(r.alias); // fallback only if displayName missing
+          : titleCase(r.alias);
+      const badges = getChampionBadges(r.alias);
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
-      <td><span class="badge">${i + 1}</span></td>
-      <td>${escapeHtml(shown)}</td>
-      <td>${r.pts}</td>`;
+        <td><span class="badge">${i + 1}</span></td>
+        <td>${escapeHtml(shown)}${badges}</td>
+        <td>${r.pts}</td>`;
       tbody.appendChild(tr);
     });
   }
 
-  function titleCase(str) {
-    return String(str || "")
-      .split(/\s+/)
-      .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-      .join(" ");
-  }
+  // Season awards data - populated with each season's winners
+  var seasonAwards = {
+    1: {
+      commissionersTrophy: {
+        alias: "grifjom",
+        displayName: "Josh",
+        stat: "234 points",
+      },
+      sporcleCup: {
+        alias: "grifjom",
+        displayName: "Josh",
+        stat: "Playoff Champion",
+      },
+      h2hDemon: {
+        alias: "winkmax",
+        displayName: "Max",
+        stat: "107 wins",
+      },
+      highestHighs: {
+        alias: "moghosh",
+        displayName: "Moon",
+        stat: "12 first places",
+      },
+    },
+  };
 
-  function renderFame(rows) {
-    var body = document.getElementById("fame-body");
+  // Award type metadata for rendering
+  var awardTypes = {
+    commissionersTrophy: {
+      icon: "🏆",
+      title: "Commissioner's Trophy",
+      description: "Most points in the regular season",
+      cardClass: "commissioners-trophy",
+    },
+    sporcleCup: {
+      icon: "🥇",
+      title: "Sporcle Cup",
+      description: "Playoff champion",
+      cardClass: "sporcle-cup",
+    },
+    h2hDemon: {
+      icon: "👹",
+      title: "Head to Head Demon",
+      description: "Most Head to Head victories",
+      cardClass: "h2h-demon",
+    },
+    highestHighs: {
+      icon: "⭐",
+      title: "Highest Highs",
+      description: "Most first places on daily quizzes",
+      cardClass: "highest-highs",
+    },
+  };
+
+  // Render Hall of Champions awards cards
+  function renderAwards(season) {
+    var container = document.getElementById("awards-container");
     var empty = document.getElementById("empty-fame");
-    if (!body) return;
-    body.innerHTML = "";
-    var list = rows
-      .slice()
-      .sort(function (a, b) {
-        return (
-          (b.firsts || 0) - (a.firsts || 0) ||
-          (a.displayName || a.alias).localeCompare(b.displayName || b.alias)
-        );
-      })
-      .slice(0, 10);
-    if (!list.length) {
-      if (empty) empty.classList.remove("hidden");
+    if (!container) return;
+
+    var awards = seasonAwards[season];
+    if (!awards) {
+      container.innerHTML = "";
+      if (empty) empty.classList.remove("d-none");
       return;
     }
-    if (empty) empty.classList.add("hidden");
-    for (var i = 0; i < list.length; i++) {
-      var r = list[i];
-      var shown =
-        r.displayName && r.displayName.trim()
-          ? r.displayName.trim()
-          : titleCase(r.alias);
-      var tr = document.createElement("tr");
-      tr.innerHTML =
-        '<td><span class="badge">' +
-        (i + 1) +
-        "</span></td><td>" +
-        escapeHtml(shown) +
-        "</td><td>" +
-        (r.firsts || 0) +
-        "</td>";
-      body.appendChild(tr);
+    if (empty) empty.classList.add("d-none");
+
+    var html = "";
+    var awardOrder = [
+      "commissionersTrophy",
+      "sporcleCup",
+      "h2hDemon",
+      "highestHighs",
+    ];
+
+    awardOrder.forEach(function (awardKey) {
+      var award = awards[awardKey];
+      var meta = awardTypes[awardKey];
+      if (!award || !meta) return;
+
+      var winnerName = award.displayName || titleCase(award.alias) || "TBD";
+
+      html += '<div class="col-md-6 col-lg-3">';
+      html += '<div class="award-card ' + meta.cardClass + '">';
+      html += '<span class="award-icon">' + meta.icon + "</span>";
+      html += '<div class="award-title">' + meta.title + "</div>";
+      html += '<div class="award-description">' + meta.description + "</div>";
+      html += '<div class="award-winner">' + escapeHtml(winnerName) + "</div>";
+      html +=
+        '<div class="award-stat">' + escapeHtml(award.stat || "") + "</div>";
+      html += "</div></div>";
+    });
+
+    container.innerHTML = html;
+  }
+
+  // Initialize season selector dropdown
+  var seasonSelector = document.getElementById("season-selector");
+  if (seasonSelector) {
+    var seasons = Object.keys(seasonAwards).sort((a, b) => b - a);
+    seasonSelector.innerHTML = "";
+    seasons.forEach(function (s) {
+      var opt = document.createElement("option");
+      opt.value = s;
+      opt.textContent = "Season " + s;
+      seasonSelector.appendChild(opt);
+    });
+
+    seasonSelector.addEventListener("change", function () {
+      renderAwards(parseInt(this.value, 10));
+    });
+
+    if (seasons.length > 0) {
+      renderAwards(parseInt(seasons[0], 10));
     }
   }
 
+  // Render Wall of Shame (most last places)
   function renderShame(rows) {
     var body = document.getElementById("shame-body");
     var empty = document.getElementById("empty-shame");
     if (!body) return;
     body.innerHTML = "";
+
     var list = rows
       .slice()
-      .sort(function (a, b) {
-        return (
+      .sort(
+        (a, b) =>
           (b.lasts || 0) - (a.lasts || 0) ||
           (a.displayName || a.alias).localeCompare(b.displayName || b.alias)
-        );
-      })
+      )
       .slice(0, 10);
+
     if (!list.length) {
       if (empty) empty.classList.remove("hidden");
       return;
     }
     if (empty) empty.classList.add("hidden");
+
     for (var i = 0; i < list.length; i++) {
       var r = list[i];
       var shown =
@@ -206,56 +368,18 @@ function initApp() {
       tr.innerHTML =
         '<td><span class="badge">' +
         (i + 1) +
-        "</span></td><td>" +
+        "</span></td>" +
+        "<td>" +
         escapeHtml(shown) +
-        "</td><td>" +
+        "</td>" +
+        "<td>" +
         (r.lasts || 0) +
         "</td>";
       body.appendChild(tr);
     }
   }
 
-  // ---------- Form submit ----------
-  var form = document.getElementById("entry-form");
-  if (form) {
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      var nameEl = document.getElementById("name");
-      var aliasEl = document.getElementById("alias");
-      var fracEl = document.getElementById("fraction");
-
-      var displayName = nameEl ? nameEl.value.trim() : "";
-      var alias = aliasEl ? aliasEl.value.trim() : "";
-      var fraction = fracEl ? fracEl.value.trim() : "";
-
-      if (!displayName) return setStatus("Name required", "warn");
-      if (!alias) return setStatus("Alias required", "warn");
-      var parsed = parseFraction(fraction);
-      if (!parsed) return setStatus("Enter like 7/9", "warn");
-
-      var ratio = parsed.num / parsed.den;
-      window.shared
-        .submitScore({
-          alias,
-          displayName,
-          num: parsed.num,
-          den: parsed.den,
-          ratio,
-        })
-        .then(function () {
-          setStatus("Saved entry for today", "ok");
-          if (fracEl) {
-            fracEl.value = "";
-            fracEl.focus();
-          }
-        })
-        .catch(function (err) {
-          setStatus(err && err.message ? err.message : "Save failed", "warn");
-        });
-    });
-  }
-
-  // ---------- Live listeners from Firestore ----------
+  // Set up Firestore listeners for real-time data
   if (window.shared) {
     if (typeof window.shared.listenToday === "function") {
       window.shared.listenToday((snap) => {
@@ -276,28 +400,19 @@ function initApp() {
             lasts: x.lasts || 0,
           };
         });
-
-        renderPointsFromShared(rows); // existing leaderboard
-        renderFame(rows); // new
-        renderShame(rows); // new
+        renderPointsFromShared(rows);
+        renderShame(rows);
         renderPlayoffsBracketSimple(rows);
       });
     }
   }
 
-  // ---------- Admin UI ----------
-  var adminPanel = document.getElementById("admin-panel");
-  var btnIn = document.getElementById("admin-signin");
-  var btnOut = document.getElementById("admin-signout");
-  var btnGrant = document.getElementById("grant-admin");
-
+  // Admin UI management
   async function refreshAdminUI() {
-    // Always keep standings rendering
     function finish() {
       renderStandingsFromShared(_latestTodayRows || []);
     }
 
-    // If auth helpers not ready, just bail quietly
     if (
       !window.authHelpers ||
       typeof window.authHelpers.getIdTokenResult !== "function"
@@ -306,7 +421,6 @@ function initApp() {
       return;
     }
 
-    // Look up DOM elements inside the function (no TDZ issues)
     const adminTabBtn = document.querySelector('.tab-btn[data-tab="admin"]');
     const adminPanel = document.getElementById("admin-panel");
     const btnIn = document.getElementById("admin-signin-btn");
@@ -317,19 +431,15 @@ function initApp() {
     try {
       let res;
       try {
-        // This can throw if there is no current user – we treat that as "not admin"
         res = await window.authHelpers.getIdTokenResult();
       } catch (e) {
-        // No user / getIdToken of null → treat as signed-out, do NOT log an error
         __isAdmin = false;
-
         if (adminTabBtn) adminTabBtn.classList.add("hidden");
         if (adminPanel) adminPanel.classList.add("hidden");
         if (btnIn) btnIn.classList.remove("hidden");
         if (btnOut) btnOut.classList.add("hidden");
         if (btnGrant) btnGrant.classList.add("hidden");
         if (quizAdmin) quizAdmin.classList.add("hidden");
-
         finish();
         return;
       }
@@ -338,10 +448,7 @@ function initApp() {
       const isAdmin = !!claims.admin;
       __isAdmin = isAdmin;
 
-      const provider =
-        claims.firebase && claims.firebase.sign_in_provider
-          ? claims.firebase.sign_in_provider
-          : null;
+      const provider = claims.firebase?.sign_in_provider || null;
 
       if (adminTabBtn) adminTabBtn.classList.toggle("hidden", !isAdmin);
       if (adminPanel) adminPanel.classList.toggle("hidden", !isAdmin);
@@ -352,12 +459,10 @@ function initApp() {
       if (btnGrant) btnGrant.classList.toggle("hidden", !showGrant);
 
       if (quizAdmin) {
-        if (isAdmin) quizAdmin.classList.remove("hidden");
-        else quizAdmin.classList.add("hidden");
+        quizAdmin.classList.toggle("hidden", !isAdmin);
       }
     } catch (e) {
-      // Any other unexpected error – log once but fail gracefully
-      console.error("refreshAdminUI unexpected error:", e);
+      console.error("refreshAdminUI error:", e);
       if (adminPanel) adminPanel.classList.add("hidden");
       if (btnIn) btnIn.classList.remove("hidden");
       if (btnOut) btnOut.classList.add("hidden");
@@ -368,7 +473,7 @@ function initApp() {
     finish();
   }
 
-  // React to auth changes
+  // Listen for auth state changes
   if (window.authHelpers && typeof window.authHelpers.onChange === "function") {
     window.authHelpers.onChange(function () {
       refreshAdminUI();
@@ -376,93 +481,7 @@ function initApp() {
   }
   refreshAdminUI();
 
-  // Admin sign in
-  if (btnIn) {
-    btnIn.addEventListener("click", async () => {
-      try {
-        await window.authHelpers.signInAsAdmin();
-        await refreshAdminUI();
-      } catch (e) {
-        setStatus(e.message || "Sign in failed", "warn");
-      }
-    });
-  }
-
-  // Admin sign out
-  if (btnOut) {
-    btnOut.addEventListener("click", function () {
-      if (
-        !window.authHelpers ||
-        typeof window.authHelpers.signOut !== "function"
-      )
-        return;
-      window.authHelpers.signOut().then(function () {
-        location.reload();
-      });
-    });
-  }
-
-  // Grant admin once (only works if your email is allow listed in functions)
-  if (btnGrant) {
-    btnGrant.addEventListener("click", function () {
-      if (!window.shared || typeof window.shared.makeAdmin !== "function")
-        return;
-      window.shared
-        .makeAdmin()
-        .then(function (res) {
-          var ok = res && res.data && res.data.ok;
-          if (ok) {
-            setStatus("Admin granted", "ok");
-            refreshAdminUI();
-          } else {
-            setStatus("Grant failed", "warn");
-          }
-        })
-        .catch(function (e) {
-          setStatus(e && e.message ? e.message : "Grant failed", "warn");
-        });
-    });
-  }
-
-  window.refreshAdminUI = function (isAdmin) {
-    // Quiz form toggle
-    var quizForm = document.getElementById("quiz-form");
-    if (quizForm) quizForm.classList.toggle("d-none", !isAdmin);
-
-    // Admin buttons (if you have them)
-    var adminSigninBtn = document.getElementById("admin-signin");
-    var adminSignoutBtn = document.getElementById("admin-signout");
-    var grantAdminBtn = document.getElementById("grant-admin");
-    if (adminSigninBtn) adminSigninBtn.classList.toggle("d-none", !!isAdmin);
-    if (adminSignoutBtn) adminSignoutBtn.classList.toggle("d-none", !isAdmin);
-    if (grantAdminBtn) grantAdminBtn.classList.toggle("d-none", !!isAdmin);
-
-    // Safely toggle the Actions column header
-    var actionsTh =
-      document.getElementById("standings-actions-th") ||
-      (function () {
-        var body = document.getElementById("standings-body");
-        if (!body) return null;
-        var table = body.closest("table");
-        if (!table) return null;
-        var ths = table.querySelectorAll("thead th");
-        return ths.length ? ths[ths.length - 1] : null; // fallback: last th
-      })();
-
-    if (actionsTh) actionsTh.style.display = isAdmin ? "" : "none";
-
-    // Safely toggle all Actions cells
-    var actionTds = document.querySelectorAll(
-      "#standings-body td.actions-cell"
-    );
-    if (actionTds && actionTds.forEach) {
-      actionTds.forEach(function (td) {
-        td.style.display = isAdmin ? "" : "none";
-      });
-    }
-  };
-
-  // Inside initApp()
+  // Admin sign in/out buttons
   var adminSignin = document.getElementById("admin-signin");
   var adminSignout = document.getElementById("admin-signout");
 
@@ -486,23 +505,21 @@ function initApp() {
     });
   }
 
-  // ---------- Admin actions ----------
-  // Quiz link display + admin form
+  // Quiz link display - updates when admin sets a new quiz URL
   const quizDisplay = document.getElementById("quiz-link-display");
   const quizForm = document.getElementById("quiz-form");
-  const quizAdmin = document.getElementById("quiz-admin");
 
-  // Listen for changes in Firestore
   window.shared.listenQuizLink((snap) => {
     const data = snap.data();
     if (data && data.url) {
-      quizDisplay.innerHTML = `<a href="${data.url}" target="_blank" style="color:#60a5fa;text-decoration:underline;">${data.url}</a>`;
+      quizDisplay.href = data.url;
+      quizDisplay.textContent = "▶ Play This Quiz";
+      quizDisplay.classList.remove("d-none");
     } else {
-      quizDisplay.textContent = "No quiz link posted yet.";
+      quizDisplay.classList.add("d-none");
     }
   });
 
-  // Allow admin to submit new quiz link
   if (quizForm) {
     quizForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -514,6 +531,7 @@ function initApp() {
     });
   }
 
+  // Admin action buttons
   var finishBtn = document.getElementById("finish-day");
   if (finishBtn) {
     finishBtn.addEventListener("click", function () {
@@ -523,12 +541,8 @@ function initApp() {
         return;
       window.shared
         .finishDay()
-        .then(function () {
-          setStatus("Awarded points", "ok");
-        })
-        .catch(function (e) {
-          setStatus(e && e.message ? e.message : "Permission denied", "warn");
-        });
+        .then(() => setStatus("Awarded points", "ok"))
+        .catch((e) => setStatus(e?.message || "Permission denied", "warn"));
     });
   }
 
@@ -540,47 +554,36 @@ function initApp() {
         return;
       window.shared
         .resetScores()
-        .then(function () {
-          setStatus("All points reset", "ok");
-        })
-        .catch(function (e) {
-          setStatus(e && e.message ? e.message : "Permission denied", "warn");
-        });
+        .then(() => setStatus("All points reset", "ok"))
+        .catch((e) => setStatus(e?.message || "Permission denied", "warn"));
     });
   }
 
+  // Table row edit/delete handlers
   var standingsTable = document.getElementById("standings-body");
   if (standingsTable) {
     standingsTable.addEventListener("click", function (ev) {
       var t = ev.target;
       if (!t || !t.classList) return;
 
-      // DELETE
       if (t.classList.contains("act-del")) {
         var alias = t.getAttribute("data-alias") || "";
         if (!__isAdmin) return setStatus("Admins only", "warn");
-        if (!confirm('Delete today’s entry for alias "' + alias + '"?')) return;
+        if (!confirm("Delete today's entry for alias \"" + alias + '"?'))
+          return;
         window.shared
           .deleteEntry(alias)
-          .then(function () {
-            setStatus("Entry deleted", "ok");
-          })
-          .catch(function (e) {
-            setStatus(e && e.message ? e.message : "Delete failed", "warn");
-          });
+          .then(() => setStatus("Entry deleted", "ok"))
+          .catch((e) => setStatus(e?.message || "Delete failed", "warn"));
         return;
       }
 
-      // EDIT
       if (t.classList.contains("act-edit")) {
         var oldAlias = t.getAttribute("data-alias") || "";
         var currentName = t.getAttribute("data-display-name") || "";
         if (!__isAdmin) return setStatus("Admins only", "warn");
 
-        var newAlias = prompt(
-          "Alias (immutable ID) — change only if needed:",
-          oldAlias
-        );
+        var newAlias = prompt("Alias (immutable ID):", oldAlias);
         if (newAlias === null) return;
         newAlias = newAlias.trim();
         if (!newAlias) return setStatus("Alias required", "warn");
@@ -606,38 +609,13 @@ function initApp() {
             num: parsed.num,
             den: parsed.den,
           })
-          .then(function () {
-            setStatus("Entry updated", "ok");
-          })
-          .catch(function (e) {
-            setStatus(e && e.message ? e.message : "Update failed", "warn");
-          });
+          .then(() => setStatus("Entry updated", "ok"))
+          .catch((e) => setStatus(e?.message || "Update failed", "warn"));
       }
     });
   }
 
-  var migrateForm = document.getElementById("alias-migrate-form");
-  if (migrateForm) {
-    migrateForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-      if (!__isAdmin) return setStatus("Admins only", "warn");
-      var oldId = document.getElementById("old-id").value.trim();
-      var newAlias = document.getElementById("new-alias").value.trim();
-      var newDN = document.getElementById("new-dn").value.trim();
-      if (!oldId || !newAlias)
-        return setStatus("Old id and new alias required", "warn");
-
-      window.shared
-        .adminMovePoints({ oldId, newAlias, newDisplayName: newDN })
-        .then(function () {
-          setStatus("Alias migration complete", "ok");
-        })
-        .catch(function (e) {
-          setStatus(e && e.message ? e.message : "Migration failed", "warn");
-        });
-    });
-  }
-
+  // Admin forms for managing points/finishes
   var delForm = document.getElementById("delete-points-form");
   if (delForm) {
     delForm.addEventListener("submit", function (e) {
@@ -670,17 +648,35 @@ function initApp() {
           docId: docId,
           mode: mode,
           value: value,
-          displayName: dn || undefined, // optional
+          displayName: dn || undefined,
         })
-        .then(function () {
-          setStatus("Points updated", "ok");
-        })
-        .catch(function (e) {
-          setStatus(e && e.message ? e.message : "Update failed", "warn");
-        });
+        .then(() => setStatus("Points updated", "ok"))
+        .catch((e) => setStatus(e?.message || "Update failed", "warn"));
     });
   }
 
+  var fForm = document.getElementById("finishes-edit-form");
+  if (fForm) {
+    fForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (!__isAdmin) return setStatus("Admins only", "warn");
+      var docId = document.getElementById("fe-docid").value.trim();
+      var mode = document.getElementById("fe-mode").value;
+      var firsts = document.getElementById("fe-firsts").value.trim();
+      var lasts = document.getElementById("fe-lasts").value.trim();
+
+      var payload = { docId: docId, mode: mode };
+      if (firsts !== "") payload.firsts = Number(firsts);
+      if (lasts !== "") payload.lasts = Number(lasts);
+
+      window.shared
+        .adminUpdateFinishes(payload)
+        .then(() => setStatus("Finishes updated", "ok"))
+        .catch((e) => setStatus(e?.message || "Update failed", "warn"));
+    });
+  }
+
+  // Tab navigation system
   (function tabsInit() {
     var nav = document.getElementById("tabs");
     if (!nav) return;
@@ -706,28 +702,27 @@ function initApp() {
       try {
         localStorage.setItem(LS_KEY, key);
       } catch (e) {}
-      if (location.hash !== "#" + key)
+      if (location.hash !== "#" + key) {
         history.replaceState(null, "", "#" + key);
+      }
     }
 
     function pickInitial() {
       var fromHash = (location.hash || "").replace("#", "");
       if (
         fromHash &&
-        buttons.some(function (b) {
-          return b.getAttribute("data-tab") === fromHash;
-        })
-      )
+        buttons.some((b) => b.getAttribute("data-tab") === fromHash)
+      ) {
         return fromHash;
+      }
       try {
         var fromLS = localStorage.getItem(LS_KEY);
         if (
           fromLS &&
-          buttons.some(function (b) {
-            return b.getAttribute("data-tab") === fromLS;
-          })
-        )
+          buttons.some((b) => b.getAttribute("data-tab") === fromLS)
+        ) {
           return fromLS;
+        }
       } catch (e) {}
       return "today";
     }
@@ -744,79 +739,7 @@ function initApp() {
     showTab(pickInitial());
   })();
 
-  var fForm = document.getElementById("finishes-edit-form");
-  if (fForm) {
-    fForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-      if (!__isAdmin) return setStatus("Admins only", "warn");
-      var docId = document.getElementById("fe-docid").value.trim();
-      var mode = document.getElementById("fe-mode").value;
-      var firsts = document.getElementById("fe-firsts").value.trim();
-      var lasts = document.getElementById("fe-lasts").value.trim();
-
-      var payload = { docId: docId, mode: mode };
-      if (firsts !== "") payload.firsts = Number(firsts);
-      if (lasts !== "") payload.lasts = Number(lasts);
-
-      window.shared
-        .adminUpdateFinishes(payload)
-        .then(function () {
-          setStatus("Finishes updated", "ok");
-        })
-        .catch(function (e) {
-          setStatus(e && e.message ? e.message : "Update failed", "warn");
-        });
-    });
-  }
-
-  /*(function themeInit() {
-    const key = "theme_scheme";
-    const LIGHT = document.getElementById("theme-light");
-    const DARK = document.getElementById("theme-dark");
-    const btn = document.getElementById("theme-toggle");
-
-    function apply(mode) {
-      if (mode === "light") {
-        LIGHT.disabled = false;
-        DARK.disabled = true;
-      } else {
-        LIGHT.disabled = true;
-        DARK.disabled = false;
-      }
-      btn.textContent = mode === "light" ? "🌞" : "🌙";
-      try {
-        localStorage.setItem(key, mode);
-      } catch (e) {}
-    }
-
-    const saved = localStorage.getItem(key) || "dark";
-    apply(saved);
-
-    if (btn)
-      btn.addEventListener("click", () => {
-        const next = LIGHT.disabled ? "light" : "dark";
-        apply(next);
-      });
-  })();*/
-
-  var signoutBtn = document.getElementById("account-signout");
-  if (signoutBtn) {
-    signoutBtn.addEventListener("click", function () {
-      if (!window.authHelpers || !window.authHelpers.signOut) return;
-      window.authHelpers.signOut().then(function () {
-        location.reload();
-      });
-    });
-  }
-
-  if (window.authHelpers && typeof window.authHelpers.onChange === "function") {
-    window.authHelpers.onChange(function (user) {
-      if (signoutBtn) signoutBtn.classList.toggle("d-none", !user);
-      // your existing refreshAdminUI() call here
-      refreshAdminUI && refreshAdminUI();
-    });
-  }
-
+  // Playoff bracket rendering utilities
   function escHtml(s) {
     return String(s || "").replace(/[&<>"']/g, function (c) {
       return {
@@ -829,7 +752,7 @@ function initApp() {
     });
   }
 
-  // 32-team first-round pairing
+  // Standard 32-team bracket pairings (1v32, 16v17, etc.)
   function seededPairs32() {
     return [
       [1, 32],
@@ -851,7 +774,7 @@ function initApp() {
     ];
   }
 
-  // Sort by points desc, then name asc; return 32 seeds (fill with Bye)
+  // Build top 32 seeds from standings, filling with BYEs if needed
   function computeTop32(rows) {
     var sorted = rows.slice().sort(function (a, b) {
       var pa = a.pts || 0;
@@ -872,16 +795,13 @@ function initApp() {
           isBye: false,
         });
       } else {
-        top.push({
-          seed: i + 1,
-          name: "Bye",
-          isBye: true,
-        });
+        top.push({ seed: i + 1, name: "Bye", isBye: true });
       }
     }
     return top;
   }
 
+  // Render a simple projected playoff bracket based on current standings
   function renderPlayoffsBracketSimple(rows) {
     var host = document.getElementById("playoffs-bracket");
     if (!host) return;
@@ -897,13 +817,12 @@ function initApp() {
     ];
     var counts = [16, 8, 4, 2, 1, 1];
 
-    var seeds = computeTop32(rows); // 32 entries
+    var seeds = computeTop32(rows);
     var seedMap = {};
     seeds.forEach(function (s) {
       seedMap[s.seed] = s;
     });
 
-    // helpers
     function makeCol(title) {
       var col = document.createElement("div");
       col.className = "col-12 col-lg-2 br-round-col";
@@ -957,7 +876,7 @@ function initApp() {
       return card;
     }
 
-    // Column 0: real Round-of-32 pairings
+    // First round: actual seeded pairings
     var col0 = makeCol(titles[0]);
     seededPairs32().forEach(function (pair) {
       var a = seedMap[pair[0]];
@@ -966,11 +885,11 @@ function initApp() {
     });
     host.appendChild(col0.col);
 
-    // Remaining columns: placeholders with TBD
+    // Later rounds: TBD placeholders
     for (var ci = 1; ci < titles.length; ci++) {
       var c = makeCol(titles[ci]);
       for (var m = 0; m < counts[ci]; m++) {
-        c.inner.appendChild(matchCard(null, null)); // "– TBD"
+        c.inner.appendChild(matchCard(null, null));
       }
       host.appendChild(c.col);
     }

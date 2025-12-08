@@ -123,6 +123,471 @@
         background: var(--bs-border-color);
         transform: translateY(-50%);
       }
+
+      /* ========== Champion Badge Styles ========== */
+      .champion-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        padding: 0.1em 0.3em;
+        margin-left: 0.3em;
+        border-radius: 4px;
+        font-weight: 600;
+        vertical-align: middle;
+      }
+
+      /* Commissioner's Trophy - Gold */
+      .champion-badge.badge-commissioner {
+        background: linear-gradient(135deg, #ffd700, #ffec8b);
+        box-shadow: 0 1px 3px rgba(255, 215, 0, 0.4);
+      }
+
+      /* Sporcle Cup - Silver */
+      .champion-badge.badge-cup {
+        background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+        box-shadow: 0 1px 3px rgba(192, 192, 192, 0.4);
+      }
+
+      /* Head to Head Demon - Red */
+      .champion-badge.badge-h2h {
+        background: linear-gradient(135deg, #ff6b6b, #ffa8a8);
+        box-shadow: 0 1px 3px rgba(255, 107, 107, 0.4);
+      }
+
+      /* Highest Highs - Green */
+      .champion-badge.badge-highs {
+        background: linear-gradient(135deg, #51cf66, #8ce99a);
+        box-shadow: 0 1px 3px rgba(81, 207, 102, 0.4);
+      }
+
+      /* ========== Hall of Champions Award Cards ========== */
+      .award-card {
+        background: linear-gradient(145deg, #1a1a2e, #16213e);
+        border-radius: 16px;
+        padding: 1.5rem;
+        text-align: center;
+        border: 2px solid transparent;
+        transition: transform 0.2s, box-shadow 0.2s;
+        height: 100%;
+      }
+
+      .award-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      }
+
+      .award-card.commissioners-trophy {
+        border-color: #ffd700;
+        background: linear-gradient(145deg, #2a2a1e, #1e1a10);
+      }
+
+      .award-card.sporcle-cup {
+        border-color: #c0c0c0;
+        background: linear-gradient(145deg, #1e1e2a, #15152a);
+      }
+
+      .award-card.h2h-demon {
+        border-color: #ff4444;
+        background: linear-gradient(145deg, #2a1a1a, #1e1010);
+      }
+
+      .award-card.highest-highs {
+        border-color: #44ff44;
+        background: linear-gradient(145deg, #1a2a1a, #101e10);
+      }
+
+      .award-icon {
+        font-size: 3.5rem;
+        margin-bottom: 0.75rem;
+        display: block;
+      }
+
+      .award-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        color: #fff;
+      }
+
+      .award-description {
+        font-size: 0.8rem;
+        opacity: 0.7;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+      }
+
+      .award-winner {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #fff;
+        margin-bottom: 0.25rem;
+      }
+
+      .award-stat {
+        font-size: 0.85rem;
+        opacity: 0.8;
+      }
+
+      .award-card.commissioners-trophy .award-title {
+        color: #ffd700;
+      }
+      .award-card.sporcle-cup .award-title {
+        color: #c0c0c0;
+      }
+      .award-card.h2h-demon .award-title {
+        color: #ff6b6b;
+      }
+      .award-card.highest-highs .award-title {
+        color: #69db7c;
+      }
+
+      /* ========== Quiz Wheel Styles ========== */
+
+      /* H2H Category Queue Buttons */
+      .h2h-category-btn {
+        transition: all 0.2s;
+        border-width: 2px;
+      }
+
+      .h2h-category-btn.active {
+        background-color: var(--bs-primary);
+        border-color: var(--bs-primary);
+        color: white;
+        font-weight: 600;
+      }
+
+      .h2h-category-btn:not(.active):hover {
+        background-color: rgba(var(--bs-primary-rgb), 0.1);
+      }
+
+      /* H2H Standings Pills */
+      #h2h-standings-tabs .nav-link {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.9rem;
+      }
+      .quiz-wheel-section {
+        padding: 1.5rem;
+      }
+
+      .quiz-wheel-header {
+        text-align: center;
+        margin-bottom: 1rem;
+      }
+
+      .quiz-wheel-header h2 {
+        font-size: 1.25rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .quiz-wheel-header p {
+        font-size: 0.875rem;
+        opacity: 0.7;
+        margin: 0;
+      }
+
+      .wheel-and-result {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+      }
+
+      .wheel-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .wheel-wrapper {
+        position: relative;
+        width: 300px;
+        height: 300px;
+      }
+
+      #wheel-canvas {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        box-shadow: 0 0 0 6px var(--bs-body-bg),
+          0 0 0 10px var(--bs-border-color), 0 0 25px rgba(0, 0, 0, 0.3);
+      }
+
+      .wheel-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(
+          145deg,
+          var(--bs-card-bg),
+          var(--bs-body-bg)
+        );
+        border-radius: 50%;
+        box-shadow: 0 0 0 3px var(--bs-border-color),
+          0 4px 12px rgba(0, 0, 0, 0.3),
+          inset 0 2px 4px rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        font-size: 1.25rem;
+      }
+
+      .wheel-pointer {
+        position: absolute;
+        top: -12px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 20;
+        filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.3));
+      }
+
+      .wheel-pointer::before {
+        content: "";
+        display: block;
+        width: 0;
+        height: 0;
+        border-left: 14px solid transparent;
+        border-right: 14px solid transparent;
+        border-top: 24px solid var(--bs-success);
+      }
+
+      .wheel-pointer::after {
+        content: "";
+        display: block;
+        width: 14px;
+        height: 14px;
+        background: var(--bs-success);
+        border-radius: 50%;
+        margin: -7px auto 0;
+      }
+
+      .spin-button {
+        margin-top: 1.25rem;
+        padding: 0.75rem 2rem;
+        font-size: 1rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        background: linear-gradient(145deg, var(--bs-success), #198754);
+        border: none;
+        border-radius: 50px;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(25, 135, 84, 0.4);
+        transition: all 0.3s ease;
+      }
+
+      .spin-button:hover:not(:disabled) {
+        transform: translateY(-2px) scale(1.03);
+        box-shadow: 0 6px 20px rgba(25, 135, 84, 0.5);
+      }
+
+      .spin-button:active:not(:disabled) {
+        transform: translateY(0) scale(0.98);
+      }
+
+      .spin-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      /* Today's Quiz Result Area */
+      .todays-quiz-result {
+        text-align: center;
+        min-width: 280px;
+        max-width: 380px;
+        width: 100%;
+      }
+
+      .quiz-result-card {
+        background: var(--bs-card-bg);
+        border: 2px solid var(--bs-border-color);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+
+      .quiz-result-card.has-quiz {
+        border-color: var(--bs-success);
+      }
+
+      .quiz-result-header {
+        padding: 1rem;
+        color: white;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      }
+
+      .quiz-result-header.no-quiz {
+        background: var(--bs-secondary);
+      }
+
+      .quiz-result-category {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        opacity: 0.9;
+        margin-bottom: 0.25rem;
+      }
+
+      .quiz-result-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      .quiz-result-body {
+        padding: 1.25rem;
+      }
+
+      .quiz-name {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+
+      .quiz-description {
+        font-size: 0.8rem;
+        opacity: 0.7;
+        margin-bottom: 1rem;
+      }
+
+      .quiz-play-link {
+        display: inline-block;
+        padding: 0.625rem 1.5rem;
+        background: #2d3748;
+        color: #fff !important;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: 2px solid var(--bs-success);
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .quiz-play-link:hover {
+        background: var(--bs-success);
+        color: #fff !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(25, 135, 84, 0.4);
+      }
+
+      .quiz-url-text {
+        font-size: 0.75rem;
+        color: var(--bs-secondary);
+        margin-top: 0.75rem;
+        margin-bottom: 0;
+        word-break: break-all;
+        opacity: 0.8;
+      }
+
+      /* Wheel spinning state */
+      .wheel-wrapper.is-spinning #wheel-canvas {
+        /* Animation applied via JS */
+      }
+
+      /* Waiting for spin state */
+      .waiting-for-spin {
+        animation: pulse-opacity 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse-opacity {
+        0%,
+        100% {
+          opacity: 0.6;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+
+      /* Category colors for result header */
+      .wheel-cat-geography {
+        background: linear-gradient(135deg, #f85149, #da3633);
+      }
+      .wheel-cat-history {
+        background: linear-gradient(135deg, #d29922, #b08800);
+      }
+      .wheel-cat-science {
+        background: linear-gradient(135deg, #3fb950, #2ea043);
+      }
+      .wheel-cat-sports {
+        background: linear-gradient(135deg, #58a6ff, #1f6feb);
+      }
+      .wheel-cat-entertainment {
+        background: linear-gradient(135deg, #a371f7, #8957e5);
+      }
+      .wheel-cat-music {
+        background: linear-gradient(135deg, #f778ba, #db61a2);
+      }
+      .wheel-cat-literature {
+        background: linear-gradient(135deg, #79c0ff, #58a6ff);
+      }
+      .wheel-cat-misc {
+        background: linear-gradient(135deg, #ffa657, #d29922);
+      }
+
+      /* Confetti */
+      .wheel-confetti {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1100;
+        overflow: hidden;
+      }
+
+      .wheel-confetti-piece {
+        position: absolute;
+        top: -20px;
+        animation: wheelConfettiFall 3s ease-out forwards;
+      }
+
+      @keyframes wheelConfettiFall {
+        0% {
+          transform: translateY(0) rotate(0deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(100vh) rotate(720deg);
+          opacity: 0;
+        }
+      }
+
+      /* Responsive */
+      @media screen and (max-width: 700px) {
+        .wheel-and-result {
+          flex-direction: column;
+        }
+        .wheel-wrapper {
+          width: 260px;
+          height: 260px;
+        }
+        .wheel-center {
+          width: 50px;
+          height: 50px;
+          font-size: 1rem;
+        }
+        .todays-quiz-result {
+          width: 100%;
+          max-width: none;
+        }
+      }
     </style>
     <!-- React for Playoff Bracket -->
     <script
@@ -146,65 +611,344 @@
         >
           Sign out
         </button>
-        <!-- In the header button group -->
-        <button id="admin-signin-header" class="btn btn-outline-primary btn-sm">
-          Admin sign in
-        </button>
       </div>
     </header>
 
     <main class="container">
-      <!-- Always visible: Today's Quiz -->
+      <!-- Confetti Container -->
+      <div id="wheel-confetti" class="wheel-confetti"></div>
+
+      <!-- Today's Quiz with Spinning Wheel -->
       <section class="card mb-3">
-        <div class="card-body d-flex align-items-center flex-wrap gap-2">
-          <span class="text-secondary">Today’s Quiz:</span>
-          <a id="quiz-link-display" href="#" target="_blank"
-            >No quiz link posted yet.</a
-          >
-          <!-- admin-only form; JS will show/hide -->
-          <form id="quiz-form" class="d-inline-flex gap-2 ms-auto d-none">
-            <input
-              id="quiz-url"
-              class="form-control"
-              type="url"
-              placeholder="https://example.com/quiz"
-              required
-            />
-            <button type="submit" class="btn btn-outline-primary">
-              Submit
-            </button>
-          </form>
+        <div class="quiz-wheel-section">
+          <div class="quiz-wheel-header">
+            <h2>🎡 Today's Quiz</h2>
+            <p>Spin the wheel to pick today's category!</p>
+          </div>
+
+          <div class="wheel-and-result">
+            <!-- Wheel Area -->
+            <div class="wheel-area">
+              <div class="wheel-wrapper" id="wheel-wrapper">
+                <div class="wheel-pointer"></div>
+                <canvas id="wheel-canvas" width="300" height="300"></canvas>
+                <div class="wheel-center">⭐</div>
+              </div>
+              <!-- Admin-only spin button -->
+              <button id="spin-btn" class="spin-button d-none">
+                🎲 Spin the Wheel!
+              </button>
+              <div
+                id="spin-status"
+                class="text-secondary mt-2"
+                style="font-size: 0.85rem"
+              ></div>
+            </div>
+
+            <!-- Today's Quiz Result -->
+            <div class="todays-quiz-result">
+              <div id="quiz-result-card" class="quiz-result-card">
+                <div id="quiz-result-header" class="quiz-result-header no-quiz">
+                  <p class="quiz-result-category">Today's Category</p>
+                  <h3 id="quiz-result-title" class="quiz-result-title">
+                    <span>❓</span>
+                    <span>Waiting...</span>
+                  </h3>
+                </div>
+                <div class="quiz-result-body">
+                  <p id="quiz-name" class="quiz-name">No quiz selected yet</p>
+                  <p id="quiz-description" class="quiz-description">
+                    Admin will spin the wheel to select today's quiz!
+                  </p>
+                  <a
+                    id="quiz-link-display"
+                    href="#"
+                    target="_blank"
+                    class="quiz-play-link d-none"
+                  >
+                    ▶ Play This Quiz
+                  </a>
+                  <p id="quiz-url-display" class="quiz-url-text d-none"></p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <!-- Always visible: Submit Score -->
-      <section class="card mb-3">
+      <!-- User Auth Modal -->
+      <div
+        class="modal fade"
+        id="authModal"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+        tabindex="-1"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div
+            class="modal-content"
+            style="
+              background-color: #212529;
+              border-color: var(--bs-border-color);
+            "
+          >
+            <div class="modal-header border-0">
+              <h5 class="modal-title" id="authModalTitle">
+                Welcome to Sporcle League!
+              </h5>
+            </div>
+            <div class="modal-body">
+              <!-- Sign In View -->
+              <div id="auth-signin-view">
+                <p class="text-muted mb-3">
+                  Sign in to track your scores and compete with others.
+                </p>
+                <form id="signin-form">
+                  <div class="mb-3">
+                    <label for="signin-email" class="form-label">Email</label>
+                    <input
+                      type="email"
+                      id="signin-email"
+                      class="form-control"
+                      placeholder="you@example.com"
+                      required
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="signin-password" class="form-label"
+                      >Password</label
+                    >
+                    <input
+                      type="password"
+                      id="signin-password"
+                      class="form-control"
+                      placeholder="Your password"
+                      required
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    id="signin-btn"
+                    class="btn btn-primary w-100 mb-2"
+                  >
+                    Sign In
+                  </button>
+                </form>
+                <div
+                  id="signin-status"
+                  class="form-text text-danger mb-2"
+                ></div>
+                <div class="text-center">
+                  <span class="text-muted">Don't have an account?</span>
+                  <button
+                    type="button"
+                    id="show-signup-btn"
+                    class="btn btn-link p-0"
+                  >
+                    Sign Up
+                  </button>
+                </div>
+              </div>
+
+              <!-- Sign Up View -->
+              <div id="auth-signup-view" class="d-none">
+                <p class="text-muted mb-3">
+                  Create an account to start competing.
+                </p>
+                <form id="signup-form">
+                  <div class="mb-3">
+                    <label for="signup-displayname" class="form-label"
+                      >Display Name</label
+                    >
+                    <input
+                      type="text"
+                      id="signup-displayname"
+                      class="form-control"
+                      placeholder="John Smith"
+                      required
+                    />
+                    <div class="form-text">Shown on leaderboards</div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="signup-alias" class="form-label">Alias</label>
+                    <input
+                      type="text"
+                      id="signup-alias"
+                      class="form-control"
+                      placeholder="johnsmith"
+                      required
+                      pattern="[a-zA-Z0-9_]+"
+                    />
+                    <div class="form-text">
+                      Unique identifier (letters, numbers, underscores only)
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="signup-email" class="form-label">Email</label>
+                    <input
+                      type="email"
+                      id="signup-email"
+                      class="form-control"
+                      placeholder="you@example.com"
+                      required
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="signup-password" class="form-label"
+                      >Password</label
+                    >
+                    <input
+                      type="password"
+                      id="signup-password"
+                      class="form-control"
+                      placeholder="At least 6 characters"
+                      required
+                      minlength="6"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    id="signup-btn"
+                    class="btn btn-primary w-100 mb-2"
+                  >
+                    Create Account
+                  </button>
+                </form>
+                <div
+                  id="signup-status"
+                  class="form-text text-danger mb-2"
+                ></div>
+                <div class="text-center">
+                  <span class="text-muted">Already have an account?</span>
+                  <button
+                    type="button"
+                    id="show-signin-btn"
+                    class="btn btn-link p-0"
+                  >
+                    Sign In
+                  </button>
+                </div>
+              </div>
+
+              <!-- Edit Profile View -->
+              <div id="auth-profile-view" class="d-none">
+                <p class="mb-3">Update your profile:</p>
+                <form id="profile-setup-form">
+                  <div class="mb-3">
+                    <label for="setup-displayname" class="form-label"
+                      >Display Name</label
+                    >
+                    <input
+                      type="text"
+                      id="setup-displayname"
+                      class="form-control"
+                      placeholder="John Smith"
+                      required
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="setup-alias" class="form-label">Alias</label>
+                    <input
+                      type="text"
+                      id="setup-alias"
+                      class="form-control"
+                      placeholder="johnsmith"
+                      required
+                      pattern="[a-zA-Z0-9_]+"
+                    />
+                    <div class="form-text">
+                      Unique identifier (cannot be changed once set)
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn-primary w-100">
+                    Save Profile
+                  </button>
+                </form>
+                <div
+                  id="profile-setup-status"
+                  class="form-text mt-2 text-danger"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Profile Bar (shown when logged in) -->
+      <div
+        id="user-profile-bar"
+        class="d-none mb-3 p-3 rounded"
+        style="
+          background: var(--bs-card-bg);
+          border: 1px solid var(--bs-border-color);
+        "
+      >
+        <div
+          class="d-flex justify-content-between align-items-center flex-wrap gap-2"
+        >
+          <div>
+            <span class="text-muted">Signed in as:</span>
+            <strong id="user-display-name">--</strong>
+            <span class="text-muted">(<span id="user-alias">--</span>)</span>
+          </div>
+          <div class="d-flex gap-2">
+            <button
+              id="edit-profile-btn"
+              class="btn btn-outline-secondary btn-sm"
+            >
+              Edit Profile
+            </button>
+            <button id="user-signout-btn" class="btn btn-outline-danger btn-sm">
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Always visible: Submit Score (simplified for logged-in users) -->
+      <section id="submit-score-section" class="card mb-3">
         <div class="card-body">
           <h2 class="h5 mb-3">Submit Score</h2>
-          <form id="entry-form" class="d-flex flex-wrap gap-2">
-            <input
-              id="name"
-              class="form-control"
-              type="text"
-              placeholder="Display name"
-              required
-            />
-            <input
-              id="alias"
-              class="form-control"
-              type="text"
-              placeholder="Alias"
-              required
-            />
-            <input
-              id="fraction"
-              class="form-control"
-              type="text"
-              placeholder="Score (e.g., 7/9)"
-              required
-            />
-            <button type="submit" class="btn btn-primary">Submit</button>
-          </form>
+
+          <!-- Shown when not logged in -->
+          <div id="submit-guest-view">
+            <p class="text-muted mb-3">Sign in to submit your score.</p>
+            <button id="submit-signin-btn" class="btn btn-primary">
+              Sign In
+            </button>
+          </div>
+
+          <!-- Shown when logged in -->
+          <div id="submit-user-view" class="d-none">
+            <form id="entry-form" class="row g-2 align-items-end">
+              <div class="col-sm-4">
+                <label for="fraction" class="form-label">Score</label>
+                <input
+                  id="fraction"
+                  class="form-control"
+                  type="text"
+                  placeholder="7/9"
+                  required
+                />
+              </div>
+              <div class="col-sm-4">
+                <label for="time-left" class="form-label">Time Left</label>
+                <input
+                  id="time-left"
+                  class="form-control"
+                  type="text"
+                  placeholder="1:23"
+                  required
+                />
+              </div>
+              <div class="col-sm-4">
+                <button type="submit" class="btn btn-primary w-100">
+                  Submit
+                </button>
+              </div>
+            </form>
+            <div id="submit-status" class="form-text mt-2"></div>
+          </div>
         </div>
       </section>
 
@@ -244,20 +988,9 @@
             type="button"
             role="tab"
           >
-            Wall of Fame
+            Hall of Champions
           </button>
         </li>
-        <!--<li class="nav-item" role="presentation">
-          <button
-            class="nav-link"
-            data-bs-toggle="tab"
-            data-bs-target="#tab-shame"
-            type="button"
-            role="tab"
-          >
-            Participation Pavilion
-          </button>
-        </li>-->
         <li class="nav-item" role="presentation">
           <button
             class="nav-link"
@@ -312,6 +1045,7 @@
                       <th>Name</th>
                       <th>Score</th>
                       <th>%</th>
+                      <th>Time Left</th>
                       <th id="standings-actions-th" style="width: 170px">
                         Actions
                       </th>
@@ -347,50 +1081,34 @@
           </section>
         </div>
 
-        <!-- Wall of Fame -->
+        <!-- Hall of Champions -->
         <div class="tab-pane fade" id="tab-fame" role="tabpanel">
           <section class="card">
             <div class="card-body">
-              <h2 class="h5 mb-3">Wall of Fame</h2>
-              <div class="table-responsive">
-                <table class="table table-sm table-striped align-middle">
-                  <thead>
-                    <tr>
-                      <th style="width: 64px">#</th>
-                      <th>Name</th>
-                      <th>Firsts</th>
-                    </tr>
-                  </thead>
-                  <tbody id="fame-body"></tbody>
-                </table>
-              </div>
-              <div id="empty-fame" class="note">No data yet.</div>
-            </div>
-          </section>
-        </div>
+              <h2 class="h5 mb-3">🏆 Hall of Champions</h2>
+              <p class="text-muted mb-4">
+                Celebrating the greatest achievements in Sporcle League history.
+              </p>
 
-        <!-- Wall of Shame -->
-        <div class="tab-pane fade" id="tab-shame" role="tabpanel">
-          <section class="card">
-            <div class="card-body">
-              <h2 class="h5 mb-3">Participation Pavilion</h2>
-              <div class="note mt-2">
-                An ode to those who gave it their all and fell just a little
-                short.
+              <!-- Season selector -->
+              <div class="mb-4">
+                <select
+                  id="season-selector"
+                  class="form-select"
+                  style="max-width: 200px"
+                >
+                  <option value="1" selected>Season 1</option>
+                </select>
               </div>
-              <div class="table-responsive">
-                <table class="table table-sm table-striped align-middle">
-                  <thead>
-                    <tr>
-                      <th style="width: 64px">#</th>
-                      <th>Name</th>
-                      <th>Lasts</th>
-                    </tr>
-                  </thead>
-                  <tbody id="shame-body"></tbody>
-                </table>
+
+              <!-- Awards Grid -->
+              <div id="awards-container" class="row g-4">
+                <!-- Awards will be rendered here by JS -->
               </div>
-              <div id="empty-shame" class="note">No data yet.</div>
+
+              <div id="empty-fame" class="note d-none">
+                No champions yet for this season.
+              </div>
             </div>
           </section>
         </div>
@@ -456,37 +1174,135 @@
             <div class="card-body">
               <h2 class="h5 mb-3">Head to Head</h2>
 
-              <form id="h2h-form" class="row g-2 mb-3">
-                <div class="col-md-4">
-                  <label for="h2h-name" class="form-label">Display Name</label>
-                  <input
-                    type="text"
-                    id="h2h-name"
-                    class="form-control"
-                    placeholder="Your Name"
-                    required
-                  />
+              <!-- Category Queue Selection -->
+              <div class="mb-4">
+                <label class="form-label fw-bold">Select Queue Category</label>
+                <div class="row g-2" id="h2h-category-grid">
+                  <div class="col-6 col-md-3">
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary w-100 h2h-category-btn active"
+                      data-category="random"
+                    >
+                      🎲 Random
+                    </button>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary w-100 h2h-category-btn"
+                      data-category="geography"
+                    >
+                      🌍 Geography
+                    </button>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary w-100 h2h-category-btn"
+                      data-category="history"
+                    >
+                      🏛️ History
+                    </button>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary w-100 h2h-category-btn"
+                      data-category="science"
+                    >
+                      🔬 Science
+                    </button>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary w-100 h2h-category-btn"
+                      data-category="sports"
+                    >
+                      ⚽ Sports
+                    </button>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary w-100 h2h-category-btn"
+                      data-category="entertainment"
+                    >
+                      🎬 Movies/TV
+                    </button>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary w-100 h2h-category-btn"
+                      data-category="music"
+                    >
+                      🎵 Music
+                    </button>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary w-100 h2h-category-btn"
+                      data-category="literature"
+                    >
+                      📚 Literature
+                    </button>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary w-100 h2h-category-btn"
+                      data-category="misc"
+                    >
+                      ❓ Misc
+                    </button>
+                  </div>
                 </div>
-                <div class="col-md-4">
-                  <label for="h2h-alias" class="form-label">Alias</label>
-                  <input
-                    type="text"
-                    id="h2h-alias"
-                    class="form-control"
-                    placeholder="ellisjf"
-                    required
-                  />
+                <div class="form-text mt-2">
+                  <strong>Random:</strong> Match with anyone in any queue.
+                  <strong>Category:</strong> Match only with others in the same
+                  category.
                 </div>
-                <div class="col-md-4 d-flex align-items-end">
+              </div>
+
+              <!-- Logged-in user matchmaking -->
+              <div id="h2h-user-info" class="mb-3 d-none">
+                <div class="d-flex align-items-center gap-3">
+                  <div>
+                    <span class="text-muted">Playing as:</span>
+                    <strong id="h2h-user-display"></strong>
+                    <span class="text-muted"
+                      >(<span id="h2h-user-alias"></span>)</span
+                    >
+                  </div>
                   <button
-                    type="submit"
-                    class="btn btn-primary w-100"
+                    type="button"
+                    class="btn btn-primary"
                     id="h2h-find-btn"
                   >
                     Find Match
                   </button>
                 </div>
-              </form>
+              </div>
+
+              <!-- Sign-in prompt for non-logged-in users -->
+              <div id="h2h-signin-prompt" class="mb-3">
+                <p class="text-muted mb-2">
+                  Sign in to play Head to Head matches.
+                </p>
+                <button
+                  type="button"
+                  class="btn btn-outline-primary"
+                  id="h2h-signin-btn"
+                >
+                  Sign In to Play
+                </button>
+              </div>
+
+              <!-- Hidden field to store selected category -->
+              <input type="hidden" id="h2h-selected-category" value="random" />
 
               <button
                 id="h2h-cancel-btn"
@@ -496,14 +1312,21 @@
               </button>
 
               <div id="h2h-status" class="mb-2 text-muted">
-                Enter your name and alias, then click "Find Match" to join the
-                queue.
+                Select a category, enter your name and alias, then click "Find
+                Match" to join the queue.
               </div>
 
               <!-- Match info once paired -->
               <div id="h2h-match-card" class="card d-none mb-3">
                 <div class="card-body">
                   <h3 class="h6 mb-2">You have been matched!</h3>
+                  <p class="mb-1">
+                    <strong>Category:</strong>
+                    <span
+                      id="h2h-match-category"
+                      class="badge bg-secondary"
+                    ></span>
+                  </p>
                   <p class="mb-1">
                     <strong>You:</strong> <span id="h2h-you-name"></span> (<span
                       id="h2h-you-alias"
@@ -583,31 +1406,346 @@
                 </div>
               </div>
 
-              <!-- Standings table -->
+              <!-- Standings section with category tabs -->
               <div class="mt-4">
                 <h3 class="h6">Head-to-Head Standings</h3>
-                <div class="table-responsive">
-                  <table
-                    class="table table-sm align-middle"
-                    id="h2h-standings-table"
-                  >
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Display Name</th>
-                        <th>Alias</th>
-                        <th>W</th>
-                        <th>L</th>
-                        <th>Streak</th>
-                        <th>Best Streak</th>
-                        <th>Win%</th>
-                      </tr>
-                    </thead>
 
-                    <tbody id="h2h-standings-body">
-                      <!-- filled by JS -->
-                    </tbody>
-                  </table>
+                <!-- Category tabs for standings -->
+                <ul
+                  class="nav nav-pills mb-3"
+                  id="h2h-standings-tabs"
+                  role="tablist"
+                >
+                  <li class="nav-item" role="presentation">
+                    <button
+                      class="nav-link active"
+                      id="h2h-tab-overall"
+                      data-bs-toggle="pill"
+                      data-bs-target="#h2h-standings-overall"
+                      type="button"
+                      role="tab"
+                    >
+                      Overall
+                    </button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button
+                      class="nav-link"
+                      data-bs-toggle="pill"
+                      data-bs-target="#h2h-standings-geography"
+                      type="button"
+                      role="tab"
+                    >
+                      🌍
+                    </button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button
+                      class="nav-link"
+                      data-bs-toggle="pill"
+                      data-bs-target="#h2h-standings-history"
+                      type="button"
+                      role="tab"
+                    >
+                      🏛️
+                    </button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button
+                      class="nav-link"
+                      data-bs-toggle="pill"
+                      data-bs-target="#h2h-standings-science"
+                      type="button"
+                      role="tab"
+                    >
+                      🔬
+                    </button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button
+                      class="nav-link"
+                      data-bs-toggle="pill"
+                      data-bs-target="#h2h-standings-sports"
+                      type="button"
+                      role="tab"
+                    >
+                      ⚽
+                    </button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button
+                      class="nav-link"
+                      data-bs-toggle="pill"
+                      data-bs-target="#h2h-standings-entertainment"
+                      type="button"
+                      role="tab"
+                    >
+                      🎬
+                    </button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button
+                      class="nav-link"
+                      data-bs-toggle="pill"
+                      data-bs-target="#h2h-standings-music"
+                      type="button"
+                      role="tab"
+                    >
+                      🎵
+                    </button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button
+                      class="nav-link"
+                      data-bs-toggle="pill"
+                      data-bs-target="#h2h-standings-literature"
+                      type="button"
+                      role="tab"
+                    >
+                      📚
+                    </button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button
+                      class="nav-link"
+                      data-bs-toggle="pill"
+                      data-bs-target="#h2h-standings-misc"
+                      type="button"
+                      role="tab"
+                    >
+                      ❓
+                    </button>
+                  </li>
+                </ul>
+
+                <div class="tab-content" id="h2h-standings-content">
+                  <!-- Overall standings -->
+                  <div
+                    class="tab-pane fade show active"
+                    id="h2h-standings-overall"
+                    role="tabpanel"
+                  >
+                    <div class="table-responsive">
+                      <table class="table table-sm align-middle">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Display Name</th>
+                            <th>Alias</th>
+                            <th>W</th>
+                            <th>L</th>
+                            <th>Streak</th>
+                            <th>Best Streak</th>
+                            <th>Win%</th>
+                          </tr>
+                        </thead>
+                        <tbody id="h2h-standings-body">
+                          <!-- filled by JS -->
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <!-- Category-specific standings (generated dynamically) -->
+                  <div
+                    class="tab-pane fade"
+                    id="h2h-standings-geography"
+                    role="tabpanel"
+                  >
+                    <div class="table-responsive">
+                      <table class="table table-sm align-middle">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Display Name</th>
+                            <th>Alias</th>
+                            <th>W</th>
+                            <th>L</th>
+                            <th>Win%</th>
+                          </tr>
+                        </thead>
+                        <tbody id="h2h-standings-body-geography"></tbody>
+                      </table>
+                    </div>
+                    <div class="text-muted small" id="h2h-empty-geography">
+                      No matches yet in this category.
+                    </div>
+                  </div>
+
+                  <div
+                    class="tab-pane fade"
+                    id="h2h-standings-history"
+                    role="tabpanel"
+                  >
+                    <div class="table-responsive">
+                      <table class="table table-sm align-middle">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Display Name</th>
+                            <th>Alias</th>
+                            <th>W</th>
+                            <th>L</th>
+                            <th>Win%</th>
+                          </tr>
+                        </thead>
+                        <tbody id="h2h-standings-body-history"></tbody>
+                      </table>
+                    </div>
+                    <div class="text-muted small" id="h2h-empty-history">
+                      No matches yet in this category.
+                    </div>
+                  </div>
+
+                  <div
+                    class="tab-pane fade"
+                    id="h2h-standings-science"
+                    role="tabpanel"
+                  >
+                    <div class="table-responsive">
+                      <table class="table table-sm align-middle">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Display Name</th>
+                            <th>Alias</th>
+                            <th>W</th>
+                            <th>L</th>
+                            <th>Win%</th>
+                          </tr>
+                        </thead>
+                        <tbody id="h2h-standings-body-science"></tbody>
+                      </table>
+                    </div>
+                    <div class="text-muted small" id="h2h-empty-science">
+                      No matches yet in this category.
+                    </div>
+                  </div>
+
+                  <div
+                    class="tab-pane fade"
+                    id="h2h-standings-sports"
+                    role="tabpanel"
+                  >
+                    <div class="table-responsive">
+                      <table class="table table-sm align-middle">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Display Name</th>
+                            <th>Alias</th>
+                            <th>W</th>
+                            <th>L</th>
+                            <th>Win%</th>
+                          </tr>
+                        </thead>
+                        <tbody id="h2h-standings-body-sports"></tbody>
+                      </table>
+                    </div>
+                    <div class="text-muted small" id="h2h-empty-sports">
+                      No matches yet in this category.
+                    </div>
+                  </div>
+
+                  <div
+                    class="tab-pane fade"
+                    id="h2h-standings-entertainment"
+                    role="tabpanel"
+                  >
+                    <div class="table-responsive">
+                      <table class="table table-sm align-middle">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Display Name</th>
+                            <th>Alias</th>
+                            <th>W</th>
+                            <th>L</th>
+                            <th>Win%</th>
+                          </tr>
+                        </thead>
+                        <tbody id="h2h-standings-body-entertainment"></tbody>
+                      </table>
+                    </div>
+                    <div class="text-muted small" id="h2h-empty-entertainment">
+                      No matches yet in this category.
+                    </div>
+                  </div>
+
+                  <div
+                    class="tab-pane fade"
+                    id="h2h-standings-music"
+                    role="tabpanel"
+                  >
+                    <div class="table-responsive">
+                      <table class="table table-sm align-middle">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Display Name</th>
+                            <th>Alias</th>
+                            <th>W</th>
+                            <th>L</th>
+                            <th>Win%</th>
+                          </tr>
+                        </thead>
+                        <tbody id="h2h-standings-body-music"></tbody>
+                      </table>
+                    </div>
+                    <div class="text-muted small" id="h2h-empty-music">
+                      No matches yet in this category.
+                    </div>
+                  </div>
+
+                  <div
+                    class="tab-pane fade"
+                    id="h2h-standings-literature"
+                    role="tabpanel"
+                  >
+                    <div class="table-responsive">
+                      <table class="table table-sm align-middle">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Display Name</th>
+                            <th>Alias</th>
+                            <th>W</th>
+                            <th>L</th>
+                            <th>Win%</th>
+                          </tr>
+                        </thead>
+                        <tbody id="h2h-standings-body-literature"></tbody>
+                      </table>
+                    </div>
+                    <div class="text-muted small" id="h2h-empty-literature">
+                      No matches yet in this category.
+                    </div>
+                  </div>
+
+                  <div
+                    class="tab-pane fade"
+                    id="h2h-standings-misc"
+                    role="tabpanel"
+                  >
+                    <div class="table-responsive">
+                      <table class="table table-sm align-middle">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Display Name</th>
+                            <th>Alias</th>
+                            <th>W</th>
+                            <th>L</th>
+                            <th>Win%</th>
+                          </tr>
+                        </thead>
+                        <tbody id="h2h-standings-body-misc"></tbody>
+                      </table>
+                    </div>
+                    <div class="text-muted small" id="h2h-empty-misc">
+                      No matches yet in this category.
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -754,6 +1892,52 @@
                 </div>
               </div>
 
+              <!-- Season Management -->
+              <div class="card mb-3">
+                <div class="card-body">
+                  <h5 class="card-title">Season Management</h5>
+                  <p class="card-text text-muted">
+                    Use these controls to end the current season and start
+                    fresh.
+                  </p>
+
+                  <div class="mb-3">
+                    <label for="season-number-input" class="form-label"
+                      >Current Season Number</label
+                    >
+                    <input
+                      type="number"
+                      id="season-number-input"
+                      class="form-control"
+                      style="max-width: 100px"
+                      value="1"
+                      min="1"
+                    />
+                  </div>
+
+                  <div class="d-flex flex-wrap gap-2 mb-2">
+                    <button id="end-playoffs-btn" class="btn btn-warning">
+                      🏁 End Playoffs
+                    </button>
+                    <button id="archive-season-btn" class="btn btn-danger">
+                      📦 Archive & Reset Season
+                    </button>
+                  </div>
+
+                  <div class="form-text mb-2">
+                    <strong>End Playoffs:</strong> Closes playoffs and shows
+                    projected bracket based on current standings.<br />
+                    <strong>Archive & Reset:</strong> Saves current points and
+                    H2H records to archive, then clears them for a new season.
+                  </div>
+
+                  <div
+                    id="season-management-status"
+                    class="form-text mt-2"
+                  ></div>
+                </div>
+              </div>
+
               <!-- Manual Playoff Result Entry -->
               <div class="card mb-3">
                 <div class="card-body">
@@ -887,6 +2071,8 @@
         signInWithPopup,
         signOut,
         getIdTokenResult,
+        createUserWithEmailAndPassword,
+        signInWithEmailAndPassword,
       } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
       import {
         getFirestore,
@@ -962,11 +2148,20 @@
       console.log("todayCol path =", todayCol.path);
       const pointsCol = collection(db, "points");
       const quizDoc = doc(db, "quizLink", "today");
+      const wheelSpinDoc = doc(db, "wheelSpin", "today");
+      const wheelQuizzesCol = collection(db, "wheelQuizzes");
 
       // 5) Expose app helpers used by app.js
       window.shared = {
         // Today submissions (alias is the doc id)
-        submitScore: async function ({ alias, displayName, num, den, ratio }) {
+        submitScore: async function ({
+          alias,
+          displayName,
+          num,
+          den,
+          ratio,
+          timeLeft,
+        }) {
           var id = String(alias || "")
             .trim()
             .toLowerCase();
@@ -979,6 +2174,7 @@
               num: num,
               den: den,
               ratio: ratio,
+              timeLeft: timeLeft || 0,
               t: Date.now(),
             },
             { merge: true }
@@ -1043,6 +2239,25 @@
           return onSnapshot(quizDoc, cb);
         },
 
+        // Wheel spin
+        setWheelSpin: async function (spinData) {
+          await setDoc(
+            wheelSpinDoc,
+            { ...spinData, timestamp: Date.now() },
+            { merge: false }
+          );
+        },
+        listenWheelSpin: function (cb) {
+          return onSnapshot(wheelSpinDoc, cb);
+        },
+
+        // Wheel quizzes collection
+        listenWheelQuizzes: function (cb) {
+          return onSnapshot(wheelQuizzesCol, cb, function (err) {
+            console.error("[wheelQuizzes] err:", err);
+          });
+        },
+
         // Callables (admin)
         finishDay: httpsCallable(functions, "finishDayAwardPoints"),
         resetScores: httpsCallable(functions, "resetAllPoints"),
@@ -1052,6 +2267,32 @@
         adminDeletePoints: httpsCallable(functions, "adminDeletePointsDoc"),
         adminUpdatePoints: httpsCallable(functions, "adminUpdatePoints"),
         adminUpdateFinishes: httpsCallable(functions, "adminUpdateFinishes"),
+
+        // User profiles
+        getUserProfile: async function (uid) {
+          const docSnap = await getDoc(doc(db, "userProfiles", uid));
+          return docSnap.exists() ? docSnap.data() : null;
+        },
+        setUserProfile: async function (uid, data) {
+          await setDoc(
+            doc(db, "userProfiles", uid),
+            {
+              ...data,
+              updatedAt: Date.now(),
+            },
+            { merge: true }
+          );
+        },
+        checkAliasAvailable: async function (alias, excludeUid) {
+          const q = query(
+            collection(db, "userProfiles"),
+            where("alias", "==", alias.toLowerCase())
+          );
+          const snap = await getDocs(q);
+          if (snap.empty) return true;
+          // If only match is current user, it's available
+          return snap.docs.length === 1 && snap.docs[0].id === excludeUid;
+        },
       };
 
       // 6) Auth helpers for app.js and buttons
@@ -1070,6 +2311,16 @@
         },
         getIdTokenResult: function () {
           return getIdTokenResult(auth.currentUser);
+        },
+        // Email/password auth
+        signInWithEmail: function (email, password) {
+          return signInWithEmailAndPassword(auth, email, password);
+        },
+        createAccount: function (email, password) {
+          return createUserWithEmailAndPassword(auth, email, password);
+        },
+        getCurrentUser: function () {
+          return auth.currentUser;
         },
       };
 
@@ -1168,9 +2419,12 @@
       });
 
       // Head-to-Head DOM elements (add to your existing references)
-      const h2hForm = document.getElementById("h2h-form");
-      const h2hNameInput = document.getElementById("h2h-name");
-      const h2hAliasInput = document.getElementById("h2h-alias");
+      const h2hUserInfo = document.getElementById("h2h-user-info");
+      const h2hUserDisplay = document.getElementById("h2h-user-display");
+      const h2hUserAlias = document.getElementById("h2h-user-alias");
+      const h2hSigninPrompt = document.getElementById("h2h-signin-prompt");
+      const h2hSigninBtn = document.getElementById("h2h-signin-btn");
+      const h2hFindBtn = document.getElementById("h2h-find-btn");
       const h2hStatus = document.getElementById("h2h-status");
       const h2hMatchCard = document.getElementById("h2h-match-card");
       const h2hYouName = document.getElementById("h2h-you-name");
@@ -1178,6 +2432,7 @@
       const h2hOppName = document.getElementById("h2h-opp-name");
       const h2hOppAlias = document.getElementById("h2h-opp-alias");
       const h2hQuizLink = document.getElementById("h2h-quiz-link");
+      const h2hMatchCategory = document.getElementById("h2h-match-category");
 
       const h2hScoreCard = document.getElementById("h2h-score-card");
       const h2hScoreForm = document.getElementById("h2h-score-form");
@@ -1190,12 +2445,46 @@
       const h2hResultDetail = document.getElementById("h2h-result-detail");
 
       const h2hStandingsBody = document.getElementById("h2h-standings-body");
+      const h2hSelectedCategoryInput = document.getElementById(
+        "h2h-selected-category"
+      );
+
+      // H2H Category definitions
+      const h2hCategories = {
+        random: { name: "Random", icon: "🎲" },
+        geography: { name: "Geography", icon: "🌍" },
+        history: { name: "History", icon: "🏛️" },
+        science: { name: "Science", icon: "🔬" },
+        sports: { name: "Sports", icon: "⚽" },
+        entertainment: { name: "Movies/TV", icon: "🎬" },
+        music: { name: "Music", icon: "🎵" },
+        literature: { name: "Literature", icon: "📚" },
+        misc: { name: "Misc", icon: "❓" },
+      };
+
+      // Category button selection handlers
+      const h2hCategoryBtns = document.querySelectorAll(".h2h-category-btn");
+      h2hCategoryBtns.forEach((btn) => {
+        btn.addEventListener("click", function () {
+          // Remove active from all buttons
+          h2hCategoryBtns.forEach((b) => b.classList.remove("active"));
+          // Add active to clicked button
+          this.classList.add("active");
+          // Update hidden input
+          const category = this.dataset.category;
+          if (h2hSelectedCategoryInput) {
+            h2hSelectedCategoryInput.value = category;
+          }
+        });
+      });
 
       let h2hQueueUnsub = null;
       let h2hQueueDocRef = null;
       let h2hCurrentMatchRef = null;
       let h2hCurrentSide = null; // "playerA" or "playerB"
       let h2hYouData = null; // {displayName, alias, clientId}
+      let h2hSelectedCategory = "random"; // Track selected category
+      let h2hRecentQuizUrls = []; // Track recent quiz URLs to avoid repeats
 
       let h2hQueueStartTime = null;
       let h2hQueueIntervalId = null;
@@ -1206,6 +2495,7 @@
       const H2H_QUEUE_TIMEOUT_SECONDS = 10 * 60; // 10 minutes
 
       const h2hCancelBtn = document.getElementById("h2h-cancel-btn");
+      let h2hMatchRetryId = null;
 
       function clearHeadToHeadQueueTimers() {
         h2hQueueStartTime = null;
@@ -1217,9 +2507,13 @@
           clearTimeout(h2hQueueTimeoutId);
           h2hQueueTimeoutId = null;
         }
+        if (h2hMatchRetryId) {
+          clearInterval(h2hMatchRetryId);
+          h2hMatchRetryId = null;
+        }
       }
 
-      function startHeadToHeadQueueTimers() {
+      function startHeadToHeadQueueTimers(db, myQueueRef, youData) {
         clearHeadToHeadQueueTimers();
         h2hQueueStartTime = Date.now();
 
@@ -1230,16 +2524,43 @@
             (Date.now() - h2hQueueStartTime) / 1000
           );
           const pretty = formatSecondsAsMMSS(elapsedSec);
-          setH2HStatus(`Waiting for an opponent… In queue for ${pretty}`);
+          const categoryInfo =
+            h2hCategories[h2hSelectedCategory] || h2hCategories.random;
+          setH2HStatus(
+            categoryInfo.icon +
+              " Waiting for an opponent... In queue for " +
+              pretty
+          );
         }, 1000);
+
+        // Periodically retry matchmaking every 3 seconds
+        h2hMatchRetryId = setInterval(async () => {
+          if (!myQueueRef || !youData) return;
+
+          // Check if we're still waiting
+          try {
+            const snap = await getDoc(myQueueRef);
+            if (!snap.exists() || snap.data().status !== "waiting") {
+              // We've been matched or removed, stop retrying
+              clearInterval(h2hMatchRetryId);
+              h2hMatchRetryId = null;
+              return;
+            }
+
+            // Try to find a match
+            await tryHeadToHeadMatchmaking(db, myQueueRef, youData);
+          } catch (e) {
+            console.error("Error in matchmaking retry:", e);
+          }
+        }, 3000);
 
         // hard timeout at 10 minutes
         h2hQueueTimeoutId = setTimeout(() => {
-          // if we’re still waiting after 10 minutes, auto-cancel
+          // if we're still waiting after 10 minutes, auto-cancel
           cancelHeadToHeadQueue(
-            `Matchmaking timed out after ${formatSecondsAsMMSS(
-              H2H_QUEUE_TIMEOUT_SECONDS
-            )}. Please try again.`
+            "Matchmaking timed out after " +
+              formatSecondsAsMMSS(H2H_QUEUE_TIMEOUT_SECONDS) +
+              ". Please try again."
           );
         }, H2H_QUEUE_TIMEOUT_SECONDS * 1000);
       }
@@ -1281,6 +2602,7 @@
         if (submitBtn) submitBtn.disabled = false;
 
         if (h2hCancelBtn) h2hCancelBtn.classList.add("d-none");
+        if (h2hFindBtn) h2hFindBtn.disabled = false;
 
         setH2HStatus(message || "Matchmaking cancelled.");
       }
@@ -1395,6 +2717,13 @@
       function showH2HMatch(matchData, you, opp, yourSideKey) {
         if (!matchData) return;
 
+        // Show category badge
+        const category = matchData.category || "random";
+        const categoryInfo = h2hCategories[category] || h2hCategories.random;
+        if (h2hMatchCategory) {
+          h2hMatchCategory.textContent = `${categoryInfo.icon} ${categoryInfo.name}`;
+        }
+
         h2hYouName.textContent = you.displayName;
         h2hYouAlias.textContent = you.alias;
         h2hOppName.textContent = opp.displayName;
@@ -1427,6 +2756,7 @@
       // ============================================================================
 
       let __playoffsFinalized = false;
+      let __playoffsEnded = false;
       let playoffCurrentMatchUnsub = null;
       let playoffMyMatchData = null; // stores {seriesId, matchDoc, myAlias, mySide}
 
@@ -1452,6 +2782,7 @@
         (snap) => {
           const data = snap.exists() ? snap.data() : {};
           __playoffsFinalized = !!data.finalized;
+          __playoffsEnded = !!data.ended;
           updatePlayoffsUIFromFlag();
         },
         (err) => {
@@ -1461,7 +2792,128 @@
 
       function updatePlayoffsUIFromFlag() {
         if (playoffJoinCard) {
-          playoffJoinCard.classList.toggle("d-none", !__playoffsFinalized);
+          // Hide join card if playoffs ended or not finalized
+          playoffJoinCard.classList.toggle(
+            "d-none",
+            !__playoffsFinalized || __playoffsEnded
+          );
+        }
+
+        // If playoffs ended, show projected bracket
+        if (__playoffsEnded) {
+          showProjectedBracket();
+        }
+      }
+
+      // Show a projected bracket based on current standings (when playoffs ended)
+      async function showProjectedBracket() {
+        if (!playoffsBracketContainer) return;
+
+        try {
+          // Fetch current standings
+          const pointsRef = collection(db, "points");
+          const pointsSnap = await getDocs(
+            query(pointsRef, orderBy("points", "desc"))
+          );
+
+          if (pointsSnap.empty) {
+            playoffsBracketContainer.innerHTML = `
+              <div class="alert alert-info">
+                <h5>🏆 Season Complete</h5>
+                <p>Playoffs have ended. No standings data available for projected bracket.</p>
+              </div>
+            `;
+            return;
+          }
+
+          // Build projected seeds
+          const seeds = [];
+          let seedNum = 1;
+          pointsSnap.forEach((docSnap) => {
+            const data = docSnap.data();
+            seeds.push({
+              seed: seedNum,
+              alias: docSnap.id,
+              displayName: data.displayName || docSnap.id,
+              points: data.points || 0,
+            });
+            seedNum++;
+          });
+
+          // Pad to 32 if needed
+          while (seeds.length < 32) {
+            seeds.push({
+              seed: seeds.length + 1,
+              alias: "BYE",
+              displayName: "BYE",
+              points: 0,
+              isBye: true,
+            });
+          }
+
+          // Standard bracket pairings
+          const bracketPairs = [
+            [1, 32],
+            [16, 17],
+            [8, 25],
+            [9, 24],
+            [4, 29],
+            [13, 20],
+            [5, 28],
+            [12, 21],
+            [2, 31],
+            [15, 18],
+            [7, 26],
+            [10, 23],
+            [3, 30],
+            [14, 19],
+            [6, 27],
+            [11, 22],
+          ];
+
+          const seedMap = {};
+          seeds.forEach((s) => {
+            seedMap[s.seed] = s;
+          });
+
+          // Build projected series for rendering
+          const projectedSeries = bracketPairs.map((pair, idx) => {
+            const [seed1, seed2] = pair;
+            const p1 = seedMap[seed1];
+            const p2 = seedMap[seed2];
+            return {
+              id: "projected-" + idx,
+              round: 1,
+              matchIndex: idx,
+              aliases: [p1.alias, p2.alias],
+              seeds: [seed1, seed2],
+              displayNames: [p1.displayName, p2.displayName],
+              status: "projected",
+              winnerAlias: null,
+            };
+          });
+
+          // Show header message
+          const headerHtml = `
+            <div class="alert alert-success mb-3">
+              <h5>🏆 Playoffs Complete - Projected Bracket</h5>
+              <p class="mb-0">This shows the projected Round of 32 matchups based on current Season Standings.</p>
+            </div>
+          `;
+
+          // Render the projected bracket
+          await renderBracket(projectedSeries, true);
+
+          // Prepend the header
+          playoffsBracketContainer.insertAdjacentHTML("afterbegin", headerHtml);
+        } catch (err) {
+          console.error("Error showing projected bracket:", err);
+          playoffsBracketContainer.innerHTML = `
+            <div class="alert alert-warning">
+              <h5>🏆 Season Complete</h5>
+              <p>Error loading projected bracket: ${err.message}</p>
+            </div>
+          `;
         }
       }
 
@@ -2324,8 +3776,10 @@
 
       /**
        * Render the playoff bracket using React
+       * @param {Array} allSeries - Array of series/match objects
+       * @param {boolean} isProjected - If true, use displayNames from series objects
        */
-      async function renderBracket(allSeries) {
+      async function renderBracket(allSeries, isProjected = false) {
         if (!playoffsBracketContainer) return;
 
         if (allSeries.length === 0) {
@@ -2334,32 +3788,45 @@
           return;
         }
 
-        // Fetch all display names once
-        const allAliases = new Set();
-        allSeries.forEach((series) => {
-          const aliases = series.aliases || [];
-          aliases.forEach((alias) => {
-            if (alias !== "TBD") allAliases.add(alias);
+        let displayNames = {};
+
+        if (isProjected) {
+          // For projected brackets, extract displayNames from series data
+          allSeries.forEach((series) => {
+            const aliases = series.aliases || [];
+            const names = series.displayNames || [];
+            aliases.forEach((alias, idx) => {
+              if (alias && alias !== "TBD" && alias !== "BYE") {
+                displayNames[alias] = names[idx] || alias;
+              }
+            });
           });
-        });
+        } else {
+          // Fetch all display names from Firestore
+          const allAliases = new Set();
+          allSeries.forEach((series) => {
+            const aliases = series.aliases || [];
+            aliases.forEach((alias) => {
+              if (alias !== "TBD") allAliases.add(alias);
+            });
+          });
 
-        const displayNames = {};
-
-        // Fetch display names from points collection
-        for (const alias of allAliases) {
-          try {
-            const pointsDoc = await getDoc(
-              doc(collection(db, "points"), alias)
-            );
-            if (pointsDoc.exists()) {
-              const data = pointsDoc.data();
-              displayNames[alias] = data.displayName || alias;
-            } else {
+          // Fetch display names from points collection
+          for (const alias of allAliases) {
+            try {
+              const pointsDoc = await getDoc(
+                doc(collection(db, "points"), alias)
+              );
+              if (pointsDoc.exists()) {
+                const data = pointsDoc.data();
+                displayNames[alias] = data.displayName || alias;
+              } else {
+                displayNames[alias] = alias;
+              }
+            } catch (err) {
+              console.error(`Error fetching data for ${alias}`, err);
               displayNames[alias] = alias;
             }
-          } catch (err) {
-            console.error(`Error fetching data for ${alias}`, err);
-            displayNames[alias] = alias;
           }
         }
 
@@ -2370,6 +3837,7 @@
             matches: allSeries,
             displayNames: displayNames,
             darkMode: true,
+            isProjected: isProjected,
           })
         );
       }
@@ -2741,7 +4209,12 @@
       );
       if (playoffsTab) {
         playoffsTab.addEventListener("shown.bs.tab", () => {
-          startBracketListener();
+          // If playoffs ended, show projected; otherwise show real bracket
+          if (__playoffsEnded) {
+            showProjectedBracket();
+          } else {
+            startBracketListener();
+          }
         });
       }
 
@@ -2749,11 +4222,14 @@
       onSnapshot(playoffsConfigRef, (snap) => {
         const data = snap.exists() ? snap.data() : {};
         __playoffsFinalized = !!data.finalized;
+        __playoffsEnded = !!data.ended;
         updatePlayoffsUIFromFlag();
 
-        // Start bracket listener if playoffs are active
-        if (__playoffsFinalized) {
+        // Start bracket listener if playoffs are active (but not ended)
+        if (__playoffsFinalized && !__playoffsEnded) {
           startBracketListener();
+        } else if (__playoffsEnded) {
+          showProjectedBracket();
         }
       });
 
@@ -3481,6 +4957,220 @@
         });
       }
 
+      // ============================================================================
+      // ADMIN: Season Management Controls
+      // ============================================================================
+
+      const endPlayoffsBtn = document.getElementById("end-playoffs-btn");
+      const archiveSeasonBtn = document.getElementById("archive-season-btn");
+      const seasonNumberInput = document.getElementById("season-number-input");
+      const seasonManagementStatus = document.getElementById(
+        "season-management-status"
+      );
+
+      // End Playoffs - Sets playoffs to "ended" state, shows projected bracket
+      if (endPlayoffsBtn) {
+        endPlayoffsBtn.addEventListener("click", async () => {
+          if (
+            !confirm(
+              "Are you sure you want to end the playoffs?\n\nThis will close playoffs and show a projected bracket based on current standings."
+            )
+          ) {
+            return;
+          }
+
+          try {
+            endPlayoffsBtn.disabled = true;
+            endPlayoffsBtn.textContent = "Ending...";
+            if (seasonManagementStatus)
+              seasonManagementStatus.textContent = "Ending playoffs...";
+
+            // Set playoffsFinalized to "ended" in config
+            const configRef = doc(db, "config", "playoffs");
+            await setDoc(
+              configRef,
+              {
+                finalized: false,
+                ended: true,
+                endedAt: serverTimestamp(),
+              },
+              { merge: true }
+            );
+
+            if (seasonManagementStatus)
+              seasonManagementStatus.textContent =
+                "Playoffs ended successfully!";
+            alert(
+              "Playoffs have been ended. The bracket will now show projected matchups based on current standings."
+            );
+          } catch (err) {
+            console.error("Error ending playoffs:", err);
+            if (seasonManagementStatus)
+              seasonManagementStatus.textContent = "Error: " + err.message;
+            alert("Error ending playoffs: " + err.message);
+          } finally {
+            endPlayoffsBtn.disabled = false;
+            endPlayoffsBtn.textContent = "🏁 End Playoffs";
+          }
+        });
+      }
+
+      // Archive & Reset Season - Archives points and H2H records, then clears them
+      if (archiveSeasonBtn) {
+        archiveSeasonBtn.addEventListener("click", async () => {
+          const seasonNum = seasonNumberInput
+            ? parseInt(seasonNumberInput.value) || 1
+            : 1;
+
+          if (
+            !confirm(
+              `⚠️ ARCHIVE SEASON ${seasonNum}\n\n` +
+                `This will:\n` +
+                `• Save current points to 'archivedPoints/season${seasonNum}'\n` +
+                `• Save current H2H records to 'archivedH2H/season${seasonNum}'\n` +
+                `• Clear all current points (Season Standings)\n` +
+                `• Clear all current H2H records\n\n` +
+                `Are you sure?`
+            )
+          ) {
+            return;
+          }
+
+          if (!confirm("This CANNOT be undone. Are you REALLY sure?")) {
+            return;
+          }
+
+          let currentStep = "";
+
+          try {
+            archiveSeasonBtn.disabled = true;
+            archiveSeasonBtn.textContent = "Archiving...";
+            if (seasonManagementStatus)
+              seasonManagementStatus.textContent = "Archiving season data...";
+
+            // Step 1: Read points
+            currentStep = "Step 1: Reading points";
+            console.log("📦 " + currentStep + "...");
+            if (seasonManagementStatus)
+              seasonManagementStatus.textContent = currentStep + "...";
+            const pointsRef = collection(db, "points");
+            const pointsSnap = await getDocs(pointsRef);
+
+            const archivedPoints = {};
+            pointsSnap.forEach((docSnap) => {
+              archivedPoints[docSnap.id] = docSnap.data();
+            });
+            console.log(
+              `✅ Read ${Object.keys(archivedPoints).length} points records`
+            );
+
+            // Step 2: Save archived points
+            currentStep =
+              "Step 2: Saving archived points to archivedPoints/season" +
+              seasonNum;
+            console.log("📦 " + currentStep + "...");
+            if (seasonManagementStatus)
+              seasonManagementStatus.textContent = currentStep + "...";
+            const archivePointsRef = doc(
+              db,
+              "archivedPoints",
+              "season" + seasonNum
+            );
+            await setDoc(archivePointsRef, {
+              season: seasonNum,
+              archivedAt: serverTimestamp(),
+              data: archivedPoints,
+            });
+            console.log(`✅ Archived points saved`);
+
+            // Step 3: Read H2H records
+            currentStep = "Step 3: Reading H2H records";
+            console.log("📦 " + currentStep + "...");
+            if (seasonManagementStatus)
+              seasonManagementStatus.textContent = currentStep + "...";
+            const h2hRef = collection(db, "headtoheadRecords");
+            const h2hSnap = await getDocs(h2hRef);
+
+            const archivedH2H = {};
+            h2hSnap.forEach((docSnap) => {
+              archivedH2H[docSnap.id] = docSnap.data();
+            });
+            console.log(
+              `✅ Read ${Object.keys(archivedH2H).length} H2H records`
+            );
+
+            // Step 4: Save archived H2H
+            currentStep =
+              "Step 4: Saving archived H2H to archivedH2H/season" + seasonNum;
+            console.log("📦 " + currentStep + "...");
+            if (seasonManagementStatus)
+              seasonManagementStatus.textContent = currentStep + "...";
+            const archiveH2HRef = doc(db, "archivedH2H", "season" + seasonNum);
+            await setDoc(archiveH2HRef, {
+              season: seasonNum,
+              archivedAt: serverTimestamp(),
+              data: archivedH2H,
+            });
+            console.log(`✅ Archived H2H saved`);
+
+            // Step 5: Clear current points
+            currentStep = "Step 5: Clearing points collection";
+            console.log("🗑️ " + currentStep + "...");
+            if (seasonManagementStatus)
+              seasonManagementStatus.textContent = currentStep + "...";
+            for (const docSnap of pointsSnap.docs) {
+              await deleteDoc(docSnap.ref);
+            }
+            console.log(`✅ Cleared ${pointsSnap.docs.length} points records`);
+
+            // Step 6: Clear current H2H records
+            currentStep = "Step 6: Clearing H2H records";
+            console.log("🗑️ " + currentStep + "...");
+            if (seasonManagementStatus)
+              seasonManagementStatus.textContent = currentStep + "...";
+            for (const docSnap of h2hSnap.docs) {
+              await deleteDoc(docSnap.ref);
+            }
+            console.log(`✅ Cleared ${h2hSnap.docs.length} H2H records`);
+
+            // Step 7: Reset playoffs config
+            currentStep = "Step 7: Resetting playoffs config";
+            console.log("🔄 " + currentStep + "...");
+            if (seasonManagementStatus)
+              seasonManagementStatus.textContent = currentStep + "...";
+            const configRef = doc(db, "config", "playoffs");
+            await setDoc(configRef, {
+              finalized: false,
+              ended: false,
+            });
+            console.log(`✅ Playoffs config reset`);
+
+            if (seasonManagementStatus) {
+              seasonManagementStatus.textContent = `Season ${seasonNum} archived successfully! Data has been saved and cleared.`;
+            }
+
+            alert(
+              `Season ${seasonNum} archived successfully!\n\n` +
+                `• Archived ${
+                  Object.keys(archivedPoints).length
+                } points records\n` +
+                `• Archived ${Object.keys(archivedH2H).length} H2H records\n` +
+                `• Cleared all current standings\n\n` +
+                `You can start the new season now!`
+            );
+          } catch (err) {
+            console.error("Error at " + currentStep + ":", err);
+            if (seasonManagementStatus)
+              seasonManagementStatus.textContent =
+                "Error at " + currentStep + ": " + err.message;
+            alert("Error at " + currentStep + ":\n\n" + err.message);
+          } finally {
+            archiveSeasonBtn.disabled = false;
+            archiveSeasonBtn.textContent = "📦 Archive & Reset Season";
+          }
+        });
+      }
+
       /**
        * Try to pair this user with a waiting opponent.
        * If someone is waiting, create match doc and mark both as matched.
@@ -3488,6 +5178,7 @@
        */
       async function tryHeadToHeadMatchmaking(db, myQueueRef, myData) {
         const queueRef = collection(db, "headtoheadQueue");
+        const myCategory = myData.category || "random";
 
         // cutoff: 10 minutes ago
         const cutoff = Timestamp.fromMillis(Date.now() - 10 * 60 * 1000);
@@ -3496,12 +5187,13 @@
           queueRef,
           where("status", "==", "waiting"),
           orderBy("createdAt", "asc"),
-          limit(20)
+          limit(50) // Increased to find matches across categories
         );
 
         const snap = await getDocs(q);
 
         let opponentDoc = null;
+        let matchCategory = myCategory;
 
         for (const docSnap of snap.docs) {
           const data = docSnap.data();
@@ -3524,17 +5216,51 @@
 
           // skip myself and any same-client entries for safety
           if (
-            docSnap.id !== myQueueRef.id &&
-            data.clientId &&
-            data.clientId !== myData.clientId
+            docSnap.id === myQueueRef.id ||
+            !data.clientId ||
+            data.clientId === myData.clientId
+          ) {
+            continue;
+          }
+
+          const oppCategory = data.category || "random";
+
+          // Category matching logic:
+          // - Random matches with anyone
+          // - Specific category only matches with same category OR random
+          if (
+            myCategory === "random" ||
+            oppCategory === "random" ||
+            myCategory === oppCategory
           ) {
             opponentDoc = docSnap;
+
+            // Determine the actual match category
+            if (myCategory === "random" && oppCategory === "random") {
+              // Both random: pick a random category for the quiz
+              const categoryKeys = [
+                "geography",
+                "history",
+                "science",
+                "sports",
+                "entertainment",
+                "music",
+                "literature",
+                "misc",
+              ];
+              matchCategory =
+                categoryKeys[Math.floor(Math.random() * categoryKeys.length)];
+            } else if (myCategory === "random") {
+              matchCategory = oppCategory;
+            } else {
+              matchCategory = myCategory;
+            }
             break;
           }
         }
 
         if (!opponentDoc) {
-          // nobody else waiting yet
+          // nobody else waiting yet (in compatible category)
           return;
         }
 
@@ -3545,10 +5271,12 @@
         const matchesRef = collection(db, "headtoheadMatches");
         const matchRef = doc(matchesRef);
 
-        const quizUrl = await getRandomQuizUrl(db);
+        // Get quiz from the matched category
+        const quizUrl = await getRandomQuizUrlByCategory(db, matchCategory);
 
         batch.set(matchRef, {
           quizUrl,
+          category: matchCategory, // NEW: store category in match
           status: "active",
           createdAt: serverTimestamp(),
           playerA: {
@@ -3586,6 +5314,47 @@
         });
 
         await batch.commit();
+      }
+
+      // Get a random quiz URL filtered by category
+      async function getRandomQuizUrlByCategory(db, category) {
+        // First try wheelQuizzes collection (which has categories)
+        const wheelQuizzesRef = collection(db, "wheelQuizzes");
+        const q = query(wheelQuizzesRef, where("category", "==", category));
+        const snap = await getDocs(q);
+
+        const urls = [];
+        snap.forEach((docSnap) => {
+          const d = docSnap.data();
+          if (d && d.url) urls.push(d.url);
+        });
+
+        // If we found quizzes in the category, use one
+        if (urls.length > 0) {
+          // Avoid recent repeats
+          let choice = null;
+          for (let tries = 0; tries < 5; tries++) {
+            const idx = Math.floor(Math.random() * urls.length);
+            const candidate = urls[idx];
+            if (!h2hRecentQuizUrls.includes(candidate)) {
+              choice = candidate;
+              break;
+            }
+          }
+          if (!choice) {
+            choice = urls[Math.floor(Math.random() * urls.length)];
+          }
+
+          h2hRecentQuizUrls.push(choice);
+          if (h2hRecentQuizUrls.length > 10) {
+            h2hRecentQuizUrls.shift();
+          }
+
+          return choice;
+        }
+
+        // Fallback to old quizzes collection (no category filter)
+        return getRandomQuizUrl(db);
       }
 
       function renderHeadToHeadResult(match, youData, sideKey) {
@@ -3761,20 +5530,63 @@
       }
 
       // Handle form submission
-      if (h2hForm) {
-        h2hForm.addEventListener("submit", async (e) => {
-          e.preventDefault();
-          if (!h2hNameInput.value.trim() || !h2hAliasInput.value.trim()) {
+      if (h2hSigninBtn) {
+        h2hSigninBtn.addEventListener("click", () => {
+          if (window.showAuthModal) {
+            window.showAuthModal("signin");
+          }
+        });
+      }
+
+      // Function to update H2H UI based on auth state
+      function updateH2HAuthUI(user, profile) {
+        if (user && profile) {
+          // User is logged in with profile
+          if (h2hUserInfo) h2hUserInfo.classList.remove("d-none");
+          if (h2hSigninPrompt) h2hSigninPrompt.classList.add("d-none");
+          if (h2hUserDisplay) h2hUserDisplay.textContent = profile.displayName;
+          if (h2hUserAlias) h2hUserAlias.textContent = profile.alias;
+        } else {
+          // User not logged in
+          if (h2hUserInfo) h2hUserInfo.classList.add("d-none");
+          if (h2hSigninPrompt) h2hSigninPrompt.classList.remove("d-none");
+        }
+      }
+
+      // Make it globally accessible for auth section
+      window.updateH2HAuthUI = updateH2HAuthUI;
+
+      if (h2hFindBtn) {
+        h2hFindBtn.addEventListener("click", async () => {
+          // Check if user is logged in
+          if (!window.currentUser || !window.currentProfile) {
+            setH2HStatus("Please sign in to play Head to Head.");
+            if (window.showAuthModal) {
+              window.showAuthModal("signin");
+            }
             return;
           }
 
-          const displayName = h2hNameInput.value.trim();
-          const alias = h2hAliasInput.value.trim();
-          const clientId = getOrCreateHeadToHeadClientId();
+          const displayName = window.currentProfile.displayName;
+          const alias = window.currentProfile.alias;
+          const clientId = window.currentUser.uid; // Use Firebase UID as client ID
 
-          const youData = { displayName, alias, clientId };
+          // Get selected category
+          const category = h2hSelectedCategoryInput
+            ? h2hSelectedCategoryInput.value
+            : "random";
+          h2hSelectedCategory = category;
+          const categoryInfo = h2hCategories[category] || h2hCategories.random;
 
-          setH2HStatus("Joining matchmaking queue...");
+          const youData = { displayName, alias, clientId, category };
+
+          setH2HStatus(
+            "Joining " +
+              categoryInfo.icon +
+              " " +
+              categoryInfo.name +
+              " queue..."
+          );
           h2hMatchCard.classList.add("d-none");
           h2hScoreCard.classList.add("d-none");
           h2hResultCard.classList.add("d-none");
@@ -3784,11 +5596,12 @@
 
           const queueRef = collection(db, "headtoheadQueue");
 
-          // create or replace this client's queue entry
+          // create or replace this client's queue entry with category
           const myDocRef = await addDoc(queueRef, {
             clientId,
             displayName,
             alias,
+            category, // NEW: include category in queue
             status: "waiting",
             matchId: null,
             createdAt: serverTimestamp(),
@@ -3798,9 +5611,10 @@
           h2hMatchShownOnce = false;
 
           if (h2hCancelBtn) h2hCancelBtn.classList.remove("d-none");
+          if (h2hFindBtn) h2hFindBtn.disabled = true;
 
-          // START the queue timers here:
-          startHeadToHeadQueueTimers();
+          // START the queue timers here (with retry logic):
+          startHeadToHeadQueueTimers(db, myDocRef, youData);
 
           // start listening and try to match...
           listenForHeadToHeadMatch(db, myDocRef, youData);
@@ -3822,6 +5636,7 @@
         const scores = match.scores || {};
         const sA = scores.playerA;
         const sB = scores.playerB;
+        const matchCategory = match.category || "misc"; // Get match category
 
         // Need both scores to resolve
         if (!sA || !sB) return;
@@ -3873,6 +5688,11 @@
           getDoc(refB),
         ]);
 
+        // Helper to initialize category stats
+        function initCategoryStats() {
+          return { wins: 0, losses: 0, ties: 0 };
+        }
+
         let recA = recASnap.exists()
           ? recASnap.data()
           : {
@@ -3885,6 +5705,7 @@
               streakCount: 0,
               bestStreakType: null, // "W" or "L"
               bestStreakCount: 0,
+              categoryStats: {}, // NEW: per-category stats
             };
 
         let recB = recBSnap.exists()
@@ -3899,6 +5720,7 @@
               streakCount: 0,
               bestStreakType: null,
               bestStreakCount: 0,
+              categoryStats: {}, // NEW: per-category stats
             };
 
         // Ensure streak fields exist on old docs
@@ -3906,21 +5728,35 @@
         if (recA.streakCount === undefined) recA.streakCount = 0;
         if (recA.bestStreakType === undefined) recA.bestStreakType = null;
         if (recA.bestStreakCount === undefined) recA.bestStreakCount = 0;
+        if (!recA.categoryStats) recA.categoryStats = {};
 
         if (recB.streakType === undefined) recB.streakType = null;
         if (recB.streakCount === undefined) recB.streakCount = 0;
         if (recB.bestStreakType === undefined) recB.bestStreakType = null;
         if (recB.bestStreakCount === undefined) recB.bestStreakCount = 0;
+        if (!recB.categoryStats) recB.categoryStats = {};
 
-        // 4) Update their records in memory
+        // Initialize category stats if needed
+        if (!recA.categoryStats[matchCategory]) {
+          recA.categoryStats[matchCategory] = initCategoryStats();
+        }
+        if (!recB.categoryStats[matchCategory]) {
+          recB.categoryStats[matchCategory] = initCategoryStats();
+        }
+
+        // 4) Update their records in memory (overall AND category)
         if (tie) {
           recA.ties = (recA.ties || 0) + 1;
           recB.ties = (recB.ties || 0) + 1;
+          recA.categoryStats[matchCategory].ties += 1;
+          recB.categoryStats[matchCategory].ties += 1;
         } else {
           if (winnerAlias === pA.alias) {
             // A wins, B loses
             recA.wins = (recA.wins || 0) + 1;
             recB.losses = (recB.losses || 0) + 1;
+            recA.categoryStats[matchCategory].wins += 1;
+            recB.categoryStats[matchCategory].losses += 1;
 
             // A current streak (wins)
             if (recA.streakType === "W") {
@@ -3951,6 +5787,8 @@
             // B wins, A loses
             recB.wins = (recB.wins || 0) + 1;
             recA.losses = (recA.losses || 0) + 1;
+            recB.categoryStats[matchCategory].wins += 1;
+            recA.categoryStats[matchCategory].losses += 1;
 
             if (recB.streakType === "W") {
               recB.streakCount = (recB.streakCount || 0) + 1;
@@ -4040,9 +5878,14 @@
           const bestLabel =
             bestType === "W" && bestCount > 0 ? `W${bestCount}` : "–";
 
+          // Get champion badges
+          const badges = window.getChampionBadges
+            ? window.getChampionBadges(r.alias)
+            : "";
+
           tr.innerHTML = `
     <td>${idx + 1}</td>
-    <td>${r.displayName || ""}</td>
+    <td>${r.displayName || ""}${badges}</td>
     <td>${r.alias || ""}</td>
     <td>${r.wins || 0}</td>
     <td>${r.losses || 0}</td>
@@ -4051,6 +5894,84 @@
     <td>${winPctStr}</td>
   `;
           h2hStandingsBody.appendChild(tr);
+        });
+
+        // Also render category-specific standings
+        renderCategoryStandings(rows);
+      }
+
+      // Render category-specific standings
+      function renderCategoryStandings(rows) {
+        const categories = [
+          "geography",
+          "history",
+          "science",
+          "sports",
+          "entertainment",
+          "music",
+          "literature",
+          "misc",
+        ];
+
+        categories.forEach((category) => {
+          const tbody = document.getElementById(
+            `h2h-standings-body-${category}`
+          );
+          const emptyDiv = document.getElementById(`h2h-empty-${category}`);
+          if (!tbody) return;
+
+          tbody.innerHTML = "";
+
+          // Extract category stats for each player
+          const categoryRows = [];
+          rows.forEach((r) => {
+            const catStats = r.categoryStats && r.categoryStats[category];
+            if (catStats && (catStats.wins > 0 || catStats.losses > 0)) {
+              const w = catStats.wins || 0;
+              const l = catStats.losses || 0;
+              const games = w + l;
+              categoryRows.push({
+                displayName: r.displayName,
+                alias: r.alias,
+                wins: w,
+                losses: l,
+                games: games,
+                winPct: games > 0 ? w / games : 0,
+              });
+            }
+          });
+
+          // Sort by wins, then win%, then alias
+          categoryRows.sort((a, b) => {
+            if (b.wins !== a.wins) return b.wins - a.wins;
+            if (b.winPct !== a.winPct) return b.winPct - a.winPct;
+            return (a.alias || "").localeCompare(b.alias || "");
+          });
+
+          if (categoryRows.length === 0) {
+            if (emptyDiv) emptyDiv.classList.remove("d-none");
+            return;
+          }
+          if (emptyDiv) emptyDiv.classList.add("d-none");
+
+          categoryRows.forEach((r, idx) => {
+            const tr = document.createElement("tr");
+            const winPctStr =
+              r.games > 0 ? (r.winPct * 100).toFixed(1) + "%" : "–";
+            // Get champion badges
+            const badges = window.getChampionBadges
+              ? window.getChampionBadges(r.alias)
+              : "";
+            tr.innerHTML = `
+              <td>${idx + 1}</td>
+              <td>${r.displayName || ""}${badges}</td>
+              <td>${r.alias || ""}</td>
+              <td>${r.wins}</td>
+              <td>${r.losses}</td>
+              <td>${winPctStr}</td>
+            `;
+            tbody.appendChild(tr);
+          });
         });
       }
 
@@ -4064,6 +5985,1134 @@
           });
           renderHeadToHeadStandings(rows);
         });
+      })();
+
+      // ========== QUIZ WHEEL ==========
+      (function () {
+        // Fallback quiz data by category (used if Firestore is empty)
+        const fallbackQuizzes = {
+          geography: [
+            {
+              title: "Countries of the World",
+              description: "Can you name all 197 countries?",
+              url: "https://www.sporcle.com/games/g/world",
+            },
+            {
+              title: "US States",
+              description: "Name all 50 US states on the map.",
+              url: "https://www.sporcle.com/games/g/states",
+            },
+          ],
+          history: [
+            {
+              title: "US Presidents",
+              description: "Name all 46 US Presidents.",
+              url: "https://www.sporcle.com/games/g/presidents",
+            },
+          ],
+          science: [
+            {
+              title: "Periodic Table",
+              description: "Name all the chemical elements.",
+              url: "https://www.sporcle.com/games/g/elements",
+            },
+          ],
+          sports: [
+            {
+              title: "NFL Teams",
+              description: "Name all 32 NFL teams.",
+              url: "https://www.sporcle.com/games/g/nflteams",
+            },
+          ],
+          entertainment: [
+            {
+              title: "Oscar Best Pictures",
+              description: "Name all Best Picture winners.",
+              url: "https://www.sporcle.com/games/g/bestpicture",
+            },
+          ],
+          music: [
+            {
+              title: "Billboard #1 Hits",
+              description: "Name songs that hit #1.",
+              url: "https://www.sporcle.com/games/g/billboardone",
+            },
+          ],
+          literature: [
+            {
+              title: "Shakespeare Plays",
+              description: "Name all of Shakespeare's plays.",
+              url: "https://www.sporcle.com/games/g/shakespeare",
+            },
+          ],
+          misc: [
+            {
+              title: "Flags of the World",
+              description: "Identify country flags.",
+              url: "https://www.sporcle.com/games/g/worldflags",
+            },
+          ],
+        };
+
+        // This will be populated from Firestore
+        let wheelQuizzes = {};
+
+        // Categories in order - segment 0 starts at top of wheel and goes clockwise
+        const wheelCategories = [
+          { key: "geography", name: "Geography", icon: "🌍", color: "#f85149" },
+          { key: "history", name: "History", icon: "🏛️", color: "#d29922" },
+          { key: "science", name: "Science", icon: "🔬", color: "#3fb950" },
+          { key: "sports", name: "Sports", icon: "⚽", color: "#58a6ff" },
+          {
+            key: "entertainment",
+            name: "Movies/TV",
+            icon: "🎬",
+            color: "#a371f7",
+          },
+          { key: "music", name: "Music", icon: "🎵", color: "#f778ba" },
+          {
+            key: "literature",
+            name: "Literature",
+            icon: "📚",
+            color: "#79c0ff",
+          },
+          { key: "misc", name: "Misc", icon: "❓", color: "#ffa657" },
+        ];
+
+        const NUM_SEGMENTS = wheelCategories.length;
+        const SEGMENT_ANGLE = 360 / NUM_SEGMENTS; // 45 degrees per segment
+
+        let wheelCanvas, wheelCtx, wheelCenterX, wheelCenterY, wheelRadius;
+        let wheelCurrentRotation = 0;
+        let wheelIsSpinning = false;
+        let lastSpinTimestamp = 0;
+        let isAdmin = false;
+
+        function lightenColor(color, percent) {
+          const num = parseInt(color.replace("#", ""), 16);
+          const amt = Math.round(2.55 * percent);
+          const R = (num >> 16) + amt;
+          const G = ((num >> 8) & 0x00ff) + amt;
+          const B = (num & 0x0000ff) + amt;
+          return (
+            "#" +
+            (
+              0x1000000 +
+              (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
+              (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
+              (B < 255 ? (B < 1 ? 0 : B) : 255)
+            )
+              .toString(16)
+              .slice(1)
+          );
+        }
+
+        function drawWheel() {
+          if (!wheelCtx) return;
+
+          const anglePerSegment = (2 * Math.PI) / NUM_SEGMENTS;
+
+          wheelCtx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+
+          wheelCategories.forEach((cat, i) => {
+            // Start at -90 degrees (top) and go clockwise
+            const startAngle = i * anglePerSegment - Math.PI / 2;
+            const endAngle = startAngle + anglePerSegment;
+
+            wheelCtx.beginPath();
+            wheelCtx.moveTo(wheelCenterX, wheelCenterY);
+            wheelCtx.arc(
+              wheelCenterX,
+              wheelCenterY,
+              wheelRadius,
+              startAngle,
+              endAngle
+            );
+            wheelCtx.closePath();
+
+            const gradient = wheelCtx.createRadialGradient(
+              wheelCenterX,
+              wheelCenterY,
+              0,
+              wheelCenterX,
+              wheelCenterY,
+              wheelRadius
+            );
+            gradient.addColorStop(0, lightenColor(cat.color, 20));
+            gradient.addColorStop(1, cat.color);
+            wheelCtx.fillStyle = gradient;
+            wheelCtx.fill();
+
+            wheelCtx.strokeStyle = "rgba(0,0,0,0.3)";
+            wheelCtx.lineWidth = 2;
+            wheelCtx.stroke();
+
+            // Draw text - rotated to middle of segment
+            wheelCtx.save();
+            wheelCtx.translate(wheelCenterX, wheelCenterY);
+            wheelCtx.rotate(startAngle + anglePerSegment / 2);
+            wheelCtx.textAlign = "right";
+            wheelCtx.fillStyle = "white";
+            wheelCtx.shadowColor = "rgba(0,0,0,0.5)";
+            wheelCtx.shadowBlur = 4;
+
+            wheelCtx.font = "20px Arial";
+            wheelCtx.fillText(cat.icon, wheelRadius - 20, 7);
+
+            wheelCtx.font = "bold 10px Arial";
+            wheelCtx.fillText(cat.name, wheelRadius - 45, 5);
+
+            wheelCtx.restore();
+          });
+
+          // Inner circle shadow
+          wheelCtx.beginPath();
+          wheelCtx.arc(wheelCenterX, wheelCenterY, 35, 0, 2 * Math.PI);
+          wheelCtx.fillStyle = "rgba(0,0,0,0.2)";
+          wheelCtx.fill();
+        }
+
+        // Calculate which segment the pointer is pointing at given a rotation
+        function getWinningSegment(totalRotation) {
+          // Normalize rotation to 0-360
+          let normalizedRotation = totalRotation % 360;
+          if (normalizedRotation < 0) normalizedRotation += 360;
+
+          // When the wheel rotates CLOCKWISE by X degrees, the segment that
+          // ends up under the pointer (at top) is the one from position (360 - X).
+          //
+          // Formula: effectiveAngle = 360 - normalizedRotation
+          // segmentIndex = floor(effectiveAngle / 45)
+          //
+          // Verified against actual spins:
+          // - 152° rotation → Movies/TV (4): (360-152)/45 = 4.6 → 4 ✓
+          // - 1° rotation → Misc (7): (360-1)/45 = 7.97 → 7 ✓
+          // - 227° rotation → Science (2): (360-227)/45 = 2.95 → 2 ✓
+
+          let effectiveAngle = 360 - normalizedRotation;
+          if (effectiveAngle < 0) effectiveAngle += 360;
+
+          const segmentIndex =
+            Math.floor(effectiveAngle / SEGMENT_ANGLE) % NUM_SEGMENTS;
+
+          console.log("getWinningSegment DEBUG:", {
+            totalRotation: totalRotation,
+            normalizedRotation: normalizedRotation,
+            effectiveAngle: effectiveAngle,
+            segmentIndex: segmentIndex,
+            categoryName: wheelCategories[segmentIndex].name,
+          });
+
+          return segmentIndex;
+        }
+
+        // Debug helper - call from console: testWheelPosition(degrees)
+        window.testWheelPosition = function (degrees) {
+          if (wheelCanvas) {
+            wheelCanvas.style.transform = `rotate(${degrees}deg)`;
+            wheelCurrentRotation = degrees;
+            const segment = getWinningSegment(degrees);
+            console.log(
+              `At ${degrees}°: ${wheelCategories[segment].name} (${wheelCategories[segment].icon})`
+            );
+            return wheelCategories[segment].name;
+          }
+        };
+
+        function initWheel() {
+          wheelCanvas = document.getElementById("wheel-canvas");
+          if (!wheelCanvas) return;
+
+          wheelCtx = wheelCanvas.getContext("2d");
+          wheelCenterX = wheelCanvas.width / 2;
+          wheelCenterY = wheelCanvas.height / 2;
+          wheelRadius = wheelCanvas.width / 2 - 5;
+
+          drawWheel();
+
+          // Set up spin button click handler
+          const spinBtn = document.getElementById("spin-btn");
+          if (spinBtn) {
+            spinBtn.addEventListener("click", handleSpinClick);
+          }
+
+          // Listen for wheel spin updates from Firestore
+          if (window.shared && window.shared.listenWheelSpin) {
+            window.shared.listenWheelSpin(handleWheelSpinUpdate);
+          }
+
+          // Load quizzes from Firestore
+          if (window.shared && window.shared.listenWheelQuizzes) {
+            window.shared.listenWheelQuizzes(handleQuizzesUpdate);
+          }
+        }
+
+        // Called when wheelQuizzes collection updates
+        function handleQuizzesUpdate(snapshot) {
+          // Reset wheelQuizzes
+          wheelQuizzes = {};
+          wheelCategories.forEach((cat) => {
+            wheelQuizzes[cat.key] = [];
+          });
+
+          // Populate from Firestore
+          snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            if (data.category && wheelQuizzes[data.category]) {
+              wheelQuizzes[data.category].push({
+                title: data.title || "Untitled Quiz",
+                description: data.description || "Play this quiz!",
+                url: data.url || "#",
+              });
+            }
+          });
+
+          // Log quiz counts
+          console.log("Wheel quizzes loaded from Firestore:");
+          wheelCategories.forEach((cat) => {
+            const count = wheelQuizzes[cat.key]?.length || 0;
+            console.log(`  ${cat.icon} ${cat.name}: ${count} quizzes`);
+          });
+        }
+
+        // Get quizzes for a category (with fallback)
+        function getQuizzesForCategory(categoryKey) {
+          // Check if we have quizzes loaded from Firestore
+          if (
+            wheelQuizzes[categoryKey] &&
+            wheelQuizzes[categoryKey].length > 0
+          ) {
+            return wheelQuizzes[categoryKey];
+          }
+          // Fall back to hardcoded quizzes
+          if (
+            fallbackQuizzes[categoryKey] &&
+            fallbackQuizzes[categoryKey].length > 0
+          ) {
+            console.log(`Using fallback quizzes for ${categoryKey}`);
+            return fallbackQuizzes[categoryKey];
+          }
+          // Last resort fallback
+          return [
+            {
+              title: "Random Quiz",
+              description: "A surprise quiz!",
+              url: "https://www.sporcle.com/games/category/geography",
+            },
+          ];
+        }
+
+        // Admin clicks spin - just save rotation to Firestore
+        // The actual category/quiz determination happens AFTER the spin completes
+        async function handleSpinClick() {
+          if (wheelIsSpinning) return;
+
+          const spinBtn = document.getElementById("spin-btn");
+          spinBtn.disabled = true;
+          spinBtn.textContent = "🎲 Spinning...";
+          updateSpinStatus("Starting spin...");
+
+          // Calculate random spin parameters
+          const spinDuration = 4500 + Math.random() * 1000; // 4.5-5.5 seconds
+          const fullRotations = 5 + Math.floor(Math.random() * 3); // 5-7 full spins
+          const randomExtraAngle = Math.random() * 360; // Random final position
+          const targetRotation = fullRotations * 360 + randomExtraAngle;
+
+          // Save ONLY the spin parameters to Firestore
+          // Category and quiz will be determined AFTER spin completes
+          try {
+            await window.shared.setWheelSpin({
+              targetRotation: targetRotation,
+              spinDuration: spinDuration,
+              phase: "spinning", // Indicates spin is in progress, no result yet
+            });
+          } catch (err) {
+            console.error("Error saving wheel spin:", err);
+            spinBtn.disabled = false;
+            spinBtn.textContent = "🎲 Spin the Wheel!";
+            updateSpinStatus("Error starting spin");
+          }
+        }
+
+        // Called when Firestore wheelSpin document updates
+        function handleWheelSpinUpdate(snapshot) {
+          if (!snapshot.exists()) {
+            updateSpinStatus("Waiting for admin to spin the wheel...");
+            return;
+          }
+
+          const data = snapshot.data();
+
+          // Check if this is a new spin we need to animate
+          if (
+            data.timestamp &&
+            data.timestamp > lastSpinTimestamp &&
+            data.phase === "spinning"
+          ) {
+            lastSpinTimestamp = data.timestamp;
+            animateWheelSpin(data);
+          }
+          // Or if it's a completed spin with results (page load case)
+          else if (data.phase === "complete" && data.quiz) {
+            // Set wheel to final position without animation
+            if (data.finalRotation) {
+              wheelCurrentRotation = data.finalRotation;
+              if (wheelCanvas) {
+                wheelCanvas.style.transform = `rotate(${wheelCurrentRotation}deg)`;
+              }
+            }
+            displayQuizResult(data);
+          }
+        }
+
+        function animateWheelSpin(data) {
+          if (wheelIsSpinning) return;
+          wheelIsSpinning = true;
+
+          const spinBtn = document.getElementById("spin-btn");
+          if (spinBtn) {
+            spinBtn.disabled = true;
+            spinBtn.textContent = "🎲 Spinning...";
+          }
+          updateSpinStatus("Spinning...");
+
+          // Hide any previous result during spin
+          hideQuizResult();
+
+          const startRotation = wheelCurrentRotation;
+          const rotationAmount = data.targetRotation;
+          const finalRotation = startRotation + rotationAmount;
+          const spinDuration = data.spinDuration || 4500;
+          const startTime = performance.now();
+
+          function animate(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / spinDuration, 1);
+
+            // Cubic ease-out for realistic deceleration
+            const easeOut = 1 - Math.pow(1 - progress, 3);
+
+            wheelCurrentRotation = startRotation + rotationAmount * easeOut;
+            if (wheelCanvas) {
+              wheelCanvas.style.transform = `rotate(${wheelCurrentRotation}deg)`;
+            }
+
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            } else {
+              // Animation complete!
+              wheelCurrentRotation = finalRotation;
+              if (wheelCanvas) {
+                wheelCanvas.style.transform = `rotate(${wheelCurrentRotation}deg)`;
+              }
+
+              // Wait a moment for the wheel to visually settle
+              setTimeout(() => {
+                onSpinComplete(finalRotation, data.timestamp);
+              }, 500);
+            }
+          }
+
+          requestAnimationFrame(animate);
+        }
+
+        // Called after wheel animation completes - determine winner and show result
+        async function onSpinComplete(finalRotation, spinTimestamp) {
+          wheelIsSpinning = false;
+
+          const spinBtn = document.getElementById("spin-btn");
+          if (spinBtn) {
+            spinBtn.disabled = false;
+            spinBtn.textContent = "🎲 Spin Again!";
+          }
+
+          // Calculate which segment we landed on
+          const winningIndex = getWinningSegment(finalRotation);
+          const winningCategory = wheelCategories[winningIndex];
+
+          console.log(
+            "Spin complete! Final rotation:",
+            finalRotation,
+            "Winning index:",
+            winningIndex,
+            "Category:",
+            winningCategory.name
+          );
+
+          // Pick a random quiz from that category (uses Firestore quizzes with fallback)
+          const categoryQuizzes = getQuizzesForCategory(winningCategory.key);
+          const randomQuiz =
+            categoryQuizzes[Math.floor(Math.random() * categoryQuizzes.length)];
+
+          // Update Firestore with the complete result
+          // Only do this if we're admin (the one who initiated the spin)
+          if (isAdmin) {
+            try {
+              await window.shared.setWheelSpin({
+                targetRotation:
+                  finalRotation - (wheelCurrentRotation - finalRotation), // Keep original target
+                finalRotation: finalRotation,
+                spinDuration: 4500,
+                phase: "complete",
+                categoryKey: winningCategory.key,
+                categoryName: winningCategory.name,
+                categoryIcon: winningCategory.icon,
+                quiz: randomQuiz,
+                timestamp: spinTimestamp, // Keep the same timestamp
+              });
+
+              // Also update the quiz link for compatibility
+              await window.shared.setQuizLink(randomQuiz.url);
+            } catch (err) {
+              console.error("Error saving spin result:", err);
+            }
+          }
+
+          // Display the result locally
+          displayQuizResult({
+            categoryKey: winningCategory.key,
+            categoryName: winningCategory.name,
+            categoryIcon: winningCategory.icon,
+            quiz: randomQuiz,
+          });
+
+          // Confetti celebration!
+          createConfetti();
+        }
+
+        function hideQuizResult() {
+          const card = document.getElementById("quiz-result-card");
+          const header = document.getElementById("quiz-result-header");
+          const title = document.getElementById("quiz-result-title");
+          const quizName = document.getElementById("quiz-name");
+          const quizDesc = document.getElementById("quiz-description");
+          const quizLink = document.getElementById("quiz-link-display");
+          const quizUrl = document.getElementById("quiz-url-display");
+
+          if (card) card.classList.remove("has-quiz");
+          if (header) {
+            header.className = "quiz-result-header no-quiz";
+          }
+          if (title) {
+            title.innerHTML = "<span>🎲</span><span>Spinning...</span>";
+          }
+          if (quizName) quizName.textContent = "Determining category...";
+          if (quizDesc) quizDesc.textContent = "Watch the wheel!";
+          if (quizLink) quizLink.classList.add("d-none");
+          if (quizUrl) quizUrl.classList.add("d-none");
+        }
+
+        function displayQuizResult(data) {
+          const card = document.getElementById("quiz-result-card");
+          const header = document.getElementById("quiz-result-header");
+          const title = document.getElementById("quiz-result-title");
+          const quizName = document.getElementById("quiz-name");
+          const quizDesc = document.getElementById("quiz-description");
+          const quizLink = document.getElementById("quiz-link-display");
+          const quizUrl = document.getElementById("quiz-url-display");
+
+          if (card) card.classList.add("has-quiz");
+
+          if (header) {
+            header.classList.remove("no-quiz");
+            header.className =
+              "quiz-result-header wheel-cat-" + data.categoryKey;
+          }
+
+          if (title) {
+            title.innerHTML =
+              "<span>" +
+              (data.categoryIcon || "🎯") +
+              "</span><span>" +
+              (data.categoryName || "Quiz") +
+              "</span>";
+          }
+
+          if (data.quiz) {
+            if (quizName) quizName.textContent = data.quiz.title;
+            if (quizDesc) quizDesc.textContent = data.quiz.description;
+            if (quizLink) {
+              quizLink.href = data.quiz.url;
+              quizLink.textContent = "▶ Play This Quiz";
+              quizLink.classList.remove("d-none");
+            }
+            if (quizUrl) {
+              quizUrl.textContent = data.quiz.url;
+              quizUrl.classList.remove("d-none");
+            }
+          }
+
+          updateSpinStatus("");
+        }
+
+        function updateSpinStatus(message) {
+          const status = document.getElementById("spin-status");
+          if (status) {
+            status.textContent = message;
+          }
+        }
+
+        function createConfetti() {
+          const container = document.getElementById("wheel-confetti");
+          if (!container) return;
+
+          container.innerHTML = "";
+          const colors = wheelCategories.map((c) => c.color);
+
+          for (let i = 0; i < 100; i++) {
+            const piece = document.createElement("div");
+            piece.className = "wheel-confetti-piece";
+            piece.style.left = Math.random() * 100 + "%";
+            piece.style.background =
+              colors[Math.floor(Math.random() * colors.length)];
+            piece.style.animationDelay = Math.random() * 0.5 + "s";
+            piece.style.animationDuration = 2 + Math.random() * 2 + "s";
+            piece.style.width = 5 + Math.random() * 10 + "px";
+            piece.style.height = 5 + Math.random() * 10 + "px";
+
+            if (Math.random() > 0.5) {
+              piece.style.borderRadius = "50%";
+            }
+
+            container.appendChild(piece);
+          }
+
+          setTimeout(() => (container.innerHTML = ""), 4000);
+        }
+
+        // Show/hide spin button based on admin status
+        function updateAdminUI(admin) {
+          isAdmin = admin;
+          const spinBtn = document.getElementById("spin-btn");
+          if (spinBtn) {
+            if (admin) {
+              spinBtn.classList.remove("d-none");
+            } else {
+              spinBtn.classList.add("d-none");
+            }
+          }
+        }
+
+        // Listen for auth changes to show/hide admin button
+        if (window.authHelpers && window.authHelpers.onChange) {
+          window.authHelpers.onChange(async (user) => {
+            if (user) {
+              try {
+                const tokenResult = await window.authHelpers.getIdTokenResult();
+                updateAdminUI(tokenResult.claims.admin === true);
+              } catch (e) {
+                updateAdminUI(false);
+              }
+            } else {
+              updateAdminUI(false);
+            }
+          });
+        }
+
+        // Initialize wheel when DOM is ready
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", initWheel);
+        } else {
+          initWheel();
+        }
+      })();
+    </script>
+
+    <!-- User Authentication & Profile Management -->
+    <script>
+      // Wait for authHelpers to be available (set by the Firebase module script)
+      (function initUserAuth() {
+        if (!window.authHelpers || !window.shared) {
+          setTimeout(initUserAuth, 50);
+          return;
+        }
+
+        // DOM Elements
+        const authModal = document.getElementById("authModal");
+        const authModalTitle = document.getElementById("authModalTitle");
+        const authSigninView = document.getElementById("auth-signin-view");
+        const authSignupView = document.getElementById("auth-signup-view");
+        const authProfileView = document.getElementById("auth-profile-view");
+
+        // Sign In elements
+        const signinForm = document.getElementById("signin-form");
+        const signinEmail = document.getElementById("signin-email");
+        const signinPassword = document.getElementById("signin-password");
+        const signinBtn = document.getElementById("signin-btn");
+        const signinStatus = document.getElementById("signin-status");
+        const showSignupBtn = document.getElementById("show-signup-btn");
+
+        // Sign Up elements
+        const signupForm = document.getElementById("signup-form");
+        const signupDisplayname = document.getElementById("signup-displayname");
+        const signupAlias = document.getElementById("signup-alias");
+        const signupEmail = document.getElementById("signup-email");
+        const signupPassword = document.getElementById("signup-password");
+        const signupBtn = document.getElementById("signup-btn");
+        const signupStatus = document.getElementById("signup-status");
+        const showSigninBtn = document.getElementById("show-signin-btn");
+
+        // Profile edit elements
+        const profileSetupForm = document.getElementById("profile-setup-form");
+        const profileSetupStatus = document.getElementById(
+          "profile-setup-status"
+        );
+        const setupDisplayname = document.getElementById("setup-displayname");
+        const setupAlias = document.getElementById("setup-alias");
+
+        // User bar elements
+        const userProfileBar = document.getElementById("user-profile-bar");
+        const userDisplayName = document.getElementById("user-display-name");
+        const userAliasSpan = document.getElementById("user-alias");
+        const editProfileBtn = document.getElementById("edit-profile-btn");
+        const userSignoutBtn = document.getElementById("user-signout-btn");
+
+        // Submit score elements
+        const submitGuestView = document.getElementById("submit-guest-view");
+        const submitUserView = document.getElementById("submit-user-view");
+        const submitSigninBtn = document.getElementById("submit-signin-btn");
+        const entryForm = document.getElementById("entry-form");
+        const submitStatus = document.getElementById("submit-status");
+
+        // Use window scope so H2H section can access these
+        window.currentUser = null;
+        window.currentProfile = null;
+        let bsAuthModal = null;
+        let initialAuthCheckDone = false;
+
+        // Initialize Bootstrap modal
+        if (authModal && window.bootstrap) {
+          bsAuthModal = new window.bootstrap.Modal(authModal);
+        }
+
+        // Show auth modal (sign in view)
+        function showAuthModal(view) {
+          view = view || "signin";
+          if (bsAuthModal) {
+            authSigninView.classList.toggle("d-none", view !== "signin");
+            authSignupView.classList.toggle("d-none", view !== "signup");
+            authProfileView.classList.toggle("d-none", view !== "profile");
+
+            if (view === "signin") {
+              authModalTitle.textContent = "Welcome Back!";
+              signinStatus.textContent = "";
+            } else if (view === "signup") {
+              authModalTitle.textContent = "Create Account";
+              signupStatus.textContent = "";
+            } else if (view === "profile") {
+              authModalTitle.textContent = "Edit Profile";
+              profileSetupStatus.textContent = "";
+            }
+
+            bsAuthModal.show();
+          }
+        }
+
+        // Make showAuthModal globally accessible for H2H section
+        window.showAuthModal = showAuthModal;
+
+        // Hide auth modal
+        function hideAuthModal() {
+          if (bsAuthModal) {
+            bsAuthModal.hide();
+          }
+        }
+
+        // Toggle between sign in and sign up views
+        if (showSignupBtn) {
+          showSignupBtn.addEventListener("click", function () {
+            authSigninView.classList.add("d-none");
+            authSignupView.classList.remove("d-none");
+            authModalTitle.textContent = "Create Account";
+            signupStatus.textContent = "";
+          });
+        }
+
+        if (showSigninBtn) {
+          showSigninBtn.addEventListener("click", function () {
+            authSignupView.classList.add("d-none");
+            authSigninView.classList.remove("d-none");
+            authModalTitle.textContent = "Welcome Back!";
+            signinStatus.textContent = "";
+          });
+        }
+
+        // Sign In form submission
+        if (signinForm) {
+          signinForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const email = signinEmail.value.trim();
+            const password = signinPassword.value;
+
+            if (!email || !password) {
+              signinStatus.textContent = "Please fill in all fields.";
+              return;
+            }
+
+            try {
+              signinBtn.disabled = true;
+              signinBtn.textContent = "Signing in...";
+              signinStatus.textContent = "";
+
+              await window.authHelpers.signInWithEmail(email, password);
+              // Auth state change will handle the rest
+            } catch (err) {
+              console.error("Sign in error:", err);
+              signinBtn.disabled = false;
+              signinBtn.textContent = "Sign In";
+
+              // User-friendly error messages
+              if (
+                err.code === "auth/user-not-found" ||
+                err.code === "auth/wrong-password" ||
+                err.code === "auth/invalid-credential"
+              ) {
+                signinStatus.textContent = "Invalid email or password.";
+              } else if (err.code === "auth/too-many-requests") {
+                signinStatus.textContent =
+                  "Too many attempts. Please try again later.";
+              } else {
+                signinStatus.textContent = "Error: " + err.message;
+              }
+            }
+          });
+        }
+
+        // Sign Up form submission
+        if (signupForm) {
+          signupForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const displayName = signupDisplayname.value.trim();
+            const alias = signupAlias.value.trim().toLowerCase();
+            const email = signupEmail.value.trim();
+            const password = signupPassword.value;
+
+            if (!displayName || !alias || !email || !password) {
+              signupStatus.textContent = "Please fill in all fields.";
+              return;
+            }
+
+            if (!/^[a-zA-Z0-9_]+$/.test(alias)) {
+              signupStatus.textContent =
+                "Alias can only contain letters, numbers, and underscores.";
+              return;
+            }
+
+            if (password.length < 6) {
+              signupStatus.textContent =
+                "Password must be at least 6 characters.";
+              return;
+            }
+
+            try {
+              signupBtn.disabled = true;
+              signupBtn.textContent = "Creating account...";
+              signupStatus.textContent = "";
+
+              // Check if alias is available
+              const aliasAvailable = await window.shared.checkAliasAvailable(
+                alias,
+                null
+              );
+              if (!aliasAvailable) {
+                signupBtn.disabled = false;
+                signupBtn.textContent = "Create Account";
+                signupStatus.textContent =
+                  "This alias is already taken. Please choose another.";
+                return;
+              }
+
+              // Create the user account
+              const userCredential = await window.authHelpers.createAccount(
+                email,
+                password
+              );
+
+              // Save the profile
+              await window.shared.setUserProfile(userCredential.user.uid, {
+                displayName: displayName,
+                alias: alias,
+                email: email,
+                createdAt: Date.now(),
+              });
+
+              // Auth state change will handle the rest
+            } catch (err) {
+              console.error("Sign up error:", err);
+              signupBtn.disabled = false;
+              signupBtn.textContent = "Create Account";
+
+              // User-friendly error messages
+              if (err.code === "auth/email-already-in-use") {
+                signupStatus.textContent =
+                  "This email is already registered. Try signing in instead.";
+              } else if (err.code === "auth/weak-password") {
+                signupStatus.textContent =
+                  "Password is too weak. Use at least 6 characters.";
+              } else if (err.code === "auth/invalid-email") {
+                signupStatus.textContent =
+                  "Please enter a valid email address.";
+              } else {
+                signupStatus.textContent = "Error: " + err.message;
+              }
+            }
+          });
+        }
+
+        // Submit sign in button (in the submit score section)
+        if (submitSigninBtn) {
+          submitSigninBtn.addEventListener("click", function () {
+            showAuthModal("signin");
+          });
+        }
+
+        // Profile edit form
+        if (profileSetupForm) {
+          profileSetupForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const displayName = setupDisplayname.value.trim();
+            const alias = setupAlias.value.trim().toLowerCase();
+
+            if (!displayName || !alias) {
+              profileSetupStatus.textContent = "Please fill in all fields.";
+              return;
+            }
+
+            if (!/^[a-zA-Z0-9_]+$/.test(alias)) {
+              profileSetupStatus.textContent =
+                "Alias can only contain letters, numbers, and underscores.";
+              return;
+            }
+
+            try {
+              profileSetupStatus.textContent = "Saving...";
+
+              // Check if alias is available (allow keeping current alias)
+              const available = await window.shared.checkAliasAvailable(
+                alias,
+                currentUser.uid
+              );
+              if (!available) {
+                profileSetupStatus.textContent =
+                  "This alias is already taken. Please choose another.";
+                return;
+              }
+
+              // Save profile
+              await window.shared.setUserProfile(window.currentUser.uid, {
+                displayName: displayName,
+                alias: alias,
+              });
+
+              window.currentProfile = {
+                displayName: displayName,
+                alias: alias,
+              };
+              hideAuthModal();
+              updateUIForUser();
+            } catch (err) {
+              console.error("Profile save error:", err);
+              profileSetupStatus.textContent =
+                "Error saving profile: " + err.message;
+            }
+          });
+        }
+
+        // Sign out button
+        if (userSignoutBtn) {
+          userSignoutBtn.addEventListener("click", async function () {
+            try {
+              await window.authHelpers.signOut();
+            } catch (e) {
+              console.error("Sign out error:", e);
+            }
+          });
+        }
+
+        // Edit profile button
+        if (editProfileBtn) {
+          editProfileBtn.addEventListener("click", function () {
+            if (window.currentProfile) {
+              setupDisplayname.value = window.currentProfile.displayName || "";
+              setupAlias.value = window.currentProfile.alias || "";
+            }
+            showAuthModal("profile");
+          });
+        }
+
+        // Update UI based on user state
+        function updateUIForUser() {
+          if (window.currentUser && window.currentProfile) {
+            // Logged in with profile
+            userProfileBar.classList.remove("d-none");
+            userDisplayName.textContent = window.currentProfile.displayName;
+            userAliasSpan.textContent = window.currentProfile.alias;
+
+            submitGuestView.classList.add("d-none");
+            submitUserView.classList.remove("d-none");
+
+            // Update H2H section for logged-in user
+            if (typeof window.updateH2HAuthUI === "function") {
+              window.updateH2HAuthUI(window.currentUser, window.currentProfile);
+            }
+          } else {
+            // Not logged in or no profile
+            userProfileBar.classList.add("d-none");
+            submitGuestView.classList.remove("d-none");
+            submitUserView.classList.add("d-none");
+
+            // Update H2H section for logged-out user
+            if (typeof window.updateH2HAuthUI === "function") {
+              window.updateH2HAuthUI(null, null);
+            }
+          }
+        }
+
+        // Auth state change listener
+        window.authHelpers.onChange(async function (user) {
+          window.currentUser = user;
+
+          // Reset form states
+          if (signinBtn) {
+            signinBtn.disabled = false;
+            signinBtn.textContent = "Sign In";
+          }
+          if (signupBtn) {
+            signupBtn.disabled = false;
+            signupBtn.textContent = "Create Account";
+          }
+
+          if (user) {
+            // User is signed in, load profile
+            try {
+              // Try to get profile, with retries for race condition during sign-up
+              let retries = 3;
+              let profile = null;
+
+              while (retries > 0 && !profile) {
+                profile = await window.shared.getUserProfile(user.uid);
+                if (!profile && retries > 1) {
+                  // Wait a bit and retry (profile might still be writing)
+                  await new Promise((resolve) => setTimeout(resolve, 500));
+                }
+                retries--;
+              }
+
+              window.currentProfile = profile;
+
+              if (window.currentProfile) {
+                // Has profile, we're good
+                hideAuthModal();
+                updateUIForUser();
+              } else {
+                // No profile found after retries - this might be a new user
+                // whose profile write failed, or an old account without profile.
+                // Don't sign them out - just update UI without profile features
+                console.log("User signed in but profile not found");
+                updateUIForUser();
+              }
+            } catch (e) {
+              console.error("Error loading profile:", e);
+              updateUIForUser();
+            }
+          } else {
+            // User not signed in
+            window.currentProfile = null;
+            updateUIForUser();
+
+            // Only show sign in modal on initial page load, not on every auth change
+            if (!initialAuthCheckDone) {
+              initialAuthCheckDone = true;
+              showAuthModal("signin");
+            }
+          }
+        });
+
+        // Handle score submission
+        if (entryForm) {
+          entryForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            if (!window.currentUser || !window.currentProfile) {
+              submitStatus.textContent = "Please sign in first.";
+              return;
+            }
+
+            const fractionInput = document.getElementById("fraction");
+            const timeLeftInput = document.getElementById("time-left");
+
+            const fractionVal = fractionInput.value.trim();
+            const timeLeftVal = timeLeftInput.value.trim();
+
+            // Parse fraction
+            const match = fractionVal.match(/^(\d+)\s*\/\s*(\d+)$/);
+            if (!match) {
+              submitStatus.textContent =
+                "Invalid score format. Use num/den (e.g., 7/9)";
+              return;
+            }
+            const num = parseInt(match[1], 10);
+            const den = parseInt(match[2], 10);
+            if (den === 0) {
+              submitStatus.textContent = "Denominator cannot be zero.";
+              return;
+            }
+
+            // Parse time left (mm:ss or m:ss or just seconds)
+            var timeLeftSeconds = 0;
+            const timeMatch = timeLeftVal.match(/^(\d+):(\d{2})$/);
+            if (timeMatch) {
+              timeLeftSeconds =
+                parseInt(timeMatch[1], 10) * 60 + parseInt(timeMatch[2], 10);
+            } else if (/^\d+$/.test(timeLeftVal)) {
+              timeLeftSeconds = parseInt(timeLeftVal, 10);
+            } else {
+              submitStatus.textContent =
+                "Invalid time format. Use mm:ss (e.g., 1:23)";
+              return;
+            }
+
+            try {
+              submitStatus.textContent = "Submitting...";
+
+              await window.shared.submitScore({
+                alias: window.currentProfile.alias,
+                displayName: window.currentProfile.displayName,
+                num: num,
+                den: den,
+                ratio: num / den,
+                timeLeft: timeLeftSeconds,
+              });
+
+              fractionInput.value = "";
+              timeLeftInput.value = "";
+              submitStatus.textContent = "✓ Score submitted!";
+
+              setTimeout(function () {
+                if (submitStatus.textContent === "✓ Score submitted!") {
+                  submitStatus.textContent = "";
+                }
+              }, 3000);
+            } catch (err) {
+              console.error("Submit error:", err);
+              submitStatus.textContent = "Error: " + err.message;
+            }
+          });
+        }
+
+        // Expose for other scripts
+        window.userAuth = {
+          getCurrentUser: function () {
+            return window.currentUser;
+          },
+          getCurrentProfile: function () {
+            return window.currentProfile;
+          },
+          showAuthModal: showAuthModal,
+        };
       })();
     </script>
 
