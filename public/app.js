@@ -17,17 +17,9 @@ function initApp() {
   var _latestTodayRows = [];
 
   // Championship winners by alias (lowercase)
-  // Each entry maps to an array of { season, type } objects
-  // Types: 'commissioner' (most points), 'cup' (playoff winner),
-  //        'h2h' (most H2H wins), 'highs' (most first places)
-  var champions = {
-    grifjom: [
-      { season: 1, type: "commissioner" },
-      { season: 1, type: "cup" },
-    ],
-    winkmax: [{ season: 1, type: "h2h" }],
-    moghosh: [{ season: 1, type: "highs" }],
-  };
+  // Championship data - will be loaded from Firestore per-league
+  var champions = {};
+  var seasonAwards = {};
 
   // Badge display configuration for each award type
   var badgeStyles = {
@@ -82,6 +74,74 @@ function initApp() {
 
   // Expose globally for use in H2H standings
   window.getChampionBadges = getChampionBadges;
+
+  // Load champions from Firestore for current league
+  async function loadChampionsFromFirestore() {
+    if (
+      !window.currentLeagueId ||
+      !window.shared ||
+      !window.shared.getChampions
+    ) {
+      console.log("Cannot load champions - no league or shared not ready");
+      return;
+    }
+
+    try {
+      const championsData = await window.shared.getChampions();
+
+      // Reset data
+      champions = {};
+      seasonAwards = {};
+
+      // Process each champion document
+      championsData.forEach(function (champ) {
+        const season = champ.season || 1;
+        const alias = (champ.alias || "").toLowerCase();
+        const type = champ.type; // commissioner, cup, h2h, highs
+
+        // Build champions lookup for badges
+        if (!champions[alias]) {
+          champions[alias] = [];
+        }
+        champions[alias].push({ season: season, type: type });
+
+        // Build seasonAwards for Hall of Champions display
+        if (!seasonAwards[season]) {
+          seasonAwards[season] = {};
+        }
+
+        // Map type to award key
+        var awardKey = {
+          commissioner: "commissionersTrophy",
+          cup: "sporcleCup",
+          h2h: "h2hDemon",
+          highs: "highestHighs",
+        }[type];
+
+        if (awardKey) {
+          seasonAwards[season][awardKey] = {
+            alias: alias,
+            displayName: champ.displayName || alias,
+            stat: champ.stat || "",
+          };
+        }
+      });
+
+      console.log(
+        "Loaded champions:",
+        Object.keys(champions).length,
+        "players"
+      );
+
+      // Refresh the Hall of Champions display
+      initSeasonSelector();
+    } catch (err) {
+      console.error("Error loading champions:", err);
+    }
+  }
+
+  // Expose for league switch
+  window.loadChampionsFromFirestore = loadChampionsFromFirestore;
 
   // UI helper functions
   function setStatus(text, kind) {
@@ -161,10 +221,15 @@ function initApp() {
         timeLeft > 0 ? `${mins}:${secs.toString().padStart(2, "0")}` : "-";
       const badges = getChampionBadges(e.alias);
 
+      // Make name clickable to view profile
+      const clickableName = `<a href="#" class="player-profile-link text-decoration-none" data-alias="${escapeHtml(
+        e.alias
+      )}" data-displayname="${escapeHtml(shown)}">${escapeHtml(shown)}</a>`;
+
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td><span class="badge">${i + 1}</span></td>
-        <td>${escapeHtml(shown)}${badges}</td>
+        <td>${clickableName}${badges}</td>
         <td>${e.num}/${e.den}</td>
         <td>${(e.ratio * 100).toFixed(2)}%</td>
         <td>${timeDisplay}</td>
@@ -182,6 +247,9 @@ function initApp() {
         }`;
       tbody.appendChild(tr);
     });
+
+    // Set up click handlers for player profile links
+    setupPlayerProfileLinks();
   }
 
   // Render season standings (cumulative points)
@@ -209,40 +277,22 @@ function initApp() {
           : titleCase(r.alias);
       const badges = getChampionBadges(r.alias);
 
+      // Make name clickable to view profile
+      const clickableName = `<a href="#" class="player-profile-link text-decoration-none" data-alias="${escapeHtml(
+        r.alias
+      )}" data-displayname="${escapeHtml(shown)}">${escapeHtml(shown)}</a>`;
+
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td><span class="badge">${i + 1}</span></td>
-        <td>${escapeHtml(shown)}${badges}</td>
+        <td>${clickableName}${badges}</td>
         <td>${r.pts}</td>`;
       tbody.appendChild(tr);
     });
-  }
 
-  // Season awards data - populated with each season's winners
-  var seasonAwards = {
-    1: {
-      commissionersTrophy: {
-        alias: "grifjom",
-        displayName: "Josh",
-        stat: "234 points",
-      },
-      sporcleCup: {
-        alias: "grifjom",
-        displayName: "Josh",
-        stat: "Playoff Champion",
-      },
-      h2hDemon: {
-        alias: "winkmax",
-        displayName: "Max",
-        stat: "107 wins",
-      },
-      highestHighs: {
-        alias: "moghosh",
-        displayName: "Moon",
-        stat: "12 first places",
-      },
-    },
-  };
+    // Set up click handlers for player profile links
+    setupPlayerProfileLinks();
+  }
 
   // Award type metadata for rendering
   var awardTypes = {
@@ -279,7 +329,7 @@ function initApp() {
     if (!container) return;
 
     var awards = seasonAwards[season];
-    if (!awards) {
+    if (!awards || Object.keys(awards).length === 0) {
       container.innerHTML = "";
       if (empty) empty.classList.remove("d-none");
       return;
@@ -316,9 +366,18 @@ function initApp() {
   }
 
   // Initialize season selector dropdown
-  var seasonSelector = document.getElementById("season-selector");
-  if (seasonSelector) {
+  function initSeasonSelector() {
+    var seasonSelector = document.getElementById("season-selector");
+    if (!seasonSelector) return;
+
     var seasons = Object.keys(seasonAwards).sort((a, b) => b - a);
+
+    if (seasons.length === 0) {
+      seasonSelector.innerHTML = '<option value="1">Season 1</option>';
+      renderAwards(1);
+      return;
+    }
+
     seasonSelector.innerHTML = "";
     seasons.forEach(function (s) {
       var opt = document.createElement("option");
@@ -327,13 +386,19 @@ function initApp() {
       seasonSelector.appendChild(opt);
     });
 
+    if (seasons.length > 0) {
+      renderAwards(parseInt(seasons[0], 10));
+    }
+  }
+
+  var seasonSelector = document.getElementById("season-selector");
+  if (seasonSelector) {
     seasonSelector.addEventListener("change", function () {
       renderAwards(parseInt(this.value, 10));
     });
 
-    if (seasons.length > 0) {
-      renderAwards(parseInt(seasons[0], 10));
-    }
+    // Initial render (will be called again after loading from Firestore)
+    initSeasonSelector();
   }
 
   // Render Wall of Shame (most last places)
@@ -379,17 +444,67 @@ function initApp() {
     }
   }
 
-  // Set up Firestore listeners for real-time data
-  if (window.shared) {
+  // Track unsubscribe functions for cleanup on league switch
+  var todayUnsub = null;
+  var pointsUnsub = null;
+
+  // Subscribe to today's standings for current league
+  function subscribeTodayStandings() {
+    // Unsubscribe from previous listener
+    if (todayUnsub) {
+      todayUnsub();
+      todayUnsub = null;
+    }
+
+    // Check if league is selected
+    if (!window.currentLeagueId) {
+      console.log("No league selected yet, skipping today subscription");
+      renderStandingsFromShared([]);
+      return;
+    }
+
     if (typeof window.shared.listenToday === "function") {
-      window.shared.listenToday((snap) => {
+      console.log(
+        "Subscribing to today standings for league:",
+        window.currentLeagueId
+      );
+      todayUnsub = window.shared.listenToday((snap) => {
+        if (!snap || !snap.docs) {
+          renderStandingsFromShared([]);
+          return;
+        }
         const rows = snap.docs.map((d) => d.data());
         _latestTodayRows = rows;
         renderStandingsFromShared(rows);
       });
     }
+  }
+
+  // Subscribe to season points for current league
+  function subscribePointsStandings() {
+    // Unsubscribe from previous listener
+    if (pointsUnsub) {
+      pointsUnsub();
+      pointsUnsub = null;
+    }
+
+    // Check if league is selected
+    if (!window.currentLeagueId) {
+      console.log("No league selected yet, skipping points subscription");
+      renderPointsFromShared([]);
+      return;
+    }
+
     if (typeof window.shared.listenPoints === "function") {
-      window.shared.listenPoints(function (snap) {
+      console.log(
+        "Subscribing to points standings for league:",
+        window.currentLeagueId
+      );
+      pointsUnsub = window.shared.listenPoints(function (snap) {
+        if (!snap || !snap.docs) {
+          renderPointsFromShared([]);
+          return;
+        }
         var rows = snap.docs.map(function (d) {
           var x = d.data() || {};
           return {
@@ -405,6 +520,37 @@ function initApp() {
         renderPlayoffsBracketSimple(rows);
       });
     }
+  }
+
+  // Expose functions for league system to call on league switch
+  window.subscribeTodayStandings = subscribeTodayStandings;
+  window.subscribePointsStandings = subscribePointsStandings;
+
+  // Function to refresh all data (called when switching leagues)
+  window.refreshAllLeagueData = function () {
+    console.log("Refreshing all league data for:", window.currentLeagueId);
+    subscribeTodayStandings();
+    subscribePointsStandings();
+  };
+
+  // Set up Firestore listeners for real-time data
+  // Wait for league system to initialize before subscribing
+  if (window.shared) {
+    // Check periodically until league is set
+    var initAttempts = 0;
+    var initInterval = setInterval(function () {
+      initAttempts++;
+      if (window.currentLeagueId) {
+        clearInterval(initInterval);
+        console.log("League ready, initializing data subscriptions");
+        subscribeTodayStandings();
+        subscribePointsStandings();
+      } else if (initAttempts > 50) {
+        // After 5 seconds, stop waiting (user might not have a league yet)
+        clearInterval(initInterval);
+        console.log("No league selected after timeout");
+      }
+    }, 100);
   }
 
   // Admin UI management
@@ -539,8 +685,16 @@ function initApp() {
         return;
       if (!window.shared || typeof window.shared.finishDay !== "function")
         return;
+
+      // Get current league ID
+      const leagueId = window.currentLeagueId;
+      if (!leagueId) {
+        setStatus("No league selected", "warn");
+        return;
+      }
+
       window.shared
-        .finishDay()
+        .finishDay({ leagueId: leagueId })
         .then(() => setStatus("Awarded points", "ok"))
         .catch((e) => setStatus(e?.message || "Permission denied", "warn"));
     });
@@ -552,8 +706,16 @@ function initApp() {
       if (!confirm("Reset ALL cumulative points back to 0?")) return;
       if (!window.shared || typeof window.shared.resetScores !== "function")
         return;
+
+      // Get current league ID
+      const leagueId = window.currentLeagueId;
+      if (!leagueId) {
+        setStatus("No league selected", "warn");
+        return;
+      }
+
       window.shared
-        .resetScores()
+        .resetScores({ leagueId: leagueId })
         .then(() => setStatus("All points reset", "ok"))
         .catch((e) => setStatus(e?.message || "Permission denied", "warn"));
     });
@@ -893,5 +1055,25 @@ function initApp() {
       }
       host.appendChild(c.col);
     }
+  }
+
+  // Set up click handlers for player profile links
+  function setupPlayerProfileLinks() {
+    document.querySelectorAll(".player-profile-link").forEach(function (link) {
+      // Remove existing listeners by cloning
+      const newLink = link.cloneNode(true);
+      link.parentNode.replaceChild(newLink, link);
+
+      newLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        const alias = this.dataset.alias;
+        const displayName = this.dataset.displayname;
+
+        // Call the profile modal function from index.html
+        if (typeof window.openUserProfileModal === "function") {
+          window.openUserProfileModal(alias, displayName);
+        }
+      });
+    });
   }
 }

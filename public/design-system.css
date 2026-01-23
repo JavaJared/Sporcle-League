@@ -1,0 +1,1925 @@
+/*
+ * SPORCLE LEAGUE DESIGN SYSTEM
+ * A modern, minimalistic theme with custom color palette
+ * 
+ * Colors:
+ * - Coral Red: #ED6A5A (danger/accent)
+ * - Deep Purple: #493657 (secondary/elevated)
+ * - Dark Teal: #004643 (primary/background)
+ * - Bright Mint: #50FFB1 (success/highlight)
+ * - Forest Green: #4FB286 (info/success-alt)
+ *
+ * How to use:
+ * 1. Link this CSS file AFTER Bootstrap in your HTML
+ * 2. The variables below control the entire theme
+ * 3. Customize by changing the :root variables
+ */
+
+/* ========================================
+   1. FONT IMPORTS
+   ======================================== */
+
+/* Modak Display Font - for headings and branding */
+@font-face {
+  font-family: "Modak";
+  src: url("./fonts/Modak-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Inter for body text */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+/* ========================================
+   2. DESIGN TOKENS (Variables)
+   ======================================== */
+
+:root {
+  /* --- Color Palette --- */
+
+  /* Primary colors from new palette */
+  --color-coral: #ed6a5a;
+  --color-coral-light: #f28b7e;
+  --color-coral-dark: #d45647;
+
+  --color-purple: #493657;
+  --color-purple-light: #5e4670;
+  --color-purple-dark: #362842;
+
+  --color-teal: #004643;
+  --color-teal-light: #006560;
+  --color-teal-dark: #002f2d;
+
+  --color-mint: #50ffb1;
+  --color-mint-light: #7affca;
+  --color-mint-dark: #3acc8e;
+
+  --color-forest: #4fb286;
+  --color-forest-light: #6fc49d;
+  --color-forest-dark: #3d9a70;
+
+  /* Background colors - dark, layered approach using teal/purple */
+  --bg-base: #002f2d; /* Deepest background - dark teal */
+  --bg-surface: #003d3a; /* Cards, containers - medium teal */
+  --bg-elevated: #493657; /* Modals, dropdowns - deep purple */
+  --bg-hover: #5e4670; /* Hover states - lighter purple */
+
+  /* Accent colors - mapped to new palette */
+  --accent-primary: #50ffb1; /* Bright mint - main actions */
+  --accent-primary-hover: #7affca;
+  --accent-secondary: #4fb286; /* Forest green - secondary */
+  --accent-success: #50ffb1; /* Mint - wins, success */
+  --accent-warning: #ed6a5a; /* Coral - warnings */
+  --accent-danger: #ed6a5a; /* Coral - errors, losses */
+  --accent-info: #4fb286; /* Forest green - info */
+
+  /* Text colors */
+  --text-primary: #f1f5f9; /* Main text - almost white */
+  --text-secondary: #a8c5c3; /* Muted text - teal-tinted */
+  --text-tertiary: #6b9794; /* Very muted - darker teal */
+  --text-inverse: #002f2d; /* Text on light backgrounds */
+
+  /* Border colors */
+  --border-subtle: #004643; /* Subtle dividers */
+  --border-default: #006560; /* Default borders */
+  --border-strong: #50ffb1; /* Emphasized borders - mint accent */
+
+  /* --- Typography --- */
+  --font-display: "Modak", cursive;
+  --font-sans:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  /* Font sizes - using a modular scale (1.2 ratio) */
+  --text-xs: 0.694rem; /* 11px */
+  --text-sm: 0.833rem; /* 13px */
+  --text-base: 1rem; /* 16px */
+  --text-lg: 1.2rem; /* 19px */
+  --text-xl: 1.44rem; /* 23px */
+  --text-2xl: 1.728rem; /* 28px */
+  --text-3xl: 2.074rem; /* 33px */
+  --text-4xl: 2.488rem; /* 40px */
+
+  /* Font weights */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* Line heights */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  /* --- Spacing --- */
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.25rem; /* 20px */
+  --space-6: 1.5rem; /* 24px */
+  --space-8: 2rem; /* 32px */
+  --space-10: 2.5rem; /* 40px */
+  --space-12: 3rem; /* 48px */
+  --space-16: 4rem; /* 64px */
+
+  /* --- Border Radius --- */
+  --radius-sm: 0.375rem; /* 6px */
+  --radius-md: 0.5rem; /* 8px */
+  --radius-lg: 0.75rem; /* 12px */
+  --radius-xl: 1rem; /* 16px */
+  --radius-2xl: 1.5rem; /* 24px */
+  --radius-full: 9999px; /* Pill shape */
+
+  /* --- Shadows --- */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-xl:
+    0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+  --shadow-glow: 0 0 20px -5px var(--accent-primary);
+  --shadow-mint-glow: 0 0 30px -5px rgba(80, 255, 177, 0.4);
+
+  /* --- Transitions --- */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms ease;
+
+  /* --- Z-Index Scale --- */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-modal-backdrop: 300;
+  --z-modal: 400;
+  --z-tooltip: 500;
+  --z-toast: 600;
+
+  /* --- shadcn-style variables --- */
+  --ring-color: rgba(80, 255, 177, 0.3);
+  --ring-offset: 2px;
+  --input-bg: var(--bg-surface);
+  --input-border: var(--border-default);
+  --input-focus-ring: var(--accent-primary);
+}
+
+/* ========================================
+   3. BASE STYLES & RESETS
+   ======================================== */
+
+/* Base body styles */
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+  background-color: var(--bg-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Smoother scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Remove default margins */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-top: 0;
+}
+
+/* Links */
+a {
+  color: var(--accent-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--accent-primary-hover);
+}
+
+/* ========================================
+   4. TYPOGRAPHY
+   ======================================== */
+
+/* Display headings use Modak font */
+h1,
+.h1 {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-tight);
+  letter-spacing: 0.02em;
+  color: var(--accent-primary);
+}
+
+h2,
+.h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-tight);
+  letter-spacing: 0.01em;
+}
+
+h3,
+.h3 {
+  font-family: var(--font-sans);
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-tight);
+}
+
+h4,
+.h4 {
+  font-family: var(--font-sans);
+  font-size: var(--text-lg);
+  font-weight: var(--font-medium);
+  line-height: var(--leading-tight);
+}
+
+h5,
+.h5 {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  line-height: var(--leading-normal);
+}
+
+h6,
+.h6 {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  line-height: var(--leading-normal);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+/* Display text class for extra-large Modak headings */
+.display-text {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  line-height: 1.1;
+  color: var(--accent-primary);
+}
+
+.text-muted {
+  color: var(--text-secondary) !important;
+}
+
+.text-small {
+  font-size: var(--text-sm);
+}
+
+.text-xs {
+  font-size: var(--text-xs);
+}
+
+/* ========================================
+   5. LAYOUT COMPONENTS
+   ======================================== */
+
+/* Main container */
+.container,
+.container-fluid {
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .container,
+  .container-fluid {
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+  }
+}
+
+/* ========================================
+   6. CARDS
+   ======================================== */
+
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition:
+    box-shadow var(--transition-base),
+    border-color var(--transition-base);
+}
+
+.card:hover {
+  border-color: var(--border-default);
+}
+
+.card-header {
+  background: transparent;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: var(--space-4) var(--space-5);
+  font-weight: var(--font-semibold);
+}
+
+.card-body {
+  padding: var(--space-5);
+}
+
+.card-footer {
+  background: transparent;
+  border-top: 1px solid var(--border-subtle);
+  padding: var(--space-4) var(--space-5);
+}
+
+/* Interactive card variant */
+.card-interactive {
+  cursor: pointer;
+}
+
+.card-interactive:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-primary);
+}
+
+/* ========================================
+   7. BUTTONS
+   ======================================== */
+
+.btn {
+  font-family: var(--font-sans);
+  font-weight: var(--font-medium);
+  font-size: var(--text-sm);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-color);
+}
+
+/* Primary button - mint */
+.btn-primary {
+  background: var(--accent-primary);
+  color: var(--text-inverse);
+  border-color: var(--accent-primary);
+}
+
+.btn-primary:hover {
+  background: var(--accent-primary-hover);
+  border-color: var(--accent-primary-hover);
+  color: var(--text-inverse);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md), var(--shadow-mint-glow);
+}
+
+/* Secondary/Outline button */
+.btn-secondary,
+.btn-outline-secondary {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border-default);
+}
+
+.btn-secondary:hover,
+.btn-outline-secondary:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+/* Success button - forest green */
+.btn-success {
+  background: var(--color-forest);
+  color: white;
+  border-color: var(--color-forest);
+}
+
+.btn-success:hover {
+  background: var(--color-forest-dark);
+  border-color: var(--color-forest-dark);
+  color: white;
+}
+
+.btn-outline-success {
+  background: transparent;
+  color: var(--accent-success);
+  border-color: var(--accent-success);
+}
+
+.btn-outline-success:hover {
+  background: var(--accent-success);
+  color: var(--text-inverse);
+}
+
+/* Warning button - coral */
+.btn-warning {
+  background: var(--accent-warning);
+  color: white;
+  border-color: var(--accent-warning);
+}
+
+.btn-warning:hover {
+  background: var(--color-coral-dark);
+  border-color: var(--color-coral-dark);
+  color: white;
+}
+
+.btn-outline-warning {
+  background: transparent;
+  color: var(--accent-warning);
+  border-color: var(--accent-warning);
+}
+
+.btn-outline-warning:hover {
+  background: var(--accent-warning);
+  color: white;
+}
+
+/* Danger button - coral */
+.btn-danger {
+  background: var(--accent-danger);
+  color: white;
+  border-color: var(--accent-danger);
+}
+
+.btn-danger:hover {
+  background: var(--color-coral-dark);
+  border-color: var(--color-coral-dark);
+  color: white;
+}
+
+.btn-outline-danger {
+  background: transparent;
+  color: var(--accent-danger);
+  border-color: var(--accent-danger);
+}
+
+.btn-outline-danger:hover {
+  background: var(--accent-danger);
+  color: white;
+}
+
+/* Info button - forest green */
+.btn-info {
+  background: var(--accent-info);
+  color: white;
+  border-color: var(--accent-info);
+}
+
+.btn-info:hover {
+  background: var(--color-forest-dark);
+  border-color: var(--color-forest-dark);
+  color: white;
+}
+
+.btn-outline-info {
+  background: transparent;
+  color: var(--accent-info);
+  border-color: var(--accent-info);
+}
+
+.btn-outline-info:hover {
+  background: var(--accent-info);
+  color: white;
+}
+
+/* Ghost button (minimal) */
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: transparent;
+}
+
+.btn-ghost:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* Button sizes */
+.btn-sm {
+  font-size: var(--text-xs);
+  padding: var(--space-1) var(--space-3);
+}
+
+.btn-lg {
+  font-size: var(--text-base);
+  padding: var(--space-3) var(--space-6);
+}
+
+/* ========================================
+   8. FORMS & INPUTS (shadcn-style)
+   ======================================== */
+
+/* 
+ * Input component styled after shadcn/ui
+ * Features: clean borders, subtle backgrounds, focus rings
+ */
+
+.form-control,
+.form-select,
+.input,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+textarea {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  padding: var(--space-2) var(--space-3);
+  width: 100%;
+  height: 2.5rem;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.form-control:focus,
+.form-select:focus,
+.input:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="search"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+textarea:focus {
+  background: var(--bg-surface);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--ring-color);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.form-control::placeholder,
+.input::placeholder,
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-tertiary);
+}
+
+.form-control:disabled,
+.input:disabled,
+input:disabled,
+textarea:disabled {
+  background: var(--bg-hover);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* File input special styling */
+input[type="file"] {
+  padding: 0;
+  height: auto;
+}
+
+input[type="file"]::file-selector-button {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  background: var(--bg-hover);
+  border: none;
+  border-right: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  padding: var(--space-2) var(--space-4);
+  margin-right: var(--space-3);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+input[type="file"]::file-selector-button:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+/* Textarea specific */
+textarea {
+  height: auto;
+  min-height: 5rem;
+  resize: vertical;
+}
+
+.form-label {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+  display: block;
+}
+
+/* Input groups */
+.input-group {
+  display: flex;
+  align-items: stretch;
+}
+
+.input-group .form-control,
+.input-group .input {
+  border-radius: 0;
+}
+
+.input-group > :first-child {
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+.input-group > :last-child {
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.input-group-text {
+  display: flex;
+  align-items: center;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+}
+
+/* Input with icon */
+.input-with-icon {
+  position: relative;
+}
+
+.input-with-icon .input,
+.input-with-icon .form-control {
+  padding-left: 2.5rem;
+}
+
+.input-with-icon .input-icon {
+  position: absolute;
+  left: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+/* Input validation states */
+.input-error,
+.form-control.is-invalid {
+  border-color: var(--accent-danger);
+}
+
+.input-error:focus,
+.form-control.is-invalid:focus {
+  border-color: var(--accent-danger);
+  box-shadow: 0 0 0 3px rgba(237, 106, 90, 0.3);
+}
+
+.input-success,
+.form-control.is-valid {
+  border-color: var(--accent-success);
+}
+
+.input-success:focus,
+.form-control.is-valid:focus {
+  border-color: var(--accent-success);
+  box-shadow: 0 0 0 3px rgba(80, 255, 177, 0.3);
+}
+
+/* Form helper text */
+.form-text {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  margin-top: var(--space-1);
+}
+
+.form-text.error {
+  color: var(--accent-danger);
+}
+
+/* ========================================
+   9. NAVIGATION & TABS
+   ======================================== */
+
+/* Nav tabs - pill style */
+.nav-pills {
+  gap: var(--space-2);
+}
+
+.nav-pills .nav-link {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  background: transparent;
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-4);
+  transition: all var(--transition-fast);
+}
+
+.nav-pills .nav-link:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.nav-pills .nav-link.active {
+  color: var(--text-inverse);
+  background: var(--accent-primary);
+}
+
+/* Underline tabs variant */
+.nav-tabs {
+  border-bottom: 1px solid var(--border-subtle);
+  gap: var(--space-4);
+}
+
+.nav-tabs .nav-link {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  padding: var(--space-3) var(--space-1);
+  margin-bottom: -1px;
+  transition: all var(--transition-fast);
+}
+
+.nav-tabs .nav-link:hover {
+  color: var(--text-primary);
+  border-bottom-color: var(--border-strong);
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--accent-primary);
+  border-bottom-color: var(--accent-primary);
+  background: transparent;
+}
+
+/* ========================================
+   10. BADGES & TAGS
+   ======================================== */
+
+.badge {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+}
+
+.badge.bg-primary {
+  background: rgba(80, 255, 177, 0.15) !important;
+  color: var(--accent-primary);
+}
+
+.badge.bg-success {
+  background: rgba(80, 255, 177, 0.15) !important;
+  color: var(--accent-success);
+}
+
+.badge.bg-warning {
+  background: rgba(237, 106, 90, 0.15) !important;
+  color: var(--accent-warning);
+}
+
+.badge.bg-danger {
+  background: rgba(237, 106, 90, 0.15) !important;
+  color: var(--accent-danger);
+}
+
+.badge.bg-info {
+  background: rgba(79, 178, 134, 0.15) !important;
+  color: var(--accent-info);
+}
+
+.badge.bg-secondary {
+  background: var(--bg-hover) !important;
+  color: var(--text-secondary);
+}
+
+/* ========================================
+   11. TABLES
+   ======================================== */
+
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--text-primary);
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table th {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: var(--space-3) var(--space-4);
+}
+
+.table td {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: var(--space-3) var(--space-4);
+  vertical-align: middle;
+}
+
+.table tbody tr {
+  transition: background var(--transition-fast);
+}
+
+.table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+.table-dark {
+  --bs-table-bg: var(--bg-surface);
+}
+
+/* ========================================
+   12. MODALS & ALERT DIALOGS (shadcn-style)
+   ======================================== */
+
+/* 
+ * Alert Dialog component styled after shadcn/ui
+ * A modal dialog that interrupts the user with important content
+ */
+
+.modal-backdrop,
+.alert-dialog-backdrop {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal-backdrop);
+  animation: fadeIn var(--transition-base) ease-out;
+}
+
+.modal-content,
+.alert-dialog-content {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: var(--z-modal);
+  width: calc(100% - 2rem);
+  max-width: 32rem;
+  max-height: calc(100vh - 4rem);
+  overflow: auto;
+  animation: alertDialogIn var(--transition-base) ease-out;
+}
+
+@keyframes alertDialogIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.modal-header,
+.alert-dialog-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  padding-bottom: 0;
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .modal-header,
+  .alert-dialog-header {
+    text-align: left;
+  }
+}
+
+.modal-title,
+.alert-dialog-title {
+  font-family: var(--font-sans);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  line-height: var(--leading-tight);
+  margin: 0;
+}
+
+.modal-description,
+.alert-dialog-description {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.modal-body,
+.alert-dialog-body {
+  padding: var(--space-6);
+}
+
+.modal-footer,
+.alert-dialog-footer {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  padding-top: 0;
+}
+
+@media (min-width: 640px) {
+  .modal-footer,
+  .alert-dialog-footer {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+}
+
+/* Alert dialog action buttons */
+.alert-dialog-cancel {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+}
+
+.alert-dialog-cancel:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.alert-dialog-action {
+  background: var(--accent-primary);
+  color: var(--text-inverse);
+  border: none;
+}
+
+.alert-dialog-action:hover {
+  background: var(--accent-primary-hover);
+}
+
+/* Destructive action variant */
+.alert-dialog-action.destructive {
+  background: var(--accent-danger);
+  color: white;
+}
+
+.alert-dialog-action.destructive:hover {
+  background: var(--color-coral-dark);
+}
+
+.btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+  opacity: 0.5;
+  transition: opacity var(--transition-fast);
+}
+
+.btn-close:hover {
+  opacity: 1;
+}
+
+/* ========================================
+   13. ALERTS & TOASTS
+   ======================================== */
+
+.alert {
+  border-radius: var(--radius-lg);
+  border: 1px solid;
+  padding: var(--space-4);
+}
+
+.alert-success {
+  background: rgba(80, 255, 177, 0.1);
+  border-color: rgba(80, 255, 177, 0.3);
+  color: var(--accent-success);
+}
+
+.alert-warning {
+  background: rgba(237, 106, 90, 0.1);
+  border-color: rgba(237, 106, 90, 0.3);
+  color: var(--accent-warning);
+}
+
+.alert-danger {
+  background: rgba(237, 106, 90, 0.1);
+  border-color: rgba(237, 106, 90, 0.3);
+  color: var(--accent-danger);
+}
+
+.alert-info {
+  background: rgba(79, 178, 134, 0.1);
+  border-color: rgba(79, 178, 134, 0.3);
+  color: var(--accent-info);
+}
+
+.toast {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.toast-header {
+  background: transparent;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.toast-body {
+  color: var(--text-secondary);
+}
+
+/* ========================================
+   14. PROGRESS BARS
+   ======================================== */
+
+.progress {
+  height: 8px;
+  background: var(--bg-hover);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-bar {
+  background: var(--accent-primary);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow);
+}
+
+/* ========================================
+   15. DROPDOWNS
+   ======================================== */
+
+.dropdown-menu {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-2);
+}
+
+.dropdown-item {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  transition: all var(--transition-fast);
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.dropdown-item.active,
+.dropdown-item:active {
+  background: var(--accent-primary);
+  color: var(--text-inverse);
+}
+
+.dropdown-divider {
+  border-color: var(--border-subtle);
+  margin: var(--space-2) 0;
+}
+
+/* ========================================
+   16. LIST GROUPS
+   ======================================== */
+
+.list-group {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.list-group-item {
+  background: var(--bg-surface);
+  border: none;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: var(--space-4);
+  transition: background var(--transition-fast);
+}
+
+.list-group-item:last-child {
+  border-bottom: none;
+}
+
+.list-group-item:hover {
+  background: var(--bg-hover);
+}
+
+.list-group-item.active {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: var(--text-inverse);
+}
+
+/* ========================================
+   17. SPORCLE LEAGUE SPECIFIC
+   ======================================== */
+
+/* Header/Navbar */
+.navbar,
+.site-header {
+  background: var(--bg-surface) !important;
+  border-bottom: 1px solid var(--border-subtle);
+  backdrop-filter: blur(10px);
+}
+
+/* Main content area */
+#main-app-content,
+.main-content {
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+/* Logo/Brand text with Modak */
+.brand-text,
+.logo-text {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  color: var(--accent-primary);
+}
+
+/* Section headings */
+.section-heading {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: var(--accent-primary);
+  margin-bottom: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Stats cards */
+.stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  text-align: center;
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  color: var(--accent-primary);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: var(--space-1);
+}
+
+/* Leaderboard */
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+  transition: all var(--transition-fast);
+}
+
+.leaderboard-row:hover {
+  background: var(--bg-hover);
+  transform: translateX(4px);
+}
+
+.leaderboard-rank {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: var(--text-tertiary);
+  width: 2rem;
+  text-align: center;
+}
+
+.leaderboard-rank.gold {
+  color: #ffd700;
+}
+.leaderboard-rank.silver {
+  color: #c0c0c0;
+}
+.leaderboard-rank.bronze {
+  color: #cd7f32;
+}
+
+/* Quest items */
+.quest-item {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  transition: all var(--transition-fast);
+}
+
+.quest-item:hover {
+  border-color: var(--border-default);
+  background: var(--bg-hover);
+}
+
+.quest-item.completed {
+  opacity: 0.6;
+  border-color: var(--accent-success);
+}
+
+.quest-check {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--bg-hover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-lg);
+  flex-shrink: 0;
+}
+
+.quest-item.completed .quest-check {
+  background: rgba(80, 255, 177, 0.15);
+  color: var(--accent-success);
+}
+
+.quest-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.quest-title {
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.quest-description {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.quest-reward {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.quest-reward-points {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: var(--accent-primary);
+}
+
+.quest-reward-label {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  display: block;
+}
+
+/* Level/XP display */
+.level-display {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.level-badge {
+  background: linear-gradient(
+    135deg,
+    var(--color-coral),
+    var(--color-coral-dark)
+  );
+  color: white;
+  font-family: var(--font-display);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+}
+
+.xp-bar-container {
+  flex: 1;
+  max-width: 120px;
+}
+
+.xp-text {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-1);
+}
+
+/* Avatar */
+.avatar {
+  border-radius: var(--radius-full);
+  background: var(--bg-hover);
+  border: 2px solid var(--border-default);
+}
+
+.avatar-sm {
+  width: 32px;
+  height: 32px;
+}
+.avatar-md {
+  width: 48px;
+  height: 48px;
+}
+.avatar-lg {
+  width: 64px;
+  height: 64px;
+}
+.avatar-xl {
+  width: 96px;
+  height: 96px;
+}
+
+/* Player cards */
+.player-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  text-align: center;
+  transition: all var(--transition-base);
+}
+
+.player-card:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md), var(--shadow-mint-glow);
+}
+
+/* Battle Royale specific */
+.br-player-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  text-align: center;
+  transition: all var(--transition-base);
+}
+
+.br-player-card.host {
+  border-color: var(--color-coral);
+  box-shadow: 0 0 0 1px var(--color-coral);
+}
+
+.br-player-card.eliminated {
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+
+/* Match cards (H2H) */
+.match-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.match-header {
+  background: var(--bg-hover);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.match-body {
+  padding: var(--space-4);
+}
+
+.match-vs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.match-player {
+  flex: 1;
+  text-align: center;
+}
+
+.match-divider {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: var(--accent-primary);
+}
+
+/* Empty states */
+.empty-state {
+  text-align: center;
+  padding: var(--space-12) var(--space-6);
+  color: var(--text-tertiary);
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  margin-bottom: var(--space-4);
+  opacity: 0.5;
+  color: var(--accent-primary);
+}
+
+.empty-state-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: var(--accent-primary);
+  margin-bottom: var(--space-2);
+}
+
+.empty-state-description {
+  font-size: var(--text-sm);
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+/* ========================================
+   18. UTILITY CLASSES
+   ======================================== */
+
+/* Backgrounds */
+.bg-surface {
+  background: var(--bg-surface) !important;
+}
+.bg-elevated {
+  background: var(--bg-elevated) !important;
+}
+.bg-hover {
+  background: var(--bg-hover) !important;
+}
+
+/* Text colors */
+.text-primary-color {
+  color: var(--text-primary) !important;
+}
+.text-secondary-color {
+  color: var(--text-secondary) !important;
+}
+.text-accent {
+  color: var(--accent-primary) !important;
+}
+.text-success {
+  color: var(--accent-success) !important;
+}
+.text-warning {
+  color: var(--accent-warning) !important;
+}
+.text-danger {
+  color: var(--accent-danger) !important;
+}
+
+/* Font family utilities */
+.font-display {
+  font-family: var(--font-display) !important;
+}
+.font-sans {
+  font-family: var(--font-sans) !important;
+}
+
+/* Borders */
+.border-subtle {
+  border-color: var(--border-subtle) !important;
+}
+.border-default {
+  border-color: var(--border-default) !important;
+}
+
+/* Shadows */
+.shadow-glow {
+  box-shadow: var(--shadow-glow) !important;
+}
+.shadow-mint-glow {
+  box-shadow: var(--shadow-mint-glow) !important;
+}
+
+/* Transitions */
+.transition-fast {
+  transition: all var(--transition-fast);
+}
+.transition-base {
+  transition: all var(--transition-base);
+}
+
+/* Gradients */
+.gradient-primary {
+  background: linear-gradient(
+    135deg,
+    var(--accent-primary),
+    var(--color-forest)
+  );
+}
+
+.gradient-success {
+  background: linear-gradient(
+    135deg,
+    var(--accent-success),
+    var(--color-forest)
+  );
+}
+
+.gradient-warning {
+  background: linear-gradient(
+    135deg,
+    var(--accent-warning),
+    var(--color-coral-dark)
+  );
+}
+
+.gradient-purple {
+  background: linear-gradient(
+    135deg,
+    var(--color-purple),
+    var(--color-purple-dark)
+  );
+}
+
+/* Glassmorphism effect */
+.glass {
+  background: rgba(0, 70, 67, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-subtle);
+}
+
+/* ========================================
+   19. ANIMATIONS
+   ======================================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes mintGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px -5px rgba(80, 255, 177, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px -5px rgba(80, 255, 177, 0.6);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--transition-base) ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp var(--transition-slow) ease-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.animate-mint-glow {
+  animation: mintGlow 2s ease-in-out infinite;
+}
+
+/* Loading skeleton */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-hover) 25%,
+    var(--bg-elevated) 50%,
+    var(--bg-hover) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-md);
+}
+
+/* ========================================
+   20. RESPONSIVE ADJUSTMENTS
+   ======================================== */
+
+@media (max-width: 768px) {
+  :root {
+    --text-3xl: 1.75rem;
+    --text-2xl: 1.5rem;
+    --text-xl: 1.25rem;
+  }
+
+  .card-body {
+    padding: var(--space-4);
+  }
+
+  .modal-body,
+  .alert-dialog-body {
+    padding: var(--space-4);
+  }
+
+  .quest-item {
+    flex-wrap: wrap;
+  }
+
+  .quest-reward {
+    width: 100%;
+    text-align: left;
+    margin-top: var(--space-2);
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--border-subtle);
+  }
+}
+
+/* ========================================
+   21. DARK MODE (already dark, but for reference)
+   ======================================== */
+
+/* If you ever want a light mode, you can add:
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg-base: #f0f9f8;
+    --bg-surface: #ffffff;
+    --bg-elevated: #f5f0f7;
+    --bg-hover: #e8e0ec;
+    
+    --text-primary: #002f2d;
+    --text-secondary: #4a6966;
+    --text-tertiary: #6b8986;
+    
+    --border-subtle: #d4e5e3;
+    --border-default: #a8c5c3;
+    
+    ... etc
+  }
+}
+*/
+
+/* ========================================
+   CORAL PRIMARY OVERRIDES
+   Drop-in palette rebalance
+   ======================================== */
+
+:root {
+  /* Promote Coral to primary */
+  --accent-primary: var(--color-coral);
+  --accent-primary-hover: var(--color-coral-light);
+
+  /* Reduce green dominance */
+  --accent-secondary: var(--color-purple);
+  --border-strong: var(--color-coral);
+
+  /* Focus + ring effects */
+  --ring-color: rgba(237, 106, 90, 0.35);
+
+  /* Keep mint for success only */
+  --accent-success: var(--color-mint);
+}
+
+/* Primary UI elements now coral */
+.btn-primary,
+.nav-pills .nav-link.active,
+.list-group-item.active,
+.progress-bar {
+  background: var(--color-coral);
+  border-color: var(--color-coral);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--color-coral-light);
+  border-color: var(--color-coral-light);
+}
+
+/* Headings & highlights */
+h1,
+.display-text,
+.section-heading,
+.stat-value,
+.match-divider,
+.empty-state-title {
+  color: var(--color-coral);
+}
+
+/* Replace mint-heavy gradients */
+.gradient-primary {
+  background: linear-gradient(135deg, var(--color-coral), var(--color-purple));
+}
+
+/* Tone down mint glow usage */
+.shadow-mint-glow {
+  box-shadow: 0 0 20px -5px rgba(80, 255, 177, 0.25);
+}
+
+/* ========================================
+   CORAL BASE + BORDERS, MINT LOGO
+   Drop-in overrides
+   ======================================== */
+
+:root {
+  /* Keep mint available, but do not let it drive the whole UI */
+  --accent-primary: var(--color-coral);
+  --accent-primary-hover: var(--color-coral-light);
+
+  /* Coral-tinted dark backgrounds (warmer than teal base) */
+  --bg-base: #1a0f12; /* deep warm near-black */
+  --bg-surface: #241217; /* cards, containers */
+  --bg-elevated: #2c1620; /* modals, dropdowns */
+  --bg-hover: #361b26; /* hover states */
+
+  /* Borders shift coral */
+  --border-subtle: rgba(237, 106, 90, 0.22);
+  --border-default: rgba(237, 106, 90, 0.38);
+  --border-strong: rgba(237, 106, 90, 0.7);
+
+  /* Focus ring also coral */
+  --ring-color: rgba(237, 106, 90, 0.35);
+}
+
+/* Logo stays bright mint */
+.brand-text,
+.logo-text {
+  color: var(--color-mint) !important;
+}
+
+/* Optional: keep your main H1/display mint too (comment out if you want coral headings) */
+h1,
+.display-text {
+  color: var(--color-mint) !important;
+}
+
+/* Make surfaces and components inherit the new coral border vibe */
+.card,
+.navbar,
+.site-header,
+.dropdown-menu,
+.toast,
+.modal-content,
+.alert-dialog-content,
+.list-group-item,
+.table th,
+.table td,
+.form-control,
+.form-select,
+.input,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+textarea {
+  border-color: var(--border-subtle) !important;
+}
+
+.card:hover,
+.quest-item:hover,
+.table tbody tr:hover,
+.dropdown-item:hover,
+.dropdown-item:focus {
+  border-color: var(--border-default) !important;
+}
+
+/* Make your “glass” utility warm instead of teal */
+.glass {
+  background: rgba(36, 18, 23, 0.65) !important;
+  border-color: var(--border-subtle) !important;
+}
+
+/* Coral-forward primary gradient */
+.gradient-primary {
+  background: linear-gradient(135deg, var(--color-coral), var(--color-purple));
+}
+
+/* ========================================
+   TYPOGRAPHY ONLY OVERRIDES
+   Safe: no color or layout changes
+   ======================================== */
+
+/* Global body font */
+body {
+  font-family: var(--font-sans);
+}
+
+/* Display / brand typography */
+h1,
+.h1,
+.display-text,
+.brand-text,
+.logo-text,
+.section-heading,
+.stat-value,
+.leaderboard-rank,
+.quest-reward-points {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+/* Standard headings */
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-sans);
+}
+
+/* Buttons */
+.btn {
+  font-family: var(--font-sans);
+  font-weight: var(--font-medium);
+}
+
+/* Navigation */
+.nav-link,
+.dropdown-item,
+.list-group-item {
+  font-family: var(--font-sans);
+}
+
+/* Forms */
+.form-control,
+.form-select,
+.input,
+input,
+textarea,
+.form-label {
+  font-family: var(--font-sans);
+}
+
+/* Tables */
+.table th {
+  font-family: var(--font-sans);
+  font-weight: var(--font-semibold);
+}
+
+.table td {
+  font-family: var(--font-sans);
+}
+
+/* Small UI text */
+.badge,
+.form-text,
+.stat-label,
+.quest-reward-label,
+.text-small,
+.text-xs {
+  font-family: var(--font-sans);
+}

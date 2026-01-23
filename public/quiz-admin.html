@@ -272,13 +272,19 @@
                 </div>
                 <div class="col-12">
                   <label for="quizUrl" class="form-label">Sporcle URL</label>
-                  <input
-                    id="quizUrl"
-                    type="url"
-                    class="form-control"
-                    placeholder="https://www.sporcle.com/games/..."
-                    required
-                  />
+                  <div class="input-group">
+                    <input
+                      id="quizUrl"
+                      type="url"
+                      class="form-control"
+                      placeholder="https://www.sporcle.com/games/..."
+                      required
+                    />
+                    <button type="button" id="checkDuplicateBtn" class="btn btn-outline-secondary">
+                      Check
+                    </button>
+                  </div>
+                  <div id="duplicateCheckResult" class="form-text mt-1"></div>
                 </div>
                 <div class="col-12">
                   <button type="submit" class="btn btn-primary">
@@ -470,11 +476,13 @@
       const quizUrl = document.getElementById("quizUrl");
       const status = document.getElementById("status");
       const submitBtnText = document.getElementById("submitBtnText");
+      const checkDuplicateBtn = document.getElementById("checkDuplicateBtn");
+      const duplicateCheckResult = document.getElementById("duplicateCheckResult");
 
       let isAdmin = false;
       let isSignedIn = false;
       let unsubscribeQuizzes = null;
-      let allQuizzes = [];
+      let allQuizzes = []; // Stores all quizzes for duplicate checking
 
       // Helper: Check if alias is available
       async function checkAliasAvailable(alias, excludeUid) {
@@ -482,6 +490,84 @@
         const snap = await getDocs(q);
         if (snap.empty) return true;
         return snap.docs.length === 1 && snap.docs[0].id === excludeUid;
+      }
+
+      // Helper: Normalize URL for comparison
+      function normalizeQuizUrl(url) {
+        if (!url) return "";
+        // Remove protocol, www, trailing slashes, and query params
+        return url
+          .toLowerCase()
+          .replace(/^https?:\/\//, "")
+          .replace(/^www\./, "")
+          .replace(/\/$/, "")
+          .split("?")[0]
+          .split("#")[0];
+      }
+
+      // Check for duplicate quiz URL
+      function checkDuplicateQuiz(url) {
+        const normalizedInput = normalizeQuizUrl(url);
+        if (!normalizedInput) return null;
+        
+        for (const quiz of allQuizzes) {
+          const normalizedExisting = normalizeQuizUrl(quiz.url);
+          if (normalizedExisting === normalizedInput) {
+            return quiz; // Return the matching quiz
+          }
+        }
+        return null; // No duplicate found
+      }
+
+      // Duplicate check button handler
+      if (checkDuplicateBtn) {
+        checkDuplicateBtn.addEventListener("click", () => {
+          const url = quizUrl.value.trim();
+          if (!url) {
+            duplicateCheckResult.innerHTML = '<span class="text-warning">Please enter a URL to check.</span>';
+            return;
+          }
+
+          const duplicate = checkDuplicateQuiz(url);
+          if (duplicate) {
+            const catEmoji = {
+              geography: "🌍", history: "🏛️", science: "🔬", sports: "⚽",
+              entertainment: "🎬", music: "🎵", literature: "📚", misc: "❓"
+            };
+            const emoji = catEmoji[duplicate.category] || "❓";
+            duplicateCheckResult.innerHTML = `<span class="text-danger">⚠️ Duplicate found: "${duplicate.title}" (${emoji} ${duplicate.category})</span>`;
+          } else {
+            duplicateCheckResult.innerHTML = '<span class="text-success">✓ No duplicate found - this quiz can be added!</span>';
+          }
+        });
+      }
+
+      // Also check on URL input blur (when user leaves the field)
+      if (quizUrl) {
+        quizUrl.addEventListener("blur", () => {
+          const url = quizUrl.value.trim();
+          if (!url) {
+            duplicateCheckResult.textContent = "";
+            return;
+          }
+
+          const duplicate = checkDuplicateQuiz(url);
+          if (duplicate) {
+            const catEmoji = {
+              geography: "🌍", history: "🏛️", science: "🔬", sports: "⚽",
+              entertainment: "🎬", music: "🎵", literature: "📚", misc: "❓"
+            };
+            const emoji = catEmoji[duplicate.category] || "❓";
+            duplicateCheckResult.innerHTML = `<span class="text-danger">⚠️ Duplicate found: "${duplicate.title}" (${emoji} ${duplicate.category})</span>`;
+          } else {
+            duplicateCheckResult.innerHTML = '<span class="text-success">✓ No duplicate found</span>';
+          }
+        });
+
+        // Clear result when typing
+        quizUrl.addEventListener("input", () => {
+          duplicateCheckResult.textContent = "";
+        });
       }
 
       // Show modals
@@ -630,6 +716,14 @@
           return;
         }
 
+        // Check for duplicate before adding
+        const duplicate = checkDuplicateQuiz(url);
+        if (duplicate) {
+          status.innerHTML = `<span class="text-danger">Cannot add: This quiz already exists as "${duplicate.title}"</span>`;
+          duplicateCheckResult.innerHTML = `<span class="text-danger">⚠️ Duplicate found: "${duplicate.title}"</span>`;
+          return;
+        }
+
         try {
           submitBtnText.textContent = "Adding...";
           status.textContent = "";
@@ -650,6 +744,7 @@
           quizCategory.value = "";
           quizDescription.value = "";
           quizUrl.value = "";
+          duplicateCheckResult.textContent = ""; // Clear duplicate check result
           status.textContent = "✓ Quiz added!";
           submitBtnText.textContent = "Add Quiz";
 
