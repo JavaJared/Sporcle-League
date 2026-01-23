@@ -18536,6 +18536,7 @@
 
         // Update lobby UI based on current data
         let brGameTracked = false; // Track if we've counted participation for this game
+        let brWinTracked = false; // Track if we've counted a win for this game
 
         function updateLobbyUI() {
           if (!currentLobbyData) return;
@@ -18549,6 +18550,7 @@
             showLobbyView();
             renderLobbyPlayers();
             brGameTracked = false; // Reset tracking for new game
+            brWinTracked = false; // Reset win tracking for new game
           } else if (status === "playing") {
             // Track quest progress when game starts (for all players, once)
             if (
@@ -19060,35 +19062,7 @@
               lastEliminated: eliminatedPlayer,
               status: "finished",
             });
-
-            // Track BR win quest for the winner (if it's the current user)
-            const currentAlias = window.currentProfile?.alias?.toLowerCase();
-            if (
-              currentAlias === winnerAlias &&
-              typeof window.trackQuestProgress === "function"
-            ) {
-              window.trackQuestProgress("brWins", 1);
-
-              // Also update all-time BR wins stat
-              try {
-                const userId = window.currentUser?.uid;
-                if (userId) {
-                  const questProgressRef = doc(db, "questProgress", userId);
-                  const questDoc = await getDoc(questProgressRef);
-                  const currentData = questDoc.exists() ? questDoc.data() : {};
-                  const allTimeStats = currentData.allTimeStats || {};
-                  allTimeStats.brWins = (allTimeStats.brWins || 0) + 1;
-
-                  await setDoc(
-                    questProgressRef,
-                    { allTimeStats: allTimeStats },
-                    { merge: true },
-                  );
-                }
-              } catch (err) {
-                console.error("Error updating all-time BR wins:", err);
-              }
-            }
+            // Win tracking is now handled in showVictoryUI() which runs on all clients
           } else {
             // Check if we (the host) just got eliminated
             const hostWasEliminated =
@@ -19237,6 +19211,40 @@
           ) {
             renderAvatar(avatarEl, players[winner].avatarConfig || {}, 120);
           }
+          
+          // Track BR win for the winner (runs on winner's client)
+          const currentAlias = window.currentProfile?.alias?.toLowerCase();
+          if (currentAlias === winner && !brWinTracked) {
+            brWinTracked = true;
+            
+            // Track via quest progress
+            if (typeof window.trackQuestProgress === "function") {
+              window.trackQuestProgress("brWins", 1);
+            }
+            
+            // Also update all-time BR wins stat
+            (async () => {
+              try {
+                const userId = window.currentUser?.uid;
+                if (userId) {
+                  const questProgressRef = doc(db, "questProgress", userId);
+                  const questDoc = await getDoc(questProgressRef);
+                  const currentData = questDoc.exists() ? questDoc.data() : {};
+                  const allTimeStats = currentData.allTimeStats || {};
+                  allTimeStats.brWins = (allTimeStats.brWins || 0) + 1;
+
+                  await setDoc(
+                    questProgressRef,
+                    { allTimeStats: allTimeStats },
+                    { merge: true }
+                  );
+                  console.log("🏆 BR win tracked successfully!");
+                }
+              } catch (err) {
+                console.error("Error updating all-time BR wins:", err);
+              }
+            })();
+          }
         }
 
         // Show eliminated view
@@ -19313,6 +19321,7 @@
           currentLobbyData = null;
           isHost = false;
           brGameTracked = false;
+          brWinTracked = false;
           myShieldActivated = false;
 
           showMenuView();
