@@ -16366,25 +16366,25 @@
           let brWins = 0;
 
           try {
-            // Try to find the user's quest progress document
-            // Quest progress uses userId, which we need to find from userProfiles
-            if (viewedUserProfile?.userId) {
-              const questProgressDoc = await getDoc(
-                doc(db, "questProgress", viewedUserProfile.userId),
-              );
-              if (questProgressDoc.exists()) {
-                questData = questProgressDoc.data();
-                playerLevel = questData?.level || 1;
+            // Query quest progress by alias
+            const questProgressSnap = await getDocs(
+              query(
+                collection(db, "questProgress"),
+                where("alias", "==", aliasLower),
+              ),
+            );
 
-                // Count BR wins from weekly quest progress
-                // BR wins are tracked in weeklyProgress.weeklyBRWins
-                const allTimeData = questData?.allTimeStats || {};
-                brWins = allTimeData.brWins || 0;
+            if (!questProgressSnap.empty) {
+              questData = questProgressSnap.docs[0].data();
+              playerLevel = questData?.level || 1;
 
-                // If no all-time data, count from current weekly progress as fallback
-                if (brWins === 0) {
-                  brWins = questData?.weeklyProgress?.weeklyBRWins || 0;
-                }
+              // Count BR wins from all-time stats
+              const allTimeData = questData?.allTimeStats || {};
+              brWins = allTimeData.brWins || 0;
+
+              // If no all-time data, count from current weekly progress as fallback
+              if (brWins === 0) {
+                brWins = questData?.weeklyProgress?.weeklyBRWins || 0;
               }
             }
           } catch (err) {
@@ -17805,7 +17805,11 @@
                 weeklyProgress: {},
                 lastDayId: "",
                 lastWeekId: "",
+                alias: window.currentProfile?.alias?.toLowerCase() || "",
+                userId: window.currentUser?.uid || "",
               };
+              // Save initial quest progress with alias
+              await saveQuestProgress();
             }
 
             // Check if we need to reset daily/weekly progress
@@ -17828,17 +17832,30 @@
             const totalXP = questProgress.totalXP || 0;
             const correctLevelData = calculateLevelFromTotalXP(totalXP);
 
-            // Only update if the data is incorrect
-            if (questProgress.level !== correctLevelData.level ||
-                questProgress.currentLevelXP !== correctLevelData.currentLevelXP) {
-              console.log(
-                `Correcting level: ${questProgress.level} -> ${correctLevelData.level}, ` +
-                `currentXP: ${questProgress.currentLevelXP} -> ${correctLevelData.currentLevelXP}`
-              );
-              questProgress.level = correctLevelData.level;
-              questProgress.currentLevelXP = correctLevelData.currentLevelXP;
+            // Check if we need to update the data
+            const needsLevelCorrection =
+              questProgress.level !== correctLevelData.level ||
+              questProgress.currentLevelXP !== correctLevelData.currentLevelXP;
 
-              // Save corrected data
+            const needsAliasUpdate =
+              !questProgress.alias && window.currentProfile?.alias;
+
+            // Update if the data is incorrect or alias is missing
+            if (needsLevelCorrection || needsAliasUpdate) {
+              if (needsLevelCorrection) {
+                console.log(
+                  `Correcting level: ${questProgress.level} -> ${correctLevelData.level}, ` +
+                  `currentXP: ${questProgress.currentLevelXP} -> ${correctLevelData.currentLevelXP}`
+                );
+                questProgress.level = correctLevelData.level;
+                questProgress.currentLevelXP = correctLevelData.currentLevelXP;
+              }
+
+              if (needsAliasUpdate) {
+                console.log("Adding alias to quest progress");
+              }
+
+              // Save corrected data (saveQuestProgress will add alias automatically)
               await saveQuestProgress();
             }
 
@@ -17854,7 +17871,13 @@
           if (!progressDoc) return;
 
           try {
-            await setDoc(progressDoc, questProgress, { merge: true });
+            // Ensure alias is saved for querying
+            const dataToSave = {
+              ...questProgress,
+              alias: window.currentProfile?.alias?.toLowerCase() || "",
+              userId: window.currentUser?.uid || "",
+            };
+            await setDoc(progressDoc, dataToSave, { merge: true });
           } catch (err) {
             console.error("Error saving quest progress:", err);
           }
