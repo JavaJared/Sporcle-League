@@ -1,6 +1,6 @@
 {
   "name": "sporcle-league-functions",
-  "description": "Firebase Functions for Sporcle League including Stripe payments",
+  "description": "Firebase Functions for Sporcle League",
   "scripts": {
     "lint": "echo 'No linting configured'",
     "serve": "firebase emulators:start --only functions",
@@ -15,8 +15,7 @@
   "main": "index.js",
   "dependencies": {
     "firebase-admin": "^11.8.0",
-    "firebase-functions": "^4.3.1",
-    "stripe": "^14.0.0"
+    "firebase-functions": "^4.3.1"
   },
   "devDependencies": {
     "firebase-functions-test": "^3.1.0"
