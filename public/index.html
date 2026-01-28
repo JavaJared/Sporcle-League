@@ -2970,7 +2970,6 @@
               ⚔️ Battle Royale
             </button>
           </li>
-          
           <li class="nav-item" role="presentation">
             <button
               class="nav-link"
@@ -2980,7 +2979,7 @@
               type="button"
               role="tab"
             >
-              🏅 Level Leaderboard
+              🏅 Levels
             </button>
           </li>
         </ul>
@@ -6044,6 +6043,11 @@
         // Start live matches listener for spectator mode
         if (typeof startLiveMatchesListener === "function") {
           startLiveMatchesListener();
+        }
+        
+        // Reset level leaderboard when league changes
+        if (typeof window.resetLevelLeaderboard === "function") {
+          window.resetLevelLeaderboard();
         }
       }
 
@@ -18337,27 +18341,27 @@
       // ========== LEVEL LEADERBOARD ==========
       (function () {
         let levelLeaderboardLoaded = false;
+        let isLoadingLeaderboard = false;
         
-        // Load level leaderboard when tab is shown
-        document.getElementById('level-leaderboard-tab')?.addEventListener('shown.bs.tab', function () {
-          if (!levelLeaderboardLoaded) {
-            loadLevelLeaderboard();
-          }
-        });
-        
-        // Also check if tab is clicked
+        // Load level leaderboard when tab is clicked
         document.getElementById('level-leaderboard-tab')?.addEventListener('click', function () {
-          if (!levelLeaderboardLoaded) {
+          if (!levelLeaderboardLoaded && !isLoadingLeaderboard) {
             loadLevelLeaderboard();
           }
         });
 
         async function loadLevelLeaderboard() {
+          if (isLoadingLeaderboard) return; // Prevent duplicate calls
+          isLoadingLeaderboard = true;
+          
           const tbody = document.getElementById('level-leaderboard-body');
           const emptyDiv = document.getElementById('empty-level-leaderboard');
           const loadingDiv = document.getElementById('level-leaderboard-loading');
           
-          if (!tbody) return;
+          if (!tbody) {
+            isLoadingLeaderboard = false;
+            return;
+          }
           
           // Show loading
           if (loadingDiv) loadingDiv.classList.remove('d-none');
@@ -18365,6 +18369,19 @@
           tbody.innerHTML = '';
           
           try {
+            // First, get the list of players in the current league from the points collection
+            const leaguePlayerAliases = new Set();
+            
+            if (currentLeagueId) {
+              const pointsCol = getPointsCol();
+              const pointsSnap = await getDocs(pointsCol);
+              pointsSnap.forEach((docSnap) => {
+                const data = docSnap.data();
+                const alias = (data.alias || docSnap.id).toLowerCase();
+                leaguePlayerAliases.add(alias);
+              });
+            }
+            
             // Query all questProgress documents
             const questProgressCol = collection(db, 'questProgress');
             const snap = await getDocs(questProgressCol);
@@ -18373,10 +18390,16 @@
             
             snap.forEach((docSnap) => {
               const data = docSnap.data();
+              const alias = (data.alias || docSnap.id).toLowerCase();
+              
+              // If we have a league selected, only include players in that league
+              if (currentLeagueId && !leaguePlayerAliases.has(alias)) {
+                return; // Skip players not in the current league
+              }
+              
               const totalXP = data.totalXP || 0;
               const level = data.level || 1;
               const displayName = data.displayName || data.alias || docSnap.id;
-              const alias = data.alias || docSnap.id;
               
               // Only include players with some XP
               if (totalXP > 0 || level > 1) {
@@ -18400,6 +18423,7 @@
             
             if (players.length === 0) {
               if (emptyDiv) emptyDiv.classList.remove('d-none');
+              isLoadingLeaderboard = false;
               return;
             }
             
@@ -18453,12 +18477,23 @@
               emptyDiv.classList.remove('d-none');
             }
           }
+          
+          isLoadingLeaderboard = false;
         }
         
-        // Expose refresh function
+        // Expose refresh function and reset when league changes
         window.refreshLevelLeaderboard = function() {
           levelLeaderboardLoaded = false;
+          isLoadingLeaderboard = false;
           loadLevelLeaderboard();
+        };
+        
+        // Reset when league changes
+        window.resetLevelLeaderboard = function() {
+          levelLeaderboardLoaded = false;
+          isLoadingLeaderboard = false;
+          const tbody = document.getElementById('level-leaderboard-body');
+          if (tbody) tbody.innerHTML = '';
         };
       })();
 
