@@ -2859,7 +2859,7 @@
 
         <!-- Bootstrap Tabs -->
         <ul
-          class="nav nav-pills nav-fill gap-2 small bg-body-tertiary rounded-3 p-2"
+          class="nav nav-pills flex-wrap gap-2 small bg-body-tertiary rounded-3 p-2"
           id="mainTabs"
           role="tablist"
         >
@@ -18351,7 +18351,7 @@
         });
 
         async function loadLevelLeaderboard() {
-          if (isLoadingLeaderboard) return; // Prevent duplicate calls
+          if (isLoadingLeaderboard) return;
           isLoadingLeaderboard = true;
           
           const tbody = document.getElementById('level-leaderboard-body');
@@ -18371,6 +18371,7 @@
           try {
             // First, get the list of players in the current league from the points collection
             const leaguePlayerAliases = new Set();
+            const leaguePlayerNames = {};
             
             if (currentLeagueId) {
               const pointsCol = getPointsCol();
@@ -18379,6 +18380,7 @@
                 const data = docSnap.data();
                 const alias = (data.alias || docSnap.id).toLowerCase();
                 leaguePlayerAliases.add(alias);
+                leaguePlayerNames[alias] = data.displayName || data.alias || docSnap.id;
               });
             }
             
@@ -18394,12 +18396,13 @@
               
               // If we have a league selected, only include players in that league
               if (currentLeagueId && !leaguePlayerAliases.has(alias)) {
-                return; // Skip players not in the current league
+                return;
               }
               
               const totalXP = data.totalXP || 0;
               const level = data.level || 1;
-              const displayName = data.displayName || data.alias || docSnap.id;
+              // Prefer display name from points collection (league-specific), fall back to questProgress
+              const displayName = leaguePlayerNames[alias] || data.displayName || data.alias || docSnap.id;
               
               // Only include players with some XP
               if (totalXP > 0 || level > 1) {
@@ -18443,7 +18446,7 @@
               // Get champion badges if available
               const badges = window.getChampionBadges ? window.getChampionBadges(player.alias) : '';
               
-              // Make name clickable to view profile
+              // Make name clickable to view profile (using same class as H2H for consistency)
               const clickableName = `<a href="#" class="level-player-link text-decoration-none" data-alias="${player.alias}" data-displayname="${player.displayName}">${player.displayName}</a>`;
               
               tr.innerHTML = `
@@ -18461,8 +18464,9 @@
                 e.preventDefault();
                 const alias = this.dataset.alias;
                 const displayName = this.dataset.displayname;
-                if (typeof window.showPlayerProfile === 'function') {
-                  window.showPlayerProfile(alias, displayName);
+                // Use the same function as H2H player links
+                if (typeof window.openUserProfileModal === 'function') {
+                  window.openUserProfileModal(alias, displayName);
                 }
               });
             });
@@ -18481,7 +18485,7 @@
           isLoadingLeaderboard = false;
         }
         
-        // Expose refresh function and reset when league changes
+        // Expose refresh function
         window.refreshLevelLeaderboard = function() {
           levelLeaderboardLoaded = false;
           isLoadingLeaderboard = false;
