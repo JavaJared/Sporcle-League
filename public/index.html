@@ -2970,6 +2970,19 @@
               ⚔️ Battle Royale
             </button>
           </li>
+          
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link"
+              id="level-leaderboard-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#tab-level-leaderboard"
+              type="button"
+              role="tab"
+            >
+              🏅 Level Leaderboard
+            </button>
+          </li>
         </ul>
 
         <div class="tab-content py-3">
@@ -5031,6 +5044,39 @@
                         Exit Match
                       </button>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+          
+          <!-- Level Leaderboard -->
+          <div class="tab-pane fade" id="tab-level-leaderboard" role="tabpanel">
+            <section class="card">
+              <div class="card-body">
+                <h2 class="h5 mb-3">🏅 Level Leaderboard</h2>
+                <p class="text-muted mb-4">
+                  Rankings based on XP level progression. Earn XP by completing daily and weekly quests!
+                </p>
+                <div class="table-responsive">
+                  <table class="table table-sm table-striped align-middle">
+                    <thead>
+                      <tr>
+                        <th style="width: 64px">#</th>
+                        <th>Player</th>
+                        <th>Level</th>
+                        <th>Total XP</th>
+                      </tr>
+                    </thead>
+                    <tbody id="level-leaderboard-body"></tbody>
+                  </table>
+                </div>
+                <div id="empty-level-leaderboard" class="note">
+                  No level data yet. Complete quests to earn XP and appear on the leaderboard!
+                </div>
+                <div id="level-leaderboard-loading" class="text-center py-4 d-none">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
                   </div>
                 </div>
               </div>
@@ -18286,6 +18332,134 @@
 
         // Expose for other modules
         window.initQuestSystem = initQuestSystem;
+      })();
+
+      // ========== LEVEL LEADERBOARD ==========
+      (function () {
+        let levelLeaderboardLoaded = false;
+        
+        // Load level leaderboard when tab is shown
+        document.getElementById('level-leaderboard-tab')?.addEventListener('shown.bs.tab', function () {
+          if (!levelLeaderboardLoaded) {
+            loadLevelLeaderboard();
+          }
+        });
+        
+        // Also check if tab is clicked
+        document.getElementById('level-leaderboard-tab')?.addEventListener('click', function () {
+          if (!levelLeaderboardLoaded) {
+            loadLevelLeaderboard();
+          }
+        });
+
+        async function loadLevelLeaderboard() {
+          const tbody = document.getElementById('level-leaderboard-body');
+          const emptyDiv = document.getElementById('empty-level-leaderboard');
+          const loadingDiv = document.getElementById('level-leaderboard-loading');
+          
+          if (!tbody) return;
+          
+          // Show loading
+          if (loadingDiv) loadingDiv.classList.remove('d-none');
+          if (emptyDiv) emptyDiv.classList.add('d-none');
+          tbody.innerHTML = '';
+          
+          try {
+            // Query all questProgress documents
+            const questProgressCol = collection(db, 'questProgress');
+            const snap = await getDocs(questProgressCol);
+            
+            const players = [];
+            
+            snap.forEach((docSnap) => {
+              const data = docSnap.data();
+              const totalXP = data.totalXP || 0;
+              const level = data.level || 1;
+              const displayName = data.displayName || data.alias || docSnap.id;
+              const alias = data.alias || docSnap.id;
+              
+              // Only include players with some XP
+              if (totalXP > 0 || level > 1) {
+                players.push({
+                  displayName: displayName,
+                  alias: alias,
+                  level: level,
+                  totalXP: totalXP
+                });
+              }
+            });
+            
+            // Sort by level (desc), then by totalXP (desc)
+            players.sort((a, b) => {
+              if (b.level !== a.level) return b.level - a.level;
+              return b.totalXP - a.totalXP;
+            });
+            
+            // Hide loading
+            if (loadingDiv) loadingDiv.classList.add('d-none');
+            
+            if (players.length === 0) {
+              if (emptyDiv) emptyDiv.classList.remove('d-none');
+              return;
+            }
+            
+            if (emptyDiv) emptyDiv.classList.add('d-none');
+            
+            // Render the leaderboard
+            players.forEach((player, idx) => {
+              const tr = document.createElement('tr');
+              const rank = idx + 1;
+              
+              // Add medal emoji for top 3
+              let rankDisplay = rank;
+              if (rank === 1) rankDisplay = '🥇';
+              else if (rank === 2) rankDisplay = '🥈';
+              else if (rank === 3) rankDisplay = '🥉';
+              
+              // Get champion badges if available
+              const badges = window.getChampionBadges ? window.getChampionBadges(player.alias) : '';
+              
+              // Make name clickable to view profile
+              const clickableName = `<a href="#" class="level-player-link text-decoration-none" data-alias="${player.alias}" data-displayname="${player.displayName}">${player.displayName}</a>`;
+              
+              tr.innerHTML = `
+                <td class="fw-bold">${rankDisplay}</td>
+                <td>${clickableName}${badges}</td>
+                <td><span class="badge bg-primary">Lvl ${player.level}</span></td>
+                <td class="text-muted">${player.totalXP.toLocaleString()} XP</td>
+              `;
+              tbody.appendChild(tr);
+            });
+            
+            // Setup click handlers for player links
+            tbody.querySelectorAll('.level-player-link').forEach(link => {
+              link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const alias = this.dataset.alias;
+                const displayName = this.dataset.displayname;
+                if (typeof window.showPlayerProfile === 'function') {
+                  window.showPlayerProfile(alias, displayName);
+                }
+              });
+            });
+            
+            levelLeaderboardLoaded = true;
+            
+          } catch (err) {
+            console.error('Error loading level leaderboard:', err);
+            if (loadingDiv) loadingDiv.classList.add('d-none');
+            if (emptyDiv) {
+              emptyDiv.textContent = 'Error loading leaderboard. Please try again.';
+              emptyDiv.classList.remove('d-none');
+            }
+          }
+        }
+        
+        // Expose refresh function
+        window.refreshLevelLeaderboard = function() {
+          levelLeaderboardLoaded = false;
+          loadLevelLeaderboard();
+        };
       })();
 
       // ========== BATTLE ROYALE ==========
