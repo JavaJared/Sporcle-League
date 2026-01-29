@@ -18259,6 +18259,11 @@
           await saveQuestProgress();
           updateLevelDisplay();
           renderQuests();
+          
+          // Invalidate level leaderboard so it refreshes next time it's viewed
+          if (typeof window.invalidateLevelLeaderboard === "function") {
+            window.invalidateLevelLeaderboard();
+          }
         };
 
         // Show quest completion toast
@@ -18446,7 +18451,7 @@
               // Get champion badges if available
               const badges = window.getChampionBadges ? window.getChampionBadges(player.alias) : '';
               
-              // Make name clickable to view profile (using same class as H2H for consistency)
+              // Make name clickable to view profile
               const clickableName = `<a href="#" class="level-player-link text-decoration-none" data-alias="${player.alias}" data-displayname="${player.displayName}">${player.displayName}</a>`;
               
               tr.innerHTML = `
@@ -18464,7 +18469,6 @@
                 e.preventDefault();
                 const alias = this.dataset.alias;
                 const displayName = this.dataset.displayname;
-                // Use the same function as H2H player links
                 if (typeof window.openUserProfileModal === 'function') {
                   window.openUserProfileModal(alias, displayName);
                 }
@@ -18485,11 +18489,16 @@
           isLoadingLeaderboard = false;
         }
         
-        // Expose refresh function
+        // Expose refresh function (forces immediate reload)
         window.refreshLevelLeaderboard = function() {
           levelLeaderboardLoaded = false;
           isLoadingLeaderboard = false;
           loadLevelLeaderboard();
+        };
+        
+        // Invalidate cache so it reloads next time tab is viewed
+        window.invalidateLevelLeaderboard = function() {
+          levelLeaderboardLoaded = false;
         };
         
         // Reset when league changes
