@@ -5044,6 +5044,68 @@
                       </button>
                     </div>
                   </div>
+                  
+                  <!-- Spectator View (watching the game after elimination) -->
+                  <div id="br-spectator-view" class="d-none">
+                    <div class="row">
+                      <div class="col-lg-8">
+                        <!-- Current Quiz Card for Spectators -->
+                        <div
+                          class="card mb-3"
+                          style="
+                            background-color: #1a2a3a;
+                            border-color: #2d4a5a;
+                          "
+                        >
+                          <div class="card-body text-center py-4">
+                            <div class="badge bg-info mb-2">👁️ Spectating</div>
+                            <h5 class="text-info mb-3" id="br-spectator-quiz-title">
+                              --
+                            </h5>
+                            <a
+                              id="br-spectator-quiz-link"
+                              href="#"
+                              target="_blank"
+                              class="btn btn-outline-info btn-lg mb-3"
+                            >
+                              👁️ View Quiz
+                            </a>
+                            <p class="text-muted small">
+                              You're spectating this round. Watch the remaining players compete!
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <button
+                          id="br-stop-spectating-btn"
+                          class="btn btn-outline-secondary"
+                        >
+                          ← Back to Eliminated View
+                        </button>
+                      </div>
+
+                      <div class="col-lg-4">
+                        <!-- Live Scoreboard for Spectators -->
+                        <div
+                          class="card"
+                          style="
+                            background-color: #2a2a2a;
+                            border-color: #4a4a4a;
+                          "
+                        >
+                          <div class="card-body">
+                            <h6 class="text-light mb-3">📊 Live Scores</h6>
+                            <div
+                              id="br-spectator-scores"
+                              style="max-height: 400px; overflow-y: auto"
+                            >
+                              <!-- Scores rendered by JS -->
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </section>
@@ -18521,6 +18583,7 @@
         let myAlias = null;
         let myDisplayName = null;
         let wheelQuizzes = [];
+        let isSpectating = false;
 
         // DOM Elements
         const menuView = document.getElementById("br-menu-view");
@@ -18994,6 +19057,77 @@
           }, 3000);
         }
 
+        // Update spectator view with current quiz and scores
+        function updateSpectatorView() {
+          if (!currentLobbyData) return;
+          
+          const quiz = currentLobbyData.currentQuiz;
+          const players = currentLobbyData.players || {};
+          const eliminated = currentLobbyData.eliminatedPlayers || [];
+          const roundScores = currentLobbyData.roundScores || {};
+          const phase = currentLobbyData.roundPhase;
+          
+          // Update quiz info
+          if (quiz) {
+            document.getElementById("br-spectator-quiz-title").textContent = quiz.title || "Quiz";
+            document.getElementById("br-spectator-quiz-link").href = quiz.url || "#";
+          }
+          
+          // Update scores display
+          const scoresContainer = document.getElementById("br-spectator-scores");
+          if (scoresContainer) {
+            const activePlayersList = Object.entries(players)
+              .filter(([alias]) => !eliminated.includes(alias))
+              .map(([alias, player]) => ({
+                alias,
+                displayName: player.displayName,
+                submitted: !!roundScores[alias],
+                score: roundScores[alias],
+              }));
+            
+            scoresContainer.innerHTML = activePlayersList
+              .map((p) => {
+                let statusHtml;
+                if (p.submitted && p.score) {
+                  const pct = (p.score.pct * 100).toFixed(1);
+                  statusHtml = `
+                    <div class="text-success">
+                      <div class="fw-bold">${p.score.num}/${p.score.den}</div>
+                      <div class="small">${pct}%</div>
+                    </div>
+                  `;
+                } else {
+                  statusHtml = `<span class="text-muted small">⏳ Playing...</span>`;
+                }
+                return `
+                  <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-secondary">
+                    <span>${p.displayName}</span>
+                    ${statusHtml}
+                  </div>
+                `;
+              })
+              .join("");
+              
+            // If in results or victory phase, show appropriate message
+            if (phase === "results") {
+              scoresContainer.innerHTML += `
+                <div class="text-center text-warning mt-3 small">
+                  📊 Round results are being shown...
+                </div>
+              `;
+            } else if (phase === "victory") {
+              const winner = currentLobbyData.winner;
+              const winnerName = currentLobbyData.winnerDisplayName || winner;
+              scoresContainer.innerHTML = `
+                <div class="text-center text-warning py-3">
+                  <div class="display-6 mb-2">👑</div>
+                  <div class="h5">${winnerName} wins!</div>
+                </div>
+              `;
+            }
+          }
+        }
+
         // Update game UI based on phase
         function updateGameUI() {
           if (!currentLobbyData) return;
@@ -19024,6 +19158,9 @@
           document
             .getElementById("br-eliminated-view")
             ?.classList.add("d-none");
+          document
+            .getElementById("br-spectator-view")
+            ?.classList.add("d-none");
 
           // If game is over (victory phase)
           if (phase === "victory") {
@@ -19038,7 +19175,15 @@
 
           // If eliminated during the game (not final round)
           if (amEliminated) {
-            showEliminatedView(false);
+            if (isSpectating) {
+              // Show spectator view instead of eliminated view
+              document
+                .getElementById("br-spectator-view")
+                ?.classList.remove("d-none");
+              updateSpectatorView();
+            } else {
+              showEliminatedView(false);
+            }
             return;
           }
 
@@ -19547,6 +19692,7 @@
           brGameTracked = false;
           brWinTracked = false;
           myShieldActivated = false;
+          isSpectating = false;
 
           showMenuView();
         }
@@ -19606,26 +19752,33 @@
           .getElementById("br-exit-match-btn")
           ?.addEventListener("click", backToMenu);
 
+        // Spectator mode handlers
+
         document
           .getElementById("br-spectate-btn")
           ?.addEventListener("click", () => {
-            // Just hide eliminated view and show current phase
+            isSpectating = true;
+            // Hide eliminated view and show spectator view
             document
               .getElementById("br-eliminated-view")
               ?.classList.add("d-none");
-            const phase = currentLobbyData?.roundPhase;
-            if (phase === "quiz") {
-              document
-                .getElementById("br-quiz-phase")
-                ?.classList.remove("d-none");
-              updateRoundScoreboard();
-            } else if (phase === "results") {
-              document
-                .getElementById("br-results-phase")
-                ?.classList.remove("d-none");
-            } else if (phase === "victory") {
-              showVictoryUI();
-            }
+            document
+              .getElementById("br-spectator-view")
+              ?.classList.remove("d-none");
+            updateSpectatorView();
+          });
+        
+        document
+          .getElementById("br-stop-spectating-btn")
+          ?.addEventListener("click", () => {
+            isSpectating = false;
+            // Hide spectator view and show eliminated view
+            document
+              .getElementById("br-spectator-view")
+              ?.classList.add("d-none");
+            document
+              .getElementById("br-eliminated-view")
+              ?.classList.remove("d-none");
           });
 
         // Initialize when tab is shown
