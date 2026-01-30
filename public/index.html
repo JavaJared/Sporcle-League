@@ -19245,8 +19245,10 @@
             : [...eliminated];
 
           // Check if game is over
-          // The game ends when this round had only 2 players competing (final matchup)
-          // After eliminating 1 of the 2, only 1 remains
+          // Count active players BEFORE this round (from players object, not roundScores)
+          const activePlayersBeforeRound = Object.keys(players).filter(
+            (a) => !eliminated.includes(a),
+          );
           const remainingPlayers = Object.keys(players).filter(
             (a) => !newEliminated.includes(a),
           );
@@ -19255,6 +19257,7 @@
           // Debug logging to track the issue
           console.log("🎮 Round results:", {
             totalPlayers: totalPlayers,
+            activePlayersBeforeRound: activePlayersBeforeRound.length,
             previouslyEliminated: eliminated.length,
             newlyEliminatedCount: newEliminated.length,
             playersWhoSubmitted: results.length,
@@ -19264,11 +19267,10 @@
           });
 
           // Game ends when:
-          // - Only 2 players competed this round (the final matchup), AND
-          // - 1 was eliminated, leaving 1 winner
-          // This is more reliable than checking remainingPlayers because it directly
-          // validates that we just had the final 1v1 round
-          const wasFinalRound = results.length === 2;
+          // - There were exactly 2 active players at the START of this round, AND
+          // - After elimination, only 1 remains
+          // This ensures we play the final 1v1 round before declaring a winner
+          const wasFinalRound = activePlayersBeforeRound.length === 2;
           const haveWinner = remainingPlayers.length === 1;
 
           if (wasFinalRound && haveWinner) {
